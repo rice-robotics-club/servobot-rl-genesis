@@ -1,0 +1,11 @@
+name: genesis
+channels:
+  - defaults
+dependencies:
+  - python=3.13
+  - pip=25.2
+  - pip:
+      - genesis-world>=0.3.4
+      - rsl-rl-lib==2.2.4
+      - torch>=2.9.0
+      - torchvision>=0.24.0
