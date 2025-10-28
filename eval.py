@@ -1,24 +1,13 @@
 import argparse
 import os
 import pickle
-from importlib import metadata
-
 import torch
 
-try:
-    try:
-        if metadata.version("rsl-rl"):
-            raise ImportError
-    except metadata.PackageNotFoundError:
-        if metadata.version("rsl-rl-lib") != "2.2.4":
-            raise ImportError
-except (metadata.PackageNotFoundError, ImportError) as e:
-    raise ImportError("Please uninstall 'rsl_rl' and install 'rsl-rl-lib==2.2.4'.") from e
 from rsl_rl.runners import OnPolicyRunner
 
 import genesis as gs
 
-from go2_env import Go2Env
+from env import ServobotEnv
 
 
 def main():
@@ -33,7 +22,7 @@ def main():
     env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
     reward_cfg["reward_scales"] = {}
 
-    env = Go2Env(
+    env = ServobotEnv(
         num_envs=1,
         env_cfg=env_cfg,
         obs_cfg=obs_cfg,
@@ -59,5 +48,5 @@ if __name__ == "__main__":
 
 """
 # evaluation
-python examples/locomotion/go2_eval.py -e go2-walking -v --ckpt 100
+python examples/locomotion/eval.py -e go2-walking -v --ckpt 100
 """

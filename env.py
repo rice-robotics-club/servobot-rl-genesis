@@ -2,13 +2,14 @@ import torch
 import math
 import genesis as gs
 from genesis.utils.geom import quat_to_xyz, transform_by_quat, inv_quat, transform_quat_by_quat
+from rsl_rl.env import VecEnv
 
 
 def gs_rand_float(lower, upper, shape, device):
     return (upper - lower) * torch.rand(size=shape, device=device) + lower
 
 
-class Go2Env:
+class ServobotEnv(VecEnv):
     def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False):
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
