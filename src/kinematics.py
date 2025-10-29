@@ -92,7 +92,7 @@ class IK:
 
         return np.array(output_cfg) * self.output_mult
 
-    def get_idle_cfg(self, height=0.13) -> dict[str, float]:
+    def get_idle_cfg(self, height=0.16) -> dict[str, float]:
         """
         Returns a configuration array for
         :param height: robot height in meters

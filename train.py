@@ -85,7 +85,7 @@ def get_cfgs():
         "termination_if_roll_greater_than": 10,  # degree
         "termination_if_pitch_greater_than": 10,
         # base pose
-        "base_init_pos": [0.0, 0.0, 0.2],
+        "base_init_pos": [0.0, 0.0, 0.18],
         "base_init_quat": [1.0, 0.0, 0.0, 0.0],
         "episode_length_s": 20.0,
         "resampling_time_s": 4.0,
@@ -104,7 +104,7 @@ def get_cfgs():
     }
     reward_cfg = {
         "tracking_sigma": 0.25,
-        "base_height_target": 0.3,
+        "base_height_target": 0.18,
         "feet_height_target": 0.075,
         "reward_scales": {
             "tracking_lin_vel": 1.0,
@@ -149,7 +149,8 @@ def main():
     )
 
     env = ServobotEnv(
-        num_envs=args.num_envs, env_cfg=env_cfg, obs_cfg=obs_cfg, reward_cfg=reward_cfg, command_cfg=command_cfg
+        num_envs=args.num_envs, env_cfg=env_cfg, obs_cfg=obs_cfg, reward_cfg=reward_cfg, command_cfg=command_cfg,
+        show_viewer=True,
     )
 
     runner = OnPolicyRunner(env, train_cfg, log_dir, device=gs.device)
