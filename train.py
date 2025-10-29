@@ -5,6 +5,7 @@ import shutil
 import yaml
 
 from rsl_rl.runners import OnPolicyRunner
+from src.kinematics import IK
 
 import genesis as gs
 
@@ -58,23 +59,11 @@ from env import ServobotEnv
 
 
 def get_cfgs():
+    ik = IK()
     env_cfg = {
         "num_actions": 12,
         # joint/link names
-        "default_joint_angles": {
-            "FL_Hip": 0.0,
-            "FL_TopLeg": 0.0,
-            "FL_BotLeg": 0.0,
-            "FR_Hip": 0.0,
-            "FR_TopLeg": 0.0,
-            "FR_BotLeg": 0.0,
-            "BL_Hip": 0.0,
-            "BL_TopLeg": 0.0,
-            "BL_BotLeg": 0.0,
-            "BR_Hip": 0.0,
-            "BR_TopLeg": 0.0,
-            "BR_BotLeg": 0.0,
-        },
+        "default_joint_angles": ik.get_idle_cfg(),
         "joint_names": [
             "FL_Hip",
             "FL_TopLeg",
@@ -96,7 +85,7 @@ def get_cfgs():
         "termination_if_roll_greater_than": 10,  # degree
         "termination_if_pitch_greater_than": 10,
         # base pose
-        "base_init_pos": [0.0, 0.0, 0.42],
+        "base_init_pos": [0.0, 0.0, 0.2],
         "base_init_quat": [1.0, 0.0, 0.0, 0.0],
         "episode_length_s": 20.0,
         "resampling_time_s": 4.0,
@@ -128,9 +117,9 @@ def get_cfgs():
     }
     command_cfg = {
         "num_commands": 3,
-        "lin_vel_x_range": [0.5, 0.5],
-        "lin_vel_y_range": [0, 0],
-        "ang_vel_range": [0, 0],
+        "lin_vel_x_range": [-0.5, 0.5],
+        "lin_vel_y_range": [-0.5, 0.5],
+        "ang_vel_range": [-0.5, 0.5],
     }
 
     return env_cfg, obs_cfg, reward_cfg, command_cfg
@@ -139,17 +128,16 @@ def get_cfgs():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("train_cfg", type=str)
-    parser.add_argument("-e", "--exp_name", type=str, default="servobot-walking")
     parser.add_argument("-B", "--num_envs", type=int, default=4096)
     parser.add_argument("--max_iterations", type=int, default=101)
     args = parser.parse_args()
 
-    gs.init(logging_level="warning")
+    gs.init(logging_level="warning", )
 
-    log_dir = f"logs/{args.exp_name}"
     env_cfg, obs_cfg, reward_cfg, command_cfg = get_cfgs()
     with open(args.train_cfg, 'r') as file:
         train_cfg = yaml.safe_load(file)
+    log_dir = f"logs/{train_cfg["runner"]["experiment_name"]}"
 
     if os.path.exists(log_dir):
         shutil.rmtree(log_dir)
