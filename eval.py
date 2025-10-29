@@ -2,6 +2,7 @@ import argparse
 import os
 import pickle
 import torch
+import pygame
 
 from rsl_rl.runners import OnPolicyRunner
 
@@ -14,6 +15,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="servobot")
     parser.add_argument("--ckpt", type=int, default=100)
+    parser.add_argument("-j", "--joystick", action="store_true")
     args = parser.parse_args()
 
     gs.init()
@@ -36,17 +38,30 @@ def main():
     runner.load(resume_path)
     policy = runner.get_inference_policy(device=gs.device)
 
+
+
     obs, _ = env.reset()
     with torch.no_grad():
+        if args.joystick:
+            pygame.init()
+            joystick = pygame.joystick.Joystick(0)
+            joystick.init()
+            print(f"Initialized joystick: {joystick.get_name()}")
+
         while True:
+            if args.joystick:
+                for _ in pygame.event.get():
+                    pass
+
+            command = (
+                -joystick.get_axis(2),
+                joystick.get_axis(3),
+                -joystick.get_axis(0)
+            ) if args.joystick else None
+
             actions = policy(obs)
-            obs, rews, dones, infos = env.step(actions)
+            obs, rews, dones, infos = env.step(actions, command=command)
 
 
 if __name__ == "__main__":
     main()
-
-"""
-# evaluation
-python examples/locomotion/eval.py -e go2-walking -v --ckpt 100
-"""

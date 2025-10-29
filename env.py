@@ -121,7 +121,7 @@ class ServobotEnv(VecEnv):
         self.commands[envs_idx, 1] = gs_rand_float(*self.command_cfg["lin_vel_y_range"], (len(envs_idx),), gs.device)
         self.commands[envs_idx, 2] = gs_rand_float(*self.command_cfg["ang_vel_range"], (len(envs_idx),), gs.device)
 
-    def step(self, actions):
+    def step(self, actions, command: tuple[float, float, float] = None):
         self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"])
         exec_actions = self.last_actions if self.simulate_action_latency else self.actions
         target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
@@ -144,13 +144,19 @@ class ServobotEnv(VecEnv):
         self.dof_pos[:] = self.robot.get_dofs_position(self.motors_dof_idx)
         self.dof_vel[:] = self.robot.get_dofs_velocity(self.motors_dof_idx)
 
-        # resample commands
-        envs_idx = (
-            (self.episode_length_buf % int(self.env_cfg["resampling_time_s"] / self.dt) == 0)
-            .nonzero(as_tuple=False)
-            .reshape((-1,))
-        )
-        self._resample_commands(envs_idx)
+        if command:
+            # set command to input [-1.0, 1.0], scaled by command ranges
+            self.commands[:, 0] = command[0] * self.command_cfg["lin_vel_x_range"][1]
+            self.commands[:, 1] = command[1] * self.command_cfg["lin_vel_y_range"][1]
+            self.commands[:, 2] = command[2] * self.command_cfg["ang_vel_range"][1]
+        else:
+            # resample commands
+            envs_idx = (
+                (self.episode_length_buf % int(self.env_cfg["resampling_time_s"] / self.dt) == 0)
+                .nonzero(as_tuple=False)
+                .reshape((-1,))
+            )
+            self._resample_commands(envs_idx)
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length
@@ -230,7 +236,7 @@ class ServobotEnv(VecEnv):
         self.extras["episode"] = {}
         for key in self.episode_sums.keys():
             self.extras["episode"]["rew_" + key] = (
-                torch.mean(self.episode_sums[key][envs_idx]).item() / self.env_cfg["episode_length_s"]
+                    torch.mean(self.episode_sums[key][envs_idx]).item() / self.env_cfg["episode_length_s"]
             )
             self.episode_sums[key][envs_idx] = 0.0
 

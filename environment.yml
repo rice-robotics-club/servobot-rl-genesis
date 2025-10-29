@@ -11,3 +11,4 @@ dependencies:
       - torchvision
       - tensorboard
       - PyYAML
+      - pygame
