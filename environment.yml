@@ -6,7 +6,7 @@ dependencies:
   - pip
   - pip:
       - genesis-world
-      - rsl-rl-lib
+      - rsl-rl-lib==2.2.4
       - torch
       - torchvision
       - tensorboard
