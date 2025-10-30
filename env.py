@@ -10,7 +10,7 @@ def gs_rand_float(lower, upper, shape, device):
 
 
 class ServobotEnv(VecEnv):
-    def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False):
+    def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False, num_viewer_envs=1):
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
         self.num_privileged_obs = None
@@ -39,7 +39,7 @@ class ServobotEnv(VecEnv):
                 camera_lookat=(0.0, 0.0, 0.5),
                 camera_fov=40,
             ),
-            vis_options=gs.options.VisOptions(rendered_envs_idx=list(range(1))),
+            vis_options=gs.options.VisOptions(rendered_envs_idx=list(range(num_viewer_envs))),
             rigid_options=gs.options.RigidOptions(
                 dt=self.dt,
                 constraint_solver=gs.constraint_solver.Newton,
@@ -291,3 +291,9 @@ class ServobotEnv(VecEnv):
         
         # Energy = |torque * velocity|
         return torch.sum(torch.abs(torques * self.dof_vel), dim=1)
+    
+    def _reward_survival(self):
+        # Small constant reward for survival
+        # Scales with target velocity magnitude, which is inspired by https://arxiv.org/pdf/2111.01674 
+        speed_magnitude = torch.norm(self.commands[:, :2], dim=1)
+        return torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_float) * speed_magnitude
