@@ -14,24 +14,16 @@ from src.controls import Controller
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ckpt", type=str, default=None, help="Checkpoint to load (default: latest)")
+    parser.add_argument("--ckpt", type=str, default=None, help="Path to checkpoint to load (default: logs/servobot/model_100.pt)")
     parser.add_argument("-t", "--teleop", type=str, default="none", choices=["keyboard", "xbox", "ps4"])
     args = parser.parse_args()
 
     
     gs.init()
 
-    # get exp name from ckpt path
-    if args.ckpt is not None:
-        exp_name = args.ckpt.split("/")[0]
-        print(f"Experiment name from checkpoint: {exp_name}")
-    else:
-        exp_name = "servobot"
-
-
-    log_dir = f"logs/"
+    ckpt_dir = os.path.dirname(args.ckpt) if args.ckpt else "logs/servobot"
     
-    env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{exp_name}/cfgs.pkl", "rb"))
+    env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"{ckpt_dir}/cfgs.pkl", "rb"))
     reward_cfg["reward_scales"] = {}
     
     
@@ -45,10 +37,10 @@ def main():
     )
 
     if args.ckpt is None:
-        resume_path = os.path.join(log_dir, "servobot/model_100.pt")
+        resume_path = "logs/servobot/model_100.pt"
     else:
-        resume_path = os.path.join(log_dir, args.ckpt)
-    runner = OnPolicyRunner(env, train_cfg, log_dir, device=gs.device)
+        resume_path = args.ckpt
+    runner = OnPolicyRunner(env, train_cfg, ckpt_dir, device=gs.device)
     runner.load(resume_path)
     policy = runner.get_inference_policy(device=gs.device)
 
