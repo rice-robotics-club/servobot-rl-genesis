@@ -3,7 +3,7 @@ import os
 import pickle
 import shutil
 import yaml
-import datetime
+from datetime import datetime
 
 from rsl_rl.runners import OnPolicyRunner
 from src.kinematics import IK
@@ -148,7 +148,9 @@ def main():
     parser.add_argument("-B", "--num_envs", type=int, default=4096)
     parser.add_argument("--max_iterations", type=int, default=101)
     parser.add_argument("-r", "--resume", type=str, default=None, 
-                        help="Path to resume from checkpoint")
+                        help="Path to checkpoint to resume from")
+    parser.add_argument("--save_dir", type=str, default=None,
+                        help="Custom directory name for saving (default: auto-generated with timestamp)")
     args = parser.parse_args()
 
     gs.init(logging_level="warning", )
@@ -157,20 +159,44 @@ def main():
     with open(args.train_cfg, 'r') as file:
         train_cfg = yaml.safe_load(file)
     
-    # Ability to load from checkpoint
-    if args.resume:
-        log_dir = os.path.dirname(args.resume)
-        print(f"Resuming from {args.resume}...")
+    exp_name = train_cfg["runner"]["experiment_name"]
+    
+    # Determine log directory
+    if args.save_dir:
+        # Use custom directory name
+        log_dir = f"logs/{args.save_dir}"
     else:
-        exp_name = train_cfg["runner"]["experiment_name"]
-        # would be nice to have a timestamp here too
+        # Auto-generate with timestamp
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        exp_name = f"{exp_name}_{timestamp}"
-        log_dir = f"logs/{exp_name}"
-        
-        if os.path.exists(log_dir):
-            shutil.rmtree(log_dir)
-        os.makedirs(log_dir, exist_ok=True)
+        if args.resume:
+            # Extract original exp name and add "resumed" suffix
+            original_dir = os.path.dirname(args.resume)
+            original_name = os.path.basename(original_dir)
+            log_dir = f"logs/{original_name}_resumed_{timestamp}"
+        else:
+            log_dir = f"logs/{exp_name}_{timestamp}"
+    
+    # Create new directory (never overwrite)
+    if os.path.exists(log_dir):
+        print(f"Warning: {log_dir} already exists. Adding timestamp suffix.")
+        log_dir = f"{log_dir}_{datetime.now().strftime('%H%M%S')}"
+    
+    os.makedirs(log_dir, exist_ok=True)
+    print(f"Saving to: {log_dir}")
+    
+    # Copy configs for reproducibility
+    os.makedirs(f"{log_dir}/configs", exist_ok=True)
+    shutil.copy(args.train_cfg, f"{log_dir}/configs/train.yaml")
+
+    # Save metadata
+    metadata = {
+        "timestamp": datetime.now().isoformat(),
+        "resumed_from": args.resume,
+        "num_envs": args.num_envs,
+        "max_iterations": args.max_iterations,
+    }
+    with open(f"{log_dir}/metadata.yaml", 'w') as f:
+        yaml.dump(metadata, f)
 
     pickle.dump(
         [env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg],
@@ -183,6 +209,11 @@ def main():
     )
 
     runner = OnPolicyRunner(env, train_cfg, log_dir, device=gs.device)
+    
+    # Load checkpoint if resuming
+    if args.resume:
+        print(f"Loading checkpoint from: {args.resume}")
+        runner.load(args.resume)
 
     runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
 
