@@ -83,8 +83,8 @@ def get_cfgs():
         "kp": 20.0,
         "kd": 0.5,
         # termination
-        "termination_if_roll_greater_than": 20,  # degree
-        "termination_if_pitch_greater_than": 20,
+        "termination_if_roll_greater_than": 45,  # degree --- WAY HIGHER NOW! RUN MY BEAUTIFUL CREATURE, RUN
+        "termination_if_pitch_greater_than": 45,
         # base pose
         "base_init_pos": [0.0, 0.0, 0.18],
         "base_init_quat": [1.0, 0.0, 0.0, 0.0],
@@ -119,8 +119,8 @@ def get_cfgs():
     }
     command_cfg = {
         "num_commands": 3, #bigger range to teach faster gait at the cost of longer trainings
-        "lin_vel_x_range": [-1.5, 1.5],
-        "lin_vel_y_range": [-1.5, 1.5],
+        "lin_vel_x_range": [-2, 2],
+        "lin_vel_y_range": [-2, 2],
         "ang_vel_range": [-1, 1], 
     }
     
