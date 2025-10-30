@@ -81,7 +81,7 @@ class Controller:
             rot_right = max(0.0, min(rotate, 1.0))
 
 
-            command = (forward * self.target_speed, strafe * self.target_speed, rotate * 4)
+            command = (forward * self.target_speed, strafe * self.target_speed, rotate * self.target_speed * 4)
             self.screen.fill((0, 0, 0))
             self.draw_movement_icons(str_forward, str_back, str_left, str_right, rot_left, rot_right)
             pygame.display.flip()
