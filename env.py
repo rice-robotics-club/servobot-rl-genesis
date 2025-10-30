@@ -275,8 +275,20 @@ class ServobotEnv(VecEnv):
         # Penalize base height away from target
         return torch.square(self.base_pos[:, 2] - self.reward_cfg["base_height_target"])
     
-    def _reward_energy(self):
+    def _reward_energy(self): 
         # Penalize energy consumption (torque * velocity)
+        # For PD control: torque = kp * (target - current) + kd * (0 - vel)
         # This is inspired by this paper: https://arxiv.org/pdf/2111.01674
         # Should help the robot develop more efficient and 'natural' gaits over time
-        return torch.sum(torch.abs(self.robot.get_dofs_torque(self.motors_dof_idx) * self.dof_vel), dim=1)
+        
+        # Calculate target positions from actions
+        exec_actions = self.last_actions if self.simulate_action_latency else self.actions
+        target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
+        
+        # Calculate PD torques
+        pos_error = target_dof_pos - self.dof_pos
+        vel_error = -self.dof_vel  # target velocity is 0
+        torques = self.env_cfg["kp"] * pos_error + self.env_cfg["kd"] * vel_error
+        
+        # Energy = |torque * velocity|
+        return torch.sum(torch.abs(torques * self.dof_vel), dim=1)

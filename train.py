@@ -3,6 +3,7 @@ import os
 import pickle
 import shutil
 import yaml
+import datetime
 
 from rsl_rl.runners import OnPolicyRunner
 from src.kinematics import IK
@@ -146,6 +147,8 @@ def main():
     parser.add_argument("train_cfg", type=str)
     parser.add_argument("-B", "--num_envs", type=int, default=4096)
     parser.add_argument("--max_iterations", type=int, default=101)
+    parser.add_argument("-r", "--resume", type=str, default=None, 
+                        help="Path to resume from checkpoint")
     args = parser.parse_args()
 
     gs.init(logging_level="warning", )
@@ -153,11 +156,21 @@ def main():
     env_cfg, obs_cfg, reward_cfg, command_cfg, symmetry_cfg = get_cfgs()
     with open(args.train_cfg, 'r') as file:
         train_cfg = yaml.safe_load(file)
-    log_dir = f"logs/{train_cfg["runner"]["experiment_name"]}"
-
-    if os.path.exists(log_dir):
-        shutil.rmtree(log_dir)
-    os.makedirs(log_dir, exist_ok=True)
+    
+    # Ability to load from checkpoint
+    if args.resume:
+        log_dir = os.path.dirname(args.resume)
+        print(f"Resuming from {args.resume}...")
+    else:
+        exp_name = train_cfg["runner"]["experiment_name"]
+        # would be nice to have a timestamp here too
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        exp_name = f"{exp_name}_{timestamp}"
+        log_dir = f"logs/{exp_name}"
+        
+        if os.path.exists(log_dir):
+            shutil.rmtree(log_dir)
+        os.makedirs(log_dir, exist_ok=True)
 
     pickle.dump(
         [env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg],
