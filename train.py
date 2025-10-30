@@ -113,13 +113,14 @@ def get_cfgs():
             "base_height": -50.0,
             "action_rate": -0.005,
             "similar_to_default": -0.1,
+            "energy": -0.0001,
         },
     }
     command_cfg = {
-        "num_commands": 3,
-        "lin_vel_x_range": [-0.5, 0.5],
-        "lin_vel_y_range": [-0.5, 0.5],
-        "ang_vel_range": [-0.5, 0.5],
+        "num_commands": 3, #bigger range to teach faster gait at the cost of longer trainings
+        "lin_vel_x_range": [-1.5, 1.5],
+        "lin_vel_y_range": [-1.5, 1.5],
+        "ang_vel_range": [-1, 1], 
     }
     
     # Add symmetry configuration

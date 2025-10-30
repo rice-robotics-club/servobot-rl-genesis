@@ -274,3 +274,9 @@ class ServobotEnv(VecEnv):
     def _reward_base_height(self):
         # Penalize base height away from target
         return torch.square(self.base_pos[:, 2] - self.reward_cfg["base_height_target"])
+    
+    def _reward_energy(self):
+        # Penalize energy consumption (torque * velocity)
+        # This is inspired by this paper: https://arxiv.org/pdf/2111.01674
+        # Should help the robot develop more efficient and 'natural' gaits over time
+        return torch.sum(torch.abs(self.robot.get_dofs_torque(self.motors_dof_idx) * self.dof_vel), dim=1)
