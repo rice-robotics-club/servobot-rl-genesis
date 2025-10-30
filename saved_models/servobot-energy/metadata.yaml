@@ -1,0 +1,4 @@
+max_iterations: 101
+num_envs: 4096
+resumed_from: logs/servobot-energy_132351/model_6700.pt
+timestamp: '2025-10-30T13:33:05.518907'
