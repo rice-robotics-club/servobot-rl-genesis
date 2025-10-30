@@ -15,13 +15,13 @@ from src.controls import Controller
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="servobot")
-    parser.add_argument("--ckpt", type=int, default=100)
+    parser.add_argument("--ckpt", type=str, default=None, help="Checkpoint to load (default: latest)")
     parser.add_argument("-t", "--teleop", type=str, default="none", choices=["keyboard", "xbox", "ps4"])
     args = parser.parse_args()
 
     gs.init()
 
-    log_dir = f"logs/{args.exp_name}"
+    log_dir = f"logs/"
     env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
     reward_cfg["reward_scales"] = {}
 
@@ -34,8 +34,11 @@ def main():
         show_viewer=True,
     )
 
+    if args.ckpt is None:
+        resume_path = os.path.join(log_dir, "servobot/model_100.pt")
+    else:
+        resume_path = os.path.join(log_dir, args.ckpt)
     runner = OnPolicyRunner(env, train_cfg, log_dir, device=gs.device)
-    resume_path = os.path.join(log_dir, f"model_{args.ckpt}.pt")
     runner.load(resume_path)
     policy = runner.get_inference_policy(device=gs.device)
 
