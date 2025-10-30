@@ -14,17 +14,27 @@ from src.controls import Controller
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--exp_name", type=str, default="servobot")
     parser.add_argument("--ckpt", type=str, default=None, help="Checkpoint to load (default: latest)")
     parser.add_argument("-t", "--teleop", type=str, default="none", choices=["keyboard", "xbox", "ps4"])
     args = parser.parse_args()
 
+    
     gs.init()
 
-    log_dir = f"logs/"
-    env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
-    reward_cfg["reward_scales"] = {}
+    # get exp name from ckpt path
+    if args.ckpt is not None:
+        exp_name = args.ckpt.split("/")[0]
+        print(f"Experiment name from checkpoint: {exp_name}")
+    else:
+        exp_name = "servobot"
 
+
+    log_dir = f"logs/"
+    
+    env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{exp_name}/cfgs.pkl", "rb"))
+    reward_cfg["reward_scales"] = {}
+    
+    
     env = ServobotEnv(
         num_envs=1,
         env_cfg=env_cfg,
