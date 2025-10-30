@@ -108,26 +108,28 @@ def get_cfgs():
         "base_height_target": 0.18,
         "feet_height_target": 0.075,
         "reward_scales": {
-            "tracking_lin_vel": 1.5,
-            "tracking_ang_vel": 0.3,
+            "tracking_lin_vel": 1.75,
+            "tracking_ang_vel": 0.75,
             "lin_vel_z": -1.0,
             "base_height": -50.0,
             "action_rate": -0.005,
             "similar_to_default": -0.1,
             "energy": -0.0001,
+            "survival": 0.3,
         },
     }
     command_cfg = {
         "num_commands": 3, #bigger range to teach faster gait at the cost of longer trainings
-        "lin_vel_x_range": [-2, 2],
-        "lin_vel_y_range": [-2, 2],
-        "ang_vel_range": [-1, 1], 
+        "lin_vel_x_range": [-1.0, 1.0],
+        "lin_vel_y_range": [-1.0, 1.0],
+        "ang_vel_range": [-0.8, 0.8], 
     }
     
     # Add symmetry configuration
     # Pairs: (left_idx, right_idx) where actions should be mirrored
     # FL <-> FR: (0,1,2) <-> (3,4,5)
     # BL <-> BR: (6,7,8) <-> (9,10,11)
+    # I have no idea how to properly give this information to RSL-RL so this is just sort of an unused variable right now
     symmetry_cfg = {
         "symmetric_pairs": [
             [0, 3],   # FL_Hip <-> FR_Hip
@@ -205,7 +207,7 @@ def main():
 
     env = ServobotEnv(
         num_envs=args.num_envs, env_cfg=env_cfg, obs_cfg=obs_cfg, reward_cfg=reward_cfg, command_cfg=command_cfg,
-        show_viewer=True,
+        show_viewer=True, num_viewer_envs=100
     )
 
     runner = OnPolicyRunner(env, train_cfg, log_dir, device=gs.device)
@@ -216,7 +218,7 @@ def main():
         runner.load(args.resume)
 
     runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
-
+    print("="*60, "\n Training complete! \n Saved robot policy to:", log_dir, "\n", "="*60)
 
 if __name__ == "__main__":
     main()
