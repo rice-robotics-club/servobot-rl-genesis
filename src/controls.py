@@ -73,15 +73,15 @@ class Controller:
             self.target_speed += throttle * 0.01  # Adjust speed
             self.target_speed = max(0.1, min(5.0, self.target_speed))  # Clamp between 0.1 and 5.0
 
-            str_forward = forward > 0.1
-            str_back = forward < -0.1
-            str_left = strafe < -0.1
-            str_right = strafe > 0.1
-            rot_left = rotate < -0.1
-            rot_right = rotate > 0.1
-            
+            str_forward = max(0.0, min(forward, 1.0))
+            str_back = max(0.0, min(-forward, 1.0))
+            str_left = max(0.0, min(-strafe, 1.0))
+            str_right = max(0.0, min(strafe, 1.0))
+            rot_left = max(0.0, min(-rotate, 1.0))
+            rot_right = max(0.0, min(rotate, 1.0))
 
-            command = (forward * self.target_speed, strafe * self.target_speed, rotate * 2)
+
+            command = (forward * self.target_speed, strafe * self.target_speed, rotate * 4)
             self.screen.fill((0, 0, 0))
             self.draw_movement_icons(str_forward, str_back, str_left, str_right, rot_left, rot_right)
             pygame.display.flip()
@@ -104,12 +104,12 @@ class Controller:
             rotate = 0.0
             
             # Track key states
-            str_forward = False
-            str_back = False
-            str_left = False
-            str_right = False
-            rot_left = False
-            rot_right = False
+            str_forward = 0.0
+            str_back = 0.0
+            str_left = 0.0
+            str_right = 0.0
+            rot_left = 0.0
+            rot_right = 0.0
 
             # Process events and track key state manually
             for event in pygame.event.get():
@@ -125,22 +125,22 @@ class Controller:
             
             # Use our tracked state instead of get_pressed()
             if pygame.K_UP in self.keys_down:
-                str_forward = True
+                str_forward = 1.0
                 forward = 1.0
             if pygame.K_DOWN in self.keys_down:
-                str_back = True
+                str_back = 1.0
                 forward = -1.0
             if pygame.K_LEFT in self.keys_down:
-                str_left = True
+                str_left = 1.0
                 strafe = -1.0
             if pygame.K_RIGHT in self.keys_down:
-                str_right = True
+                str_right = 1.0
                 strafe = 1.0
             if pygame.K_LEFTBRACKET in self.keys_down:
-                rot_left = True
+                rot_left = 1.0
                 rotate = -1.0
             if pygame.K_RIGHTBRACKET in self.keys_down:
-                rot_right = True
+                rot_right = 1.0
                 rotate = 1.0
             
             # Debug: print final command
@@ -148,69 +148,69 @@ class Controller:
                 print(f"Command: forward={forward}, strafe={strafe}, rotate={rotate}")
             
             command = (forward * 0.5, strafe * 0.5, rotate * 0.5)
-            self.screen.fill((0, 0, 0))
+            self.screen.fill((200, 200, 200))
             self.draw_movement_icons(str_forward, str_back, str_left, str_right, rot_left, rot_right)
             pygame.display.flip()
             self.clock.tick(60)
         
         return command
 
-    def draw_movement_icons(self, str_forward, str_back, str_left, str_right, rot_left, rot_right):
+    def draw_movement_icons(self, str_forward: float, str_back: float, str_left: float, str_right: float, rot_left: float, rot_right: float):
             
-            # Draw keyboard icons on the pygame window for the arrow keys 
+            # Draw icons on the pygame window for the directions 
             # and fill them in depending on which keys are pressed.
-            icon_size = 20
-            icon_gap = 10
+            icon_size = 15
+            icon_gap = 12
             center_x = 50
-            center_y = 50
+            center_y = 40
             # Up arrow
-            up_color = (0, 255, 0) if str_forward else (255, 255, 255)
+            up_color = ((1 - str_forward) * 255, 255, (1 - str_forward) * 255)
             pygame.draw.polygon(self.screen, up_color, [
                 (center_x, center_y - icon_size - icon_gap),
                 (center_x - icon_size // 2, center_y - icon_gap),
                 (center_x + icon_size // 2, center_y - icon_gap)
             ])
             # Down arrow
-            down_color = (0, 255, 0) if str_back else (255, 255, 255)
+            down_color = ((1 - str_back) * 255, 255, (1 - str_back) * 255)
             pygame.draw.polygon(self.screen, down_color, [
                 (center_x, center_y + icon_size + icon_gap),
                 (center_x - icon_size // 2, center_y + icon_gap),
                 (center_x + icon_size // 2, center_y + icon_gap)
             ])
             # Left arrow
-            left_color = (0, 255, 0) if str_left else (255, 255, 255)
+            left_color = ((1 - str_left) * 255, 255, (1 - str_left) * 255)
             pygame.draw.polygon(self.screen, left_color, [
                 (center_x - icon_size - icon_gap, center_y),
                 (center_x - icon_gap, center_y - icon_size // 2),
                 (center_x - icon_gap, center_y + icon_size // 2)
             ])
             # Right arrow
-            right_color = (0, 255, 0) if str_right else (255, 255, 255)
+            right_color = ((1 - str_right) * 255, 255, (1 - str_right) * 255)
             pygame.draw.polygon(self.screen, right_color, [
                 (center_x + icon_size + icon_gap, center_y),
                 (center_x + icon_gap, center_y - icon_size // 2),
                 (center_x + icon_gap, center_y + icon_size // 2)
             ])
             # Rotate left bracket
-            rot_left_color = (0, 255, 0) if rot_left else (255, 255, 255)
+            rot_left_color = ((1 - rot_left) * 255, 255, (1 - rot_left) * 255)
             pygame.draw.polygon(self.screen, rot_left_color, [
-                (center_x - icon_size - icon_gap, center_y - icon_size - icon_gap),
-                (center_x - icon_size - icon_gap, center_y + icon_size + icon_gap),
-                (center_x - icon_size - icon_gap + 5, center_y + icon_size + icon_gap - 5),
-                (center_x - icon_size - icon_gap + 5, center_y - icon_size - icon_gap + 5)
+                (center_x - icon_size - 2 * icon_gap, center_y - icon_size - icon_gap),
+                (center_x - icon_size - 2 * icon_gap, center_y + icon_size + icon_gap),
+                (center_x - icon_size - 2 * icon_gap + 5, center_y + icon_size + icon_gap - 5),
+                (center_x - icon_size - 2 * icon_gap + 5, center_y - icon_size - icon_gap + 5)
             ])
             # Rotate right bracket
-            rot_right_color = (0, 255, 0) if rot_right else (255, 255, 255)
+            rot_right_color = ((1 - rot_right) * 255, 255, (1 - rot_right) * 255)
             pygame.draw.polygon(self.screen, rot_right_color, [
-                (center_x + icon_size + icon_gap, center_y - icon_size - icon_gap),
-                (center_x + icon_size + icon_gap, center_y + icon_size + icon_gap),
-                (center_x + icon_size + icon_gap - 5, center_y + icon_size + icon_gap - 5),
-                (center_x + icon_size + icon_gap - 5, center_y - icon_size - icon_gap + 5)
+                (center_x + icon_size + 2 * icon_gap, center_y - icon_size - icon_gap),
+                (center_x + icon_size + 2 * icon_gap, center_y + icon_size + icon_gap),
+                (center_x + icon_size + 2 * icon_gap - 5, center_y + icon_size + icon_gap - 5),
+                (center_x + icon_size + 2 * icon_gap - 5, center_y - icon_size - icon_gap + 5)
             ])
             # Display target speed at the bottom in a cool font
-            font = pygame.font.SysFont(None, 24)
-            speed_text = font.render(f"Speed: {self.target_speed:.2f} m/s", True, (255, 255, 255))
-            self.screen.blit(speed_text, (10, 80))
+            font = pygame.font.SysFont(None, 20)
+            speed_text = font.render(f"speed: {self.target_speed:.2f}", True, (255, 255, 255))
+            self.screen.blit(speed_text, (15, 80))
 
 
 
