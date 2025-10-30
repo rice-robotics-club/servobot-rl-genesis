@@ -9,13 +9,14 @@ from rsl_rl.runners import OnPolicyRunner
 import genesis as gs
 
 from env import ServobotEnv
+from src.controls import Controller
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="servobot")
     parser.add_argument("--ckpt", type=int, default=100)
-    parser.add_argument("-j", "--joystick", action="store_true")
+    parser.add_argument("-t", "--teleop", type=str, default="none", choices=["keyboard", "xbox", "ps4"])
     args = parser.parse_args()
 
     gs.init()
@@ -39,26 +40,14 @@ def main():
     policy = runner.get_inference_policy(device=gs.device)
 
 
+    controller = Controller(type=args.teleop)
+    controller.initialize()
 
     obs, _ = env.reset()
     with torch.no_grad():
-        if args.joystick:
-            pygame.init()
-            joystick = pygame.joystick.Joystick(0)
-            joystick.init()
-            print(f"Initialized joystick: {joystick.get_name()}")
-
         while True:
-            if args.joystick:
-                for _ in pygame.event.get():
-                    pass
-
-            command = (
-                -joystick.get_axis(2),
-                joystick.get_axis(3),
-                -joystick.get_axis(0)
-            ) if args.joystick else None
-
+            
+            command = controller.get_command()
             actions = policy(obs)
             obs, rews, dones, infos = env.step(actions, command=command)
 

@@ -82,8 +82,8 @@ def get_cfgs():
         "kp": 20.0,
         "kd": 0.5,
         # termination
-        "termination_if_roll_greater_than": 10,  # degree
-        "termination_if_pitch_greater_than": 10,
+        "termination_if_roll_greater_than": 20,  # degree
+        "termination_if_pitch_greater_than": 20,
         # base pose
         "base_init_pos": [0.0, 0.0, 0.18],
         "base_init_quat": [1.0, 0.0, 0.0, 0.0],
@@ -121,8 +121,23 @@ def get_cfgs():
         "lin_vel_y_range": [-0.5, 0.5],
         "ang_vel_range": [-0.5, 0.5],
     }
+    
+    # Add symmetry configuration
+    # Pairs: (left_idx, right_idx) where actions should be mirrored
+    # FL <-> FR: (0,1,2) <-> (3,4,5)
+    # BL <-> BR: (6,7,8) <-> (9,10,11)
+    symmetry_cfg = {
+        "symmetric_pairs": [
+            [0, 3],   # FL_Hip <-> FR_Hip
+            [1, 4],   # FL_TopLeg <-> FR_TopLeg
+            [2, 5],   # FL_BotLeg <-> FR_BotLeg
+            [6, 9],   # BL_Hip <-> BR_Hip
+            [7, 10],  # BL_TopLeg <-> BR_TopLeg
+            [8, 11],  # BL_BotLeg <-> BR_BotLeg
+        ],
+    }
 
-    return env_cfg, obs_cfg, reward_cfg, command_cfg
+    return env_cfg, obs_cfg, reward_cfg, command_cfg, symmetry_cfg
 
 
 def main():
@@ -134,7 +149,7 @@ def main():
 
     gs.init(logging_level="warning", )
 
-    env_cfg, obs_cfg, reward_cfg, command_cfg = get_cfgs()
+    env_cfg, obs_cfg, reward_cfg, command_cfg, symmetry_cfg = get_cfgs()
     with open(args.train_cfg, 'r') as file:
         train_cfg = yaml.safe_load(file)
     log_dir = f"logs/{train_cfg["runner"]["experiment_name"]}"
