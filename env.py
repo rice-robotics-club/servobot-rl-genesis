@@ -3,6 +3,7 @@ import math
 import genesis as gs
 from genesis.utils.geom import quat_to_xyz, transform_by_quat, inv_quat, transform_quat_by_quat
 from rsl_rl.env import VecEnv
+from pathlib import Path
 
 
 def gs_rand_float(lower, upper, shape, device):
@@ -55,13 +56,15 @@ class ServobotEnv(VecEnv):
         # add plain
         self.scene.add_entity(gs.morphs.URDF(file="urdf/plane/plane.urdf", fixed=True))
 
+        servobot_path = Path("servobot-urdf") / "description" / "robot.urdf"
+
         # add robot
         self.base_init_pos = torch.tensor(self.env_cfg["base_init_pos"], device=gs.device)
         self.base_init_quat = torch.tensor(self.env_cfg["base_init_quat"], device=gs.device)
         self.inv_base_init_quat = inv_quat(self.base_init_quat)
         self.robot = self.scene.add_entity(
             gs.morphs.URDF(
-                file="servobot-urdf/description/robot.urdf",
+                file=servobot_path,
                 pos=self.base_init_pos.cpu().numpy(),
                 quat=self.base_init_quat.cpu().numpy(),
             ),
