@@ -9,7 +9,7 @@ from rsl_rl.runners import OnPolicyRunner
 import genesis as gs
 
 from env import ServobotEnv
-from src.controls import Controller
+from controllers import Controller
 
 
 def main():
