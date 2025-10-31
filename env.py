@@ -56,7 +56,7 @@ class ServobotEnv(VecEnv):
         # add plain
         self.scene.add_entity(gs.morphs.URDF(file="urdf/plane/plane.urdf", fixed=True))
 
-        servobot_path = Path("servobot-urdf") / "description" / "robot.urdf"
+        servobot_path = Path(__file__).parent / "servobot-urdf" / "description" / "robot.urdf"
 
         # add robot
         self.base_init_pos = torch.tensor(self.env_cfg["base_init_pos"], device=gs.device)
