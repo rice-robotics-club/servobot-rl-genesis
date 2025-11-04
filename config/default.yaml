@@ -2,7 +2,7 @@ algorithm:
   class_name: PPO
   clip_param: 0.2
   desired_kl: 0.01
-  entropy_coef: 0.03
+  entropy_coef: 0.02
   gamma: 0.99
   lam: 0.95
   learning_rate: 0.001
