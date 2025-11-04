@@ -9,7 +9,7 @@ from rsl_rl.runners import OnPolicyRunner
 import genesis as gs
 
 from env import ServobotEnv
-from controllers import Controller
+from src.controllers import Controller
 
 
 def main():
@@ -44,17 +44,19 @@ def main():
     runner.load(resume_path)
     policy = runner.get_inference_policy(device=gs.device)
 
-
-    controller = Controller(type=args.teleop)
-    controller.initialize()
+    if args.teleop != "none":
+        controller = Controller(type=args.teleop)
+        controller.initialize()
 
     obs, _ = env.reset()
     with torch.no_grad():
         while True:
-            
-            command = controller.get_command()
             actions = policy(obs)
-            obs, rews, dones, infos = env.step(actions, command=command)
+            if args.teleop != "none":
+                command = controller.get_command()
+                obs, rews, dones, infos = env.step(actions, command=command)
+            else:
+                obs, rews, dones, infos = env.step(actions)
 
 
 if __name__ == "__main__":
