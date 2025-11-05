@@ -88,11 +88,15 @@ class Controller:
             self.clock.tick(60)
 
         elif self.ps4:
-            forward = -self.joystick.get_axis(0)
-            strafe = self.joystick.get_axis(1)
-            rotate = -self.joystick.get_axis(2)
+            for _ in pygame.event.get():
+                pass
 
-            command = (forward * 0.5, strafe * 0.5, rotate * 0.5)
+            command = (
+                -self.joystick.get_axis(2),
+                self.joystick.get_axis(3),
+                -self.joystick.get_axis(0)
+            ) if self.joystick else None
+
         
         elif self.keyboard:
             # Track key state ourselves instead of trusting pygame
@@ -211,9 +215,3 @@ class Controller:
             font = pygame.font.SysFont(None, 20)
             speed_text = font.render(f"speed: {self.target_speed:.2f}", True, (255, 255, 255))
             self.screen.blit(speed_text, (15, 80))
-
-
-
-
-
-
