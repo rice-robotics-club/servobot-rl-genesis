@@ -153,6 +153,8 @@ def main():
                         help="Path to checkpoint to resume from")
     parser.add_argument("--save_dir", type=str, default=None,
                         help="Custom directory name for saving (default: auto-generated with timestamp)")
+    parser.add_argument("--view", action='store_true',
+                        help="shows view)")
     args = parser.parse_args()
 
     gs.init(logging_level="warning", )
@@ -207,7 +209,7 @@ def main():
 
     env = ServobotEnv(
         num_envs=args.num_envs, env_cfg=env_cfg, obs_cfg=obs_cfg, reward_cfg=reward_cfg, command_cfg=command_cfg,
-        show_viewer=True, num_viewer_envs=100
+        show_viewer=args.view, num_viewer_envs=100
     )
 
     runner = OnPolicyRunner(env, train_cfg, log_dir, device=gs.device)
