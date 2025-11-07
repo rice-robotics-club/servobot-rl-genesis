@@ -43,7 +43,7 @@ def main():
     else:
         resume_path = args.ckpt
     runner = OnPolicyRunner(env, train_cfg, ckpt_dir, device=gs.device)
-    runner.load(resume_path)
+    runner.load(resume_path, map_location=gs.device)
     policy = runner.get_inference_policy(device=gs.device)
 
     if args.teleop != "none":
