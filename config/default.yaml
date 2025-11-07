@@ -35,6 +35,7 @@ runner:
   resume: false
   resume_path: null
   run_name: ''
+obs_groups: {"policy": ["policy"], "critic": ["policy"]}
 runner_class_name: OnPolicyRunner
 num_steps_per_env: 24
 save_interval: 100
