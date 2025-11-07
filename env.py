@@ -78,7 +78,7 @@ class ServobotEnv(VecEnv):
 
         # PD control parameters
         self.robot.set_dofs_kp([self.env_cfg["kp"]] * self.num_actions, self.motors_dof_idx)
-        self.robot.set_dofs_kv([self.env_cfg["kd"]] * self.num_actions, self.motors_dof_idx)
+        self.robot.set_dofs_kv([self.env_cfg["kv"]] * self.num_actions, self.motors_dof_idx)
 
         # prepare reward functions and multiply reward scales by dt
         self.reward_functions, self.episode_sums = dict(), dict()
@@ -116,6 +116,20 @@ class ServobotEnv(VecEnv):
             device=gs.device,
             dtype=gs.tc_float,
         )
+        # domain randomization! these will be different for each env instance :) we pass in ranges for them in the cfg
+        self.kp = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
+        self.kv = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
+        self.friction = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float)
+        self.payload_x = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # x position of payload
+        self.payload_y = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # y position of payload
+        self.payload_z = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # z position of payload
+        self.payload_mass = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # mass of payload
+        self.motor_strength = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float) # one parameter per motor
+        # also could make gravity variable per env for simulating slopes!
+        
+        # reuse single-element tensor to avoid allocations in loops
+        self._single_env_idx = torch.zeros((1,), dtype=torch.long, device=gs.device)
+
         self.extras = dict()  # extra information for logging
         self.extras["observations"] = dict()
 
@@ -206,6 +220,81 @@ class ServobotEnv(VecEnv):
     def get_privileged_observations(self):
         return None
 
+    def _resample_domain(self, envs_idx):
+        # Randomize the environment domain for each servobot spawned
+        # Currently randomizes:
+        #   - kp and kv values for the PD controllers
+        #   - mass of each link
+        #   - friction coefficients of the feet
+        #   - gravity vector direction and magnitude (slope simulation!)
+        #   - motor strength scaling factors
+        
+        # get new random values for everything
+        self.kp[envs_idx] = gs_rand_float(
+            self.env_cfg["domain_rand"]["kp_range"][0],
+            self.env_cfg["domain_rand"]["kp_range"][1],
+            (len(envs_idx),self.num_actions),
+            gs.device,
+        )
+        self.kv[envs_idx] = gs_rand_float(
+            self.env_cfg["domain_rand"]["kv_range"][0],
+            self.env_cfg["domain_rand"]["kv_range"][1],
+            (len(envs_idx),self.num_actions),
+            gs.device,
+        )
+        self.friction[envs_idx] = gs_rand_float(
+            self.env_cfg["domain_rand"]["friction_range"][0],
+            self.env_cfg["domain_rand"]["friction_range"][1],
+            (len(envs_idx),),
+            gs.device,
+        )
+        self.payload_x[envs_idx] = gs_rand_float(
+            self.env_cfg["domain_rand"]["payload_range"][0][0],
+            self.env_cfg["domain_rand"]["payload_range"][1][0],
+            (len(envs_idx), ),
+            gs.device,
+        )
+        self.payload_y[envs_idx] = gs_rand_float(
+            self.env_cfg["domain_rand"]["payload_range"][0][1],
+            self.env_cfg["domain_rand"]["payload_range"][1][1],
+            (len(envs_idx), ),
+            gs.device,
+        )
+        self.payload_z[envs_idx] = gs_rand_float(
+            self.env_cfg["domain_rand"]["payload_range"][0][2],
+            self.env_cfg["domain_rand"]["payload_range"][1][2],
+            (len(envs_idx), ),
+            gs.device,
+        )
+        self.payload_mass[envs_idx] = gs_rand_float(
+            self.env_cfg["domain_rand"]["payload_range"][0][3],
+            self.env_cfg["domain_rand"]["payload_range"][1][3],
+            (len(envs_idx), ),
+            gs.device,
+        )
+        self.motor_strength[envs_idx] = gs_rand_float(
+            self.env_cfg["domain_rand"]["motor_strength_range"][0],
+            self.env_cfg["domain_rand"]["motor_strength_range"][1],
+            (len(envs_idx), self.num_actions),
+            gs.device,
+        )
+
+    def _apply_domain_values(self, envs_idx):
+        # apply all our awesome randomized domain values to the simulation
+        # kp and kv stuff
+        # Make kp a 2d array for each env and each motor
+        for env in envs_idx.cpu().tolist():
+            self._single_env_idx[0] = int(env)
+            self.robot.set_dofs_kp(self.kp[env].contiguous(), self.motors_dof_idx, self._single_env_idx)
+            self.robot.set_dofs_kv(self.kv[env].contiguous(), self.motors_dof_idx, self._single_env_idx)
+        # friction on the feet
+
+        # payload mass and position
+
+        # motor strength scaling
+        
+        pass
+
     def reset_idx(self, envs_idx):
         if len(envs_idx) == 0:
             return
@@ -244,6 +333,8 @@ class ServobotEnv(VecEnv):
             self.episode_sums[key][envs_idx] = 0.0
 
         self._resample_commands(envs_idx)
+        self._resample_domain(envs_idx)
+        self._apply_domain_values(envs_idx)
 
     def reset(self):
         self.reset_buf[:] = True
@@ -279,7 +370,7 @@ class ServobotEnv(VecEnv):
     
     def _reward_energy(self): 
         # Penalize energy consumption (torque * velocity)
-        # For PD control: torque = kp * (target - current) + kd * (0 - vel)
+        # For PD control: torque = kp * (target - current) + kv * (0 - vel)
         # This is inspired by this paper: https://arxiv.org/pdf/2111.01674
         # Should help the robot develop more efficient and 'natural' gaits over time
         
@@ -290,7 +381,8 @@ class ServobotEnv(VecEnv):
         # Calculate PD torques
         pos_error = target_dof_pos - self.dof_pos
         vel_error = -self.dof_vel  # target velocity is 0
-        torques = self.env_cfg["kp"] * pos_error + self.env_cfg["kd"] * vel_error
+        # These are actually different for each env if domain randomization is on
+        torques = self.kp * pos_error + self.kv * vel_error
         
         # Energy = |torque * velocity|
         return torch.sum(torch.abs(torques * self.dof_vel), dim=1)
