@@ -4,6 +4,7 @@ import genesis as gs
 from genesis.utils.geom import quat_to_xyz, transform_by_quat, inv_quat, transform_quat_by_quat
 from rsl_rl.env import VecEnv
 from pathlib import Path
+from tensordict import TensorDict
 
 
 def gs_rand_float(lower, upper, shape, device):
@@ -94,7 +95,8 @@ class ServobotEnv(VecEnv):
         self.global_gravity = torch.tensor([0.0, 0.0, -1.0], device=gs.device, dtype=gs.tc_float).repeat(
             self.num_envs, 1
         )
-        self.obs_buf = torch.zeros((self.num_envs, self.num_obs), device=gs.device, dtype=gs.tc_float)
+        obs_buf_tensor = torch.zeros((self.num_envs, self.num_obs), device=gs.device, dtype=gs.tc_float)
+        self.obs_buf = TensorDict({"policy": obs_buf_tensor}, batch_size=[self.num_envs],device=gs.device)
         self.rew_buf = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float)
         self.reset_buf = torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_int)
         self.episode_length_buf = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_int)
@@ -194,7 +196,7 @@ class ServobotEnv(VecEnv):
             self.episode_sums[name] += rew
 
         # compute observations
-        self.obs_buf = torch.cat(
+        obs_buf_tensor = torch.cat(
             [
                 self.base_ang_vel * self.obs_scales["ang_vel"],  # 3
                 self.projected_gravity,  # 3
@@ -205,6 +207,7 @@ class ServobotEnv(VecEnv):
             ],
             axis=-1,
         )
+        self.obs_buf = TensorDict({"policy": obs_buf_tensor}, batch_size=[self.num_envs],device=gs.device)
 
         self.last_actions[:] = self.actions[:]
         self.last_dof_vel[:] = self.dof_vel[:]
@@ -215,7 +218,7 @@ class ServobotEnv(VecEnv):
 
     def get_observations(self):
         self.extras["observations"]["critic"] = self.obs_buf
-        return self.obs_buf, self.extras
+        return self.obs_buf
 
     def get_privileged_observations(self):
         return None
