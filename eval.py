@@ -24,6 +24,8 @@ def main():
     ckpt_dir = os.path.dirname(args.ckpt) if args.ckpt else "logs/servobot"
     
     env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"{ckpt_dir}/cfgs.pkl", "rb"))
+    if 'obs_groups' not in train_cfg:
+        train_cfg['obs_groups'] = {"policy": ["policy"], "critic": ["policy"]}
     reward_cfg["reward_scales"] = {}
     
     
