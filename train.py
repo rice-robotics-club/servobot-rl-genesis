@@ -12,6 +12,8 @@ import genesis as gs
 
 from env import ServobotEnv
 
+from servobot_description.servobot_description import JOINT_NAMES
+
 
 # def get_train_cfg(exp_name, max_iterations):
 #     train_cfg_dict = {
@@ -65,20 +67,7 @@ def get_cfgs():
         "num_actions": 12,
         # joint/link names
         "default_joint_angles": ik.get_idle_cfg(),
-        "joint_names": [
-            "FL_Hip",
-            "FL_TopLeg",
-            "FL_BotLeg",
-            "FR_Hip",
-            "FR_TopLeg",
-            "FR_BotLeg",
-            "BL_Hip",
-            "BL_TopLeg",
-            "BL_BotLeg",
-            "BR_Hip",
-            "BR_TopLeg",
-            "BR_BotLeg",
-        ],
+        "joint_names": JOINT_NAMES,
         # PD
         "kp": 20.0,
         "kd": 0.5,
@@ -209,7 +198,7 @@ def main():
 
     env = ServobotEnv(
         num_envs=args.num_envs, env_cfg=env_cfg, obs_cfg=obs_cfg, reward_cfg=reward_cfg, command_cfg=command_cfg,
-        show_viewer=args.view, num_viewer_envs=100
+        show_viewer=args.view, num_viewer_envs=1
     )
 
     runner = OnPolicyRunner(env, train_cfg, log_dir, device=gs.device)

@@ -9,21 +9,7 @@ PosArray = typing.Annotated[np.typing.NDArray[_DType], typing.Literal[12]]
 # Type for a numpy array of length 12, representing configuration of ServoBot
 CfgArray = typing.Annotated[np.typing.NDArray[_DType], typing.Literal[12]]
 
-JOINT_NAMES = [
-    "FL_Hip",
-    "FL_TopLeg",
-    "FL_BotLeg",
-    "FR_Hip",
-    "FR_TopLeg",
-    "FR_BotLeg",
-    "BL_Hip",
-    "BL_TopLeg",
-    "BL_BotLeg",
-    "BR_Hip",
-    "BR_TopLeg",
-    "BR_BotLeg",
-]
-
+from servobot_description.servobot_description import JOINT_NAMES
 
 class IK:
     """
@@ -98,9 +84,8 @@ class IK:
         :param height: robot height in meters
         :return: numpy array of shape (12,)
         """
-        positions = np.array([0.0, 0.0, -height] * 4)
-        config = self.solve(positions)
-        return {JOINT_NAMES[i]: c for (i, c) in enumerate(config.tolist())}
+        positions = np.array([0.0, -np.pi / 4, 0.0, 0.0, np.pi / 4, 0.0, 0.0, -np.pi / 4, 0.0, 0.0, np.pi / 4, 0.0])
+        return {JOINT_NAMES[i]: c for (i, c) in enumerate(positions.tolist())}
 
 
 if __name__ == "__main__":

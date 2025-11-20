@@ -1,3 +1,3 @@
-[submodule "servobot-urdf"]
-	path = servobot-urdf
-	url = https://github.com/rice-robotics-club/servobot-urdf.git
+[submodule "servobot_description"]
+	path = servobot_description
+	url = https://github.com/rice-robotics-club/servobot_description.git
