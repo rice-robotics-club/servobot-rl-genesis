@@ -151,6 +151,7 @@ def main():
                         help="Custom directory name for saving (default: auto-generated with timestamp)")
     parser.add_argument("--view", action='store_true',
                         help="shows view)")
+    parser.add_argument("--randomize", action='store_true', help="Enable domain randomization")
     args = parser.parse_args()
 
     gs.init(logging_level="warning", )

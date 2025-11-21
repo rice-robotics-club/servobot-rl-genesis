@@ -12,13 +12,15 @@ def gs_rand_float(lower, upper, shape, device):
 
 
 class ServobotEnv(VecEnv):
-    def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False, num_viewer_envs=1):
+    def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, 
+                 show_viewer=False, num_viewer_envs=1, randomize_domain=True):
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
         self.num_privileged_obs = None
         self.num_actions = env_cfg["num_actions"]
         self.num_commands = command_cfg["num_commands"]
         self.device = gs.device
+        self.randomize_domain = randomize_domain
 
         self.simulate_action_latency = True  # there is a 1 step latency on real robot
         self.dt = 0.02  # control frequency on real robot is 50hz
@@ -336,8 +338,9 @@ class ServobotEnv(VecEnv):
             self.episode_sums[key][envs_idx] = 0.0
 
         self._resample_commands(envs_idx)
-        self._resample_domain(envs_idx)
-        self._apply_domain_values(envs_idx)
+        if self.randomize_domain:
+            self._resample_domain(envs_idx)
+            self._apply_domain_values(envs_idx)
 
     def reset(self):
         self.reset_buf[:] = True
