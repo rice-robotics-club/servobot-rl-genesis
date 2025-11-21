@@ -70,7 +70,7 @@ def get_cfgs():
         "joint_names": JOINT_NAMES,
         # PD
         "kp": 20.0,
-        "kd": 0.5,
+        "kv": 0.5,
         # termination
         "termination_if_roll_greater_than": 45,  # degree --- WAY HIGHER NOW! RUN MY BEAUTIFUL CREATURE, RUN
         "termination_if_pitch_greater_than": 45,
@@ -82,6 +82,13 @@ def get_cfgs():
         "action_scale": 0.25,
         "simulate_action_latency": True,
         "clip_actions": 100.0,
+        "domain_rand": {
+            "kp_range": [15.0, 25.0],
+            "kv_range": [0.3, 0.7],
+            "friction_range": [0.5, 1.5],
+            "payload_range": [[-0.05, -0.05, 0.0, 0.0], [0.05, 0.05, 0.1, 0.2]],  # x, y, z, mass(kg)
+            "motor_strength_range": [0.8, 1.2],
+        }
     }
     obs_cfg = {
         "num_obs": 45,
