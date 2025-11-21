@@ -1,0 +1,37 @@
+algorithm:
+  class_name: Distillation
+  learning_rate: 0.001
+  max_grad_norm: 1.0
+  num_learning_epochs: 5
+init_member_classes: {}
+policy:
+  activation: elu
+  teacher_recurrent: false
+  student_hidden_dims:
+    - 512
+    - 256
+    - 128
+  teacher_hidden_dims:
+    - 512
+    - 256
+    - 128
+  rnn_hidden_dim: 256
+  rnn_num_layers: 1
+  init_noise_std: 1.0
+  class_name: StudentTeacherRecurrent
+runner:
+  checkpoint: -1
+  experiment_name: servobot
+  load_run: -1
+  log_interval: 1
+  max_iterations: 1000
+  record_interval: -1
+  resume: false
+  resume_path: null
+  run_name: ''
+obs_groups: {"policy":["policy"], "teacher": ["policy"], "student": ["policy"]}
+runner_class_name: DistillationRunner
+num_steps_per_env: 24
+save_interval: 100
+empirical_normalization: null
+seed: 1

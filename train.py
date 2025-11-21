@@ -5,7 +5,7 @@ import shutil
 import yaml
 from datetime import datetime
 
-from rsl_rl.runners import OnPolicyRunner
+from rsl_rl.runners import OnPolicyRunner, DistillationRunner
 from src.kinematics import IK
 
 import genesis as gs
@@ -207,13 +207,15 @@ def main():
         num_envs=args.num_envs, env_cfg=env_cfg, obs_cfg=obs_cfg, reward_cfg=reward_cfg, command_cfg=command_cfg,
         show_viewer=args.view, num_viewer_envs=1
     )
-
-    runner = OnPolicyRunner(env, train_cfg, log_dir, device=gs.device)
+    runner_class = eval(train_cfg.pop("runner_class_name"))
+    runner = runner_class(env, train_cfg, log_dir, device=gs.device)
     
     # Load checkpoint if resuming
     if args.resume:
         print(f"Loading checkpoint from: {args.resume}")
         runner.load(args.resume)
+    else:
+        runner.load("saved_models/servobot-energy/model_6800.pt", map_location=gs.device)
 
     runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
     print("="*60, "\n Training complete! \n Saved robot policy to:", log_dir, "\n", "="*60)
