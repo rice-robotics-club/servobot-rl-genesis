@@ -214,8 +214,6 @@ def main():
     if args.resume:
         print(f"Loading checkpoint from: {args.resume}")
         runner.load(args.resume)
-    else:
-        runner.load("saved_models/servobot-energy/model_6800.pt", map_location=gs.device)
 
     runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
     print("="*60, "\n Training complete! \n Saved robot policy to:", log_dir, "\n", "="*60)
