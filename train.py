@@ -75,7 +75,7 @@ def get_cfgs():
         "termination_if_roll_greater_than": 45,  # degree --- WAY HIGHER NOW! RUN MY BEAUTIFUL CREATURE, RUN
         "termination_if_pitch_greater_than": 45,
         # base pose
-        "base_init_pos": [0.0, 0.0, 0.18],
+        "base_init_pos": [0.0, 0.0, 0.2],
         "base_init_quat": [1.0, 0.0, 0.0, 0.0],
         "episode_length_s": 20.0,
         "resampling_time_s": 4.0,
