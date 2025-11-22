@@ -121,15 +121,21 @@ class ServobotEnv(VecEnv):
             dtype=gs.tc_float,
         )
         # domain randomization! these will be different for each env instance :) we pass in ranges for them in the cfg
-        self.kp = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
-        self.kv = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
-        self.friction = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float)
-        self.payload_x = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # x position of payload
-        self.payload_y = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # y position of payload
-        self.payload_z = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # z position of payload
-        self.payload_mass = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # mass of payload
-        self.motor_strength = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float) # one parameter per motor
-        # also could make gravity variable per env for simulating slopes!
+        if self.randomize_domain:
+            print("Domain randomization ENABLED")
+            self.kp = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
+            self.kv = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
+            self.friction = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float)
+            self.payload_x = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # x position of payload
+            self.payload_y = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # y position of payload
+            self.payload_z = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # z position of payload
+            self.payload_mass = torch.zeros((self.num_envs,), device=gs.device, dtype=gs.tc_float) # mass of payload
+            self.motor_strength = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float) # one parameter per motor
+            # also could make gravity variable per env for simulating slopes!
+        else:
+            self.kp = torch.full((self.num_envs, self.num_actions), self.env_cfg["default_kp"], device=gs.device, dtype=gs.tc_float)
+            self.kv = torch.full((self.num_envs, self.num_actions), self.env_cfg["default_kv"], device=gs.device, dtype=gs.tc_float)
+            print("Domain randomization DISABLED")
         
         # reuse single-element tensor to avoid allocations in loops
         self._single_env_idx = torch.zeros((1,), dtype=torch.long, device=gs.device)
