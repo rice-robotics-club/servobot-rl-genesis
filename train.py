@@ -6,14 +6,28 @@ import yaml
 from datetime import datetime
 
 from rsl_rl.runners import OnPolicyRunner, DistillationRunner
-from src.kinematics import IK
 
+# from src.kinematics import IK
+
+import numpy as np
 import genesis as gs
 
 from env import ServobotEnv
 
-from servobot_description.servobot_description import JOINT_NAMES
-
+JOINT_NAMES = [
+    "fl_hip",
+    "fl_top",
+    "fl_bot",
+    "fr_hip",
+    "fr_top",
+    "fr_bot",
+    "bl_hip",
+    "bl_top",
+    "bl_bot",
+    "br_hip",
+    "br_top",
+    "br_bot",
+]
 
 # def get_train_cfg(exp_name, max_iterations):
 #     train_cfg_dict = {
@@ -62,11 +76,16 @@ from servobot_description.servobot_description import JOINT_NAMES
 
 
 def get_cfgs():
-    ik = IK()
+    # ik = IK()
     env_cfg = {
         "num_actions": 12,
         # joint/link names
-        "default_joint_angles": ik.get_idle_cfg(),
+        "default_joint_angles": {
+            JOINT_NAMES[i]: c
+            for (i, c) in enumerate(
+                [-0.2, -np.pi / 4 , 0.2, 0.0, np.pi / 4, 0.0, 0.2, -np.pi / 4, 0.0, -0.2, np.pi / 4, 0.0]
+            )
+        },
         "joint_names": JOINT_NAMES,
         # PD
         "kp": 20.0,
@@ -75,7 +94,7 @@ def get_cfgs():
         "termination_if_roll_greater_than": 45,  # degree --- WAY HIGHER NOW! RUN MY BEAUTIFUL CREATURE, RUN
         "termination_if_pitch_greater_than": 45,
         # base pose
-        "base_init_pos": [0.0, 0.0, 0.2],
+        "base_init_pos": [0.0, 0.0, 0.18],
         "base_init_quat": [1.0, 0.0, 0.0, 0.0],
         "episode_length_s": 20.0,
         "resampling_time_s": 4.0,
@@ -88,7 +107,7 @@ def get_cfgs():
             "friction_range": [0.5, 1.5],
             "payload_range": [[-0.05, -0.05, 0.0, 0.0], [0.05, 0.05, 0.1, 0.2]],  # x, y, z, mass(kg)
             "motor_strength_range": [0.8, 1.2],
-        }
+        },
     }
     obs_cfg = {
         "num_obs": 45,
@@ -115,12 +134,12 @@ def get_cfgs():
         },
     }
     command_cfg = {
-        "num_commands": 3, #bigger range to teach faster gait at the cost of longer trainings
+        "num_commands": 3,  # bigger range to teach faster gait at the cost of longer trainings
         "lin_vel_x_range": [-1.0, 1.0],
         "lin_vel_y_range": [-1.0, 1.0],
-        "ang_vel_range": [-0.8, 0.8], 
+        "ang_vel_range": [-0.8, 0.8],
     }
-    
+
     # Add symmetry configuration
     # Pairs: (left_idx, right_idx) where actions should be mirrored
     # FL <-> FR: (0,1,2) <-> (3,4,5)
@@ -128,10 +147,10 @@ def get_cfgs():
     # I have no idea how to properly give this information to RSL-RL so this is just sort of an unused variable right now
     symmetry_cfg = {
         "symmetric_pairs": [
-            [0, 3],   # FL_Hip <-> FR_Hip
-            [1, 4],   # FL_TopLeg <-> FR_TopLeg
-            [2, 5],   # FL_BotLeg <-> FR_BotLeg
-            [6, 9],   # BL_Hip <-> BR_Hip
+            [0, 3],  # FL_Hip <-> FR_Hip
+            [1, 4],  # FL_TopLeg <-> FR_TopLeg
+            [2, 5],  # FL_BotLeg <-> FR_BotLeg
+            [6, 9],  # BL_Hip <-> BR_Hip
             [7, 10],  # BL_TopLeg <-> BR_TopLeg
             [8, 11],  # BL_BotLeg <-> BR_BotLeg
         ],
@@ -145,23 +164,27 @@ def main():
     parser.add_argument("train_cfg", type=str)
     parser.add_argument("-B", "--num_envs", type=int, default=4096)
     parser.add_argument("--max_iterations", type=int, default=101)
-    parser.add_argument("-r", "--resume", type=str, default=None, 
-                        help="Path to checkpoint to resume from")
-    parser.add_argument("--save_dir", type=str, default=None,
-                        help="Custom directory name for saving (default: auto-generated with timestamp)")
-    parser.add_argument("--view", action='store_true',
-                        help="shows view)")
-    parser.add_argument("--randomize", action='store_true', help="Enable domain randomization")
+    parser.add_argument("-r", "--resume", type=str, default=None, help="Path to checkpoint to resume from")
+    parser.add_argument(
+        "--save_dir",
+        type=str,
+        default=None,
+        help="Custom directory name for saving (default: auto-generated with timestamp)",
+    )
+    parser.add_argument("--view", action="store_true", help="shows view)")
+    parser.add_argument("--randomize", action="store_true", help="Enable domain randomization")
     args = parser.parse_args()
 
-    gs.init(logging_level="warning", )
+    gs.init(
+        logging_level="warning",
+    )
 
     env_cfg, obs_cfg, reward_cfg, command_cfg, symmetry_cfg = get_cfgs()
-    with open(args.train_cfg, 'r') as file:
+    with open(args.train_cfg, "r") as file:
         train_cfg = yaml.safe_load(file)
-    
+
     exp_name = train_cfg["runner"]["experiment_name"]
-    
+
     # Determine log directory
     if args.save_dir:
         # Use custom directory name
@@ -176,15 +199,15 @@ def main():
             log_dir = f"logs/{original_name}_resumed_{timestamp}"
         else:
             log_dir = f"logs/{exp_name}_{timestamp}"
-    
+
     # Create new directory (never overwrite)
     if os.path.exists(log_dir):
         print(f"Warning: {log_dir} already exists. Adding timestamp suffix.")
         log_dir = f"{log_dir}_{datetime.now().strftime('%H%M%S')}"
-    
+
     os.makedirs(log_dir, exist_ok=True)
     print(f"Saving to: {log_dir}")
-    
+
     # Copy configs for reproducibility
     os.makedirs(f"{log_dir}/configs", exist_ok=True)
     shutil.copy(args.train_cfg, f"{log_dir}/configs/train.yaml")
@@ -196,7 +219,7 @@ def main():
         "num_envs": args.num_envs,
         "max_iterations": args.max_iterations,
     }
-    with open(f"{log_dir}/metadata.yaml", 'w') as f:
+    with open(f"{log_dir}/metadata.yaml", "w") as f:
         yaml.dump(metadata, f)
 
     pickle.dump(
@@ -205,19 +228,25 @@ def main():
     )
 
     env = ServobotEnv(
-        num_envs=args.num_envs, env_cfg=env_cfg, obs_cfg=obs_cfg, reward_cfg=reward_cfg, command_cfg=command_cfg,
-        show_viewer=args.view, num_viewer_envs=1
+        num_envs=args.num_envs,
+        env_cfg=env_cfg,
+        obs_cfg=obs_cfg,
+        reward_cfg=reward_cfg,
+        command_cfg=command_cfg,
+        show_viewer=args.view,
+        num_viewer_envs=1,
     )
     runner_class = eval(train_cfg.pop("runner_class_name"))
     runner = runner_class(env, train_cfg, log_dir, device=gs.device)
-    
+
     # Load checkpoint if resuming
     if args.resume:
         print(f"Loading checkpoint from: {args.resume}")
         runner.load(args.resume)
 
     runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
-    print("="*60, "\n Training complete! \n Saved robot policy to:", log_dir, "\n", "="*60)
+    print("=" * 60, "\n Training complete! \n Saved robot policy to:", log_dir, "\n", "=" * 60)
+
 
 if __name__ == "__main__":
     main()
