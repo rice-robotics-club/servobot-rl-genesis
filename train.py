@@ -88,8 +88,8 @@ def get_cfgs():
         },
         "joint_names": JOINT_NAMES,
         # PD
-        "kp": 20.0,
-        "kv": 0.5,
+        "default_kp": 20.0,
+        "default_kv": 0.5,
         # termination
         "termination_if_roll_greater_than": 45,  # degree --- WAY HIGHER NOW! RUN MY BEAUTIFUL CREATURE, RUN
         "termination_if_pitch_greater_than": 45,
