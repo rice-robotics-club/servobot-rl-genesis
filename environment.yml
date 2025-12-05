@@ -6,9 +6,10 @@ dependencies:
   - pip
   - pip:
       - genesis-world
-      - rsl-rl-lib
+      - rsl-rl-lib == 3.1.2  
       - torch
       - torchvision
+      - tensorflow
       - tensorboard
       - PyYAML
       - pygame
