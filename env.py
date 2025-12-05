@@ -13,7 +13,7 @@ def gs_rand_float(lower, upper, shape, device):
 
 class ServobotEnv(VecEnv):
     def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, 
-                 show_viewer=False, num_viewer_envs=1, randomize_domain=True):
+                 show_viewer=False, num_viewer_envs=1, randomize_domain=False):
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
         self.num_privileged_obs = None
