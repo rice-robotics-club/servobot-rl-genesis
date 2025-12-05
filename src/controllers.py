@@ -146,13 +146,13 @@ class Controller:
             if pygame.K_RIGHTBRACKET in self.keys_down:
                 rot_right = 1.0
                 rotate = 1.0
-            
+            # 
             # Debug: print final command
-            if forward != 0.0 or strafe != 0.0 or rotate != 0.0:
-                print(f"Command: forward={forward}, strafe={strafe}, rotate={rotate}")
+            #if forward != 0.0 or strafe != 0.0 or rotate != 0.0:
+            #    print(f"Command: forward={forward}, strafe={strafe}, rotate={rotate}")
             
             command = (forward * 0.5, strafe * 0.5, rotate * 0.5)
-            self.screen.fill((200, 200, 200))
+            self.screen.fill((0, 0, 0))
             self.draw_movement_icons(str_forward, str_back, str_left, str_right, rot_left, rot_right)
             pygame.display.flip()
             self.clock.tick(60)
