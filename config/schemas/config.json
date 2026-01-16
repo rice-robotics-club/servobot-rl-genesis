@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rice-robotics-club/servobot-rl-genesis/blob/config/schemas/config.json",
+  "title": "Runner",
+  "description": "The top-level configuration schema for RSL_RL",
+  "type": "object",
+  "properties": {
+    "runner": {
+      "$ref": "./runner.json"
+    }
+  },
+  "required": ["runner"],
+  "additionalProperties": false
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rice-robotics-club/servobot-rl-genesis/blob/config/schemas/policy.json",
+  "title": "Policy",
+  "description": "The policy configuration of an RSL_RL runner",
+  "oneOf": [
+    {
+      "title": "ActorCritic",
+      "type": "object",
+      "properties": {
+        "class_name": {
+          "type": "string",
+          "enum": ["ActorCritic", "ActorCriticCNN", "ActorCriticRecurrent"],
+          "description": "Policy class name, corresponding to the algorithm type"
+        },
+        "activation": {
+          "type": "string",
+          "enum": [
+            "elu",
+            "selu",
+            "relu",
+            "crelu",
+            "lrelu",
+            "tanh",
+            "sigmoid",
+            "softplus",
+            "gelu",
+            "swish",
+            "mish",
+            "identity"
+          ]
+        },
+        "actor_obs_normalization": {
+          "type": "boolean"
+        },
+        "critic_obs_normalization": {
+          "type": "boolean"
+        },
+        "actor_hidden_dims": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "Number of hidden layers in the actor network"
+        },
+        "critic_hidden_dims": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "Number of hidden layers in the critic network"
+        }
+      }
+    }
+  ]
+}

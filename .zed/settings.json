@@ -1,0 +1,24 @@
+{
+  "languages": {
+    "YAML": {
+      "inlay_hints": {
+        "enabled": true
+      }
+    }
+  },
+  "project_name": "servobot-rl-genesis",
+  "lsp": {
+    "yaml-language-server": {
+      "settings": {
+        "yaml": {
+          "format": {
+            "singleQuote": true,
+          },
+          "schemas": {
+            "../config/schemas/config.json": ["../config/default.yaml"],
+          },
+        },
+      },
+    },
+  },
+}

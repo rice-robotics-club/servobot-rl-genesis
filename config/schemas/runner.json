@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rice-robotics-club/servobot-rl-genesis/blob/config/schemas/runner.json",
+  "title": "Runner",
+  "description": "The configuration of an RSL_RL runner",
+  "type": "object",
+  "properties": {
+    "class_name": {
+      "type": "string",
+      "enum": ["OnPolicyRunner", "DistillationRunner"],
+      "description": "Runner class name"
+    },
+    "num_steps_per_env": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of steps per environment per iteration"
+    },
+    "max_iterations": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of policy updates"
+    },
+    "seed": {
+      "type": "integer",
+      "description": "Random seed"
+    },
+    "obs_groups": {
+      "type": "object",
+      "description": "Maps observation groups to observation sets",
+      "patternProperties": {
+        "^.*$": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "examples": [{ "policy": ["policy"], "critic": ["policy", "privileged"] }]
+    },
+    "save_interval": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Check for potential saves every N iterations"
+    },
+    "experiment_name": {
+      "type": "string",
+      "description": "Name of the experiment"
+    },
+    "run_name": {
+      "type": "string",
+      "description": "Name of the specific run"
+    },
+    "logger": {
+      "type": "string",
+      "enum": ["tensorboard", "wandb", "neptune"],
+      "description": "Logging backend to use"
+    },
+    "neptune_project": {
+      "type": "string",
+      "description": "Neptune project name (required if logger is neptune)"
+    },
+    "wandb_project": {
+      "type": "string",
+      "description": "Weights & Biases project name (required if logger is wandb)"
+    },
+    "empirical_normalization": {
+      "type": "boolean",
+      "deprecated": true,
+      "description": "Deprecated: Use actor_obs_normalization and critic_obs_normalization in policy config instead"
+    },
+    "policy": {
+      "$ref": "https://github.com/rice-robotics-club/servobot-rl-genesis/blob/config/schemas/policy.json"
+    },
+    "algorithm": {
+      "$ref": "https://github.com/rice-robotics-club/servobot-rl-genesis/blob/config/schemas/algorithm.json"
+    }
+  },
+  "additionalProperties": false
+}
