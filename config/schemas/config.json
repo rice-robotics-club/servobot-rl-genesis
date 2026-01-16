@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "runner": {
-      "$ref": "./runner.json"
+      "type": "string"
     }
   },
   "required": ["runner"],
