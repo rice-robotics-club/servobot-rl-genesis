@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "runner": {
-      "type": "string"
+      "$ref": "https://raw.githubusercontent.com/rice-robotics-club/servobot-rl-genesis/refs/heads/spring2026-wall-e/config/schemas/runner.json"
     }
   },
   "required": ["runner"],

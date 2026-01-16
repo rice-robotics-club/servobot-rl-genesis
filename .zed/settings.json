@@ -8,7 +8,9 @@
             "singleQuote": true,
           },
           "schemas": {
-            "config.json": ["/config/*.yaml"],
+            "https://raw.githubusercontent.com/rice-robotics-club/servobot-rl-genesis/refs/heads/spring2026-wall-e/config/schemas/config.json": [
+              "/config/*.yaml",
+            ],
           },
         },
       },

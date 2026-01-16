@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/rice-robotics-club/servobot-rl-genesis/blob/config/schemas/policy.json",
+  "$id": "https://raw.githubusercontent.com/rice-robotics-club/servobot-rl-genesis/refs/heads/spring2026-wall-e/config/schemas/policy.json",
   "title": "Policy",
   "description": "The policy configuration of an RSL_RL runner",
   "oneOf": [
