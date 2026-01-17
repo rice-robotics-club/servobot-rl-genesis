@@ -41,10 +41,10 @@ env:
   urdf_path: robots/servobot_description/urdf/robot.urdf
   joints:
     fl_hip: -0.2
-    fl_top: -1.0
+    fl_top: -0.6
     fl_bot: 0.1
     fr_hip: 0.2
-    fr_top: 1.0
+    fr_top: 0.6
     fr_bot: -0.1
     bl_hip: 0.2
     bl_top: -1.0
