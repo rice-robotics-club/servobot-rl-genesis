@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=./schemas/config.json
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 256
+  num_steps_per_env: 512
   save_interval: 100
   seed: 1
   obs_groups: { "policy": ["policy"], "critic": ["policy"] }
@@ -58,7 +58,7 @@ env:
   resampling_time: 4.0
   action_scale: 0.25
   simulate_action_latency: True
-  clip_actions: 10.0
+  clip_actions: 100.0
   dt: 0.02
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7

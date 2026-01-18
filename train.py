@@ -15,9 +15,27 @@ from src.utils import get_class
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config_path", type=str, default="config/servobot.yaml")
-    parser.add_argument("-n", "--num_envs", type=int, default=4096)
-    parser.add_argument("-m", "--max_iterations", type=int, default=10000)
+    parser.add_argument(
+        "-c",
+        "--config_path",
+        type=str,
+        default="config/servobot.yaml",
+        help="Config file path to use (default: config/servobot.yaml)",
+    )
+    parser.add_argument(
+        "-n",
+        "--num_envs",
+        type=int,
+        default=4096,
+        help="Number of environments to use (default: 4096)",
+    )
+    parser.add_argument(
+        "-m",
+        "--max_iterations",
+        type=int,
+        default=10000,
+        help="Maximum number of iterations to run (default: 10000)",
+    )
     parser.add_argument(
         "-r",
         "--resume",
@@ -41,7 +59,7 @@ def main():
     parser.add_argument(
         "--no_print",
         action="store_true",
-        help="Disables RSL_RL printing to terminal",
+        help="Disables RSL_RL training info",
     )
     parser.add_argument(
         "--debug",

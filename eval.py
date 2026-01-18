@@ -31,7 +31,9 @@ def main():
     )
     args = parser.parse_args()
 
-    gs.init()
+    gs.init(
+        logging_level="warning",
+    )
 
     from src.env import GenesisEnv
 
@@ -66,7 +68,7 @@ def main():
     runner.load(str(model_path), map_location=str(gs.device))
     policy = runner.get_inference_policy(device=str(gs.device))
 
-    if args.input:
+    if args.input == "gamepad":
         gamepad = Gamepad()
     else:
         gamepad = None

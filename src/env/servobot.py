@@ -121,9 +121,19 @@ class ServobotEnv(GenesisEnv):
         if command:
             # set command to input [-1.0, 1.0], scaled by command ranges
             # rearranged this to match the physical orientation of servobot
-            self.commands[:, 1] = -command[0] * self.command_cfg["lin_vel_y_range"][1]
-            self.commands[:, 0] = -command[1] * self.command_cfg["lin_vel_y_range"][1]
-            self.commands[:, 2] = -command[2] * self.command_cfg["ang_vel_range"][1]
+            self.commands[:, 0] = (
+                command[0]
+                * (self.command_cfg["lin_vel_x"][1] - self.command_cfg["lin_vel_x"][0])
+            ) + self.command_cfg["lin_vel_x"][0]
+            self.commands[:, 1] = (
+                command[1]
+                * (self.command_cfg["lin_vel_y"][1] - self.command_cfg["lin_vel_y"][0])
+            ) + self.command_cfg["lin_vel_y"][0]
+            self.commands[:, 2] = (
+                command[2]
+                * (self.command_cfg["ang_vel_z"][1] - self.command_cfg["ang_vel_z"][0])
+            ) + self.command_cfg["ang_vel_z"][0]
+            print(self.commands)
         else:
             # resample commands
             self._resample_commands(
