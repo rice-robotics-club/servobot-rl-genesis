@@ -48,9 +48,6 @@ class GenesisEnv(env.VecEnv):
         self.device = gs.device if gs.device else torch.device("gpu")
         self.dt = get_or_default(env_cfg, "dt", 0.02)
         self.joint_names = sorted(env_cfg["joints"].keys())
-        self.joint_default_positions = [
-            env_cfg["joints"][name] for name in self.joint_names
-        ]
         self.base_init_pos = get_or_default(env_cfg, "base_init_pos", [0.0, 0.0, 0.2])
         self.base_init_quat = get_or_default(
             env_cfg, "base_init_quat", [1.0, 0.0, 0.0, 0.0]
@@ -100,7 +97,7 @@ class GenesisEnv(env.VecEnv):
         self.scene.build(n_envs=num_envs)
 
         self.motors_dof_idx = torch.tensor(
-            [self.robot.get_joint(name).dof_start for name in self.joint_names],
+            [self.robot.get_joint(name).dof_idx_local for name in self.joint_names],
             dtype=gs.tc_int,
             device=gs.device,
         )
@@ -118,7 +115,7 @@ class GenesisEnv(env.VecEnv):
         )
         self.inv_base_init_quat = inv_quat(self.init_base_quat)
         self.init_dof_pos = torch.tensor(
-            [self.joint_default_positions[i] for i in self.actions_dof_idx],
+            [env_cfg["joints"][joint.name] for joint in self.robot.joints[1:]],
             dtype=gs.tc_float,
             device=gs.device,
         )
@@ -182,11 +179,10 @@ class GenesisEnv(env.VecEnv):
             (self.num_envs, 3), dtype=gs.tc_float, device=gs.device
         )
         self.default_dof_pos = torch.tensor(
-            [self.joint_default_positions[i] for i in self.actions_dof_idx],
+            [env_cfg["joints"][name] for name in self.joint_names],
             dtype=gs.tc_float,
             device=gs.device,
         )
-        print(self.actions_dof_idx, self.default_dof_pos)
         self.extras = dict()  # extra information for logging
         self.extras["observations"] = dict()
         self.reward_functions: dict = {}

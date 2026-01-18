@@ -79,7 +79,7 @@ class ServobotEnv(GenesisEnv):
             self.last_actions if self.simulate_action_latency else self.actions
         )
         target_dof_pos = exec_actions * self.action_scale + self.default_dof_pos
-        self.robot.control_dofs_position(target_dof_pos, slice(6, 18))
+        self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
 
         self.scene.step()
 
@@ -98,8 +98,8 @@ class ServobotEnv(GenesisEnv):
         self.projected_gravity: torch.Tensor = transform_by_quat(
             self.global_gravity, inv_base_quat
         )  # pyright: ignore
-        self.dof_pos = self.robot.get_dofs_position(self.actions_dof_idx)
-        self.dof_vel = self.robot.get_dofs_velocity(self.actions_dof_idx)
+        self.dof_pos = self.robot.get_dofs_position(self.motors_dof_idx)
+        self.dof_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
 
         if self.debug:
             # print("base_pos", self.base_pos)
