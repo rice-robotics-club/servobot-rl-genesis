@@ -10,7 +10,6 @@ dependencies:
   - pytorch
   - torchvision
   - pytorch-cuda=12.1
-  - evdev
   - pyyaml
   - tensorboard
   - jsonschema
@@ -20,3 +19,4 @@ dependencies:
   - pip:
       - genesis-world
       - rsl-rl-lib
+      - inputs

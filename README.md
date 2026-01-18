@@ -1,8 +1,29 @@
 # servobot-rl-genesis
 
-To initialize and update the conda environment:
-`conda env update`
-`conda activate genesis`
+## Setup
+
+To initialize the conda environment, choose the appropriate file for your platform:
+
+**For Linux/Windows with NVIDIA GPU (CUDA support):**
+```bash
+conda env create -f environment-cuda.yml
+conda activate genesis
+```
+
+**For macOS (CPU only):**
+```bash
+conda env create -f environment-macos.yml
+conda activate genesis
+```
+
+To update an existing environment:
+```bash
+# For CUDA systems
+conda env update -f environment-cuda.yml
+
+# For macOS
+conda env update -f environment-macos.yml
+```
 
 To train the robot for 1000 iterations:
 `python train.py config/default.yaml --max_iterations 1001`

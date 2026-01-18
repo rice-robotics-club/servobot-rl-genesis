@@ -1,11 +1,10 @@
 import math
 from abc import abstractmethod
-from typing import Any, Mapping, Sequence, TypeVar
+from typing import TYPE_CHECKING, Any, Mapping, Sequence, TypeVar
 
 import genesis as gs
 import tensordict
 import torch
-from genesis.engine.entities.avatar_entity.avatar_entity import RigidEntity
 from genesis.utils.geom import (
     inv_quat,
     transform_by_quat,
@@ -13,6 +12,9 @@ from genesis.utils.geom import (
 from rsl_rl import env
 
 from src.config import CommandConfig, EnvConfig, ObsConfig, RewardConfig
+
+if TYPE_CHECKING:
+    from genesis.engine.entities import RigidEntity
 
 
 class GenesisEnv(env.VecEnv):
