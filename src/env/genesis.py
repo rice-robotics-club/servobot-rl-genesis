@@ -99,7 +99,7 @@ class GenesisEnv(env.VecEnv):
         self.scene.build(n_envs=num_envs)
 
         self.motors_dof_idx = torch.tensor(
-            [self.robot.get_joint(name).dof_idx_local for name in self.joint_names],
+            [self.robot.get_joint(name).dofs_idx_local[0] for name in self.joint_names],
             dtype=gs.tc_int,
             device=gs.device,
         )

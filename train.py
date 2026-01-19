@@ -72,7 +72,9 @@ def main():
     args = parser.parse_args()
 
     gs.init(
+        precision="32",
         logging_level="warning",
+        performance_mode=True,
     )
 
     from src.env import GenesisEnv

@@ -2,7 +2,7 @@ import threading
 
 import evdev
 
-from .input import BaseInput, Twist2D
+from .input import BaseInput
 
 
 class Gamepad(BaseInput):
@@ -28,7 +28,7 @@ class Gamepad(BaseInput):
 
         print(f"Gamepad initialized: {self._gamepad.name}")
 
-        self._command: Twist2D = Twist2D()
+        self._command = [0.0, 0.0, 0.0]
 
         t = threading.Thread(target=self._read_loop)
         t.daemon = True
@@ -39,8 +39,8 @@ class Gamepad(BaseInput):
             if event.type == evdev.ecodes.EV_ABS:
                 match event.code:
                     case 4:
-                        self._command.x = (65535.0 - event.value) / 65535.0
+                        self._command[0] = (65535.0 - event.value) / 65535.0
                     case 3:
-                        self._command.y = (event.value) / 65535.0
+                        self._command[1] = (event.value) / 65535.0
                     case 0:
-                        self._command.z = (65535.0 - event.value) / 65535.0
+                        self._command[2] = (65535.0 - event.value) / 65535.0

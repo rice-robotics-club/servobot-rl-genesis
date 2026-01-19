@@ -77,11 +77,9 @@ def main():
     with torch.no_grad():
         while True:
             actions = policy(obs)
-            if gamepad:
-                twist = gamepad.command
-                env.step(actions, command=[twist.x, twist.y, twist.z])
-            else:
-                env.step(actions)
+            obs, _, _, _ = env.step(
+                actions, command=gamepad.command if gamepad else None
+            )
 
 
 if __name__ == "__main__":
