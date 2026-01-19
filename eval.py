@@ -6,7 +6,7 @@ import genesis as gs
 import torch
 from rsl_rl.runners import OnPolicyRunner
 
-from src.input import Gamepad
+
 from src.utils import get_class, get_latest
 
 
@@ -69,6 +69,7 @@ def main():
     policy = runner.get_inference_policy(device=str(gs.device))
 
     if args.input == "gamepad":
+        from src.input import Gamepad
         gamepad = Gamepad()
     else:
         gamepad = None
