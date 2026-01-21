@@ -213,7 +213,7 @@ def main():
 
     # Run test phases
     all_results = {}
-    for phase_name, phase_config in tqdm(test_phases.items(), desc="Test Phases", unit="phase", colour='green'):
+    for phase_name, phase_config in tqdm(test_phases.items(), desc="Test Phases", unit="phase", colour='green', leave=False):
         print(f"\n{'='*60}")
         print(f"{phase_config['name']}")
         print(f"{'='*60}")
