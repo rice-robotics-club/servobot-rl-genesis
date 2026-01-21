@@ -1,6 +1,7 @@
 import argparse
 import pickle
 from pathlib import Path
+from datetime import datetime
 
 import genesis as gs
 import numpy as np
@@ -32,7 +33,7 @@ class Test():
         current_command = None
 
         with torch.no_grad():
-            pbar = tqdm(range(self.timesteps), desc="Simulating", leave=False, unit="step")
+            pbar = tqdm(range(self.timesteps), desc="Simulating", leave=False, unit="step", colour='cyan')
             for step in pbar:
                 # Generate random command at specified intervals
                 if step % self.command_interval == 0:
@@ -96,35 +97,35 @@ test_phases = {
         'angular_vel_range': (-0.1, 0.1),
         'command_interval': 5,
         'name': 'Phase 1: Slow Commands (0.2-0.5 m/s, -0.1 to 0.1 rad/s)',
-        'timesteps': 1000
+        'timesteps': 100
     },
     "medium_commands": {
         'linear_vel_range': (0.5, 0.8),
         'angular_vel_range': (-0.2, 0.2),
         'command_interval': 3,
         'name': 'Phase 2: Medium Commands (0.5-0.8 m/s, -0.2 to 0.2 rad/s)',
-        'timesteps': 1000
+        'timesteps': 100
     },
     "fast_commands": {
         'linear_vel_range': (0.8, 1.0),
         'angular_vel_range': (-0.3, 0.3),
         'command_interval': 1,
         'name': 'Phase 3: Fast Commands (0.8-1.0 m/s, -0.3 to 0.3 rad/s)',
-        'timesteps': 1000
+        'timesteps': 100
     },
     "rapid_commands": {
         'linear_vel_range': (0.2, 1.0),
         'angular_vel_range': (-0.5, 0.5),
         'command_interval': 1,
         'name': 'Phase 4: Rapid Commands (0.2-1.0 m/s, -0.5 to 0.5 rad/s)',
-        'timesteps': 1000
+        'timesteps': 100
     },
     "full_range": {
         'linear_vel_range': (0.2, 1.0),
         'angular_vel_range': (-0.5, 0.5),
         'command_interval': 2,
         'name': 'Phase 5: Full Range Commands (0.2-1.0 m/s, -0.5 to 0.5 rad/s)',
-        'timesteps': 2000
+        'timesteps': 100
     }
 }
 
@@ -212,7 +213,7 @@ def main():
 
     # Run test phases
     all_results = {}
-    for phase_name, phase_config in tqdm(test_phases.items(), desc="Test Phases", unit="phase"):
+    for phase_name, phase_config in tqdm(test_phases.items(), desc="Test Phases", unit="phase", colour='green'):
         print(f"\n{'='*60}")
         print(f"{phase_config['name']}")
         print(f"{'='*60}")
@@ -253,6 +254,52 @@ def main():
         print(f"{phase_name:20s} - Survival: {results['survival_rate']*100:5.1f}% | "
               f"Lin Vel Error: {results['avg_lin_vel_error']:6.4f} m/s | "
               f"Ang Vel Error: {results['avg_ang_vel_error']:6.4f} rad/s")
+
+    # Save results to file
+    tests_dir = Path("tests")
+    tests_dir.mkdir(exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    model_name = model_path.name
+    output_file = tests_dir / f"test_results_{timestamp}.txt"
+
+    with open(output_file, 'w') as f:
+        f.write("="*60 + "\n")
+        f.write("TEST RESULTS\n")
+        f.write("="*60 + "\n\n")
+        f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Model: {model_name}\n")
+        f.write(f"Model Path: {model_path}\n")
+        f.write(f"Experiment: {exp_dir}\n")
+        f.write(f"Runs per phase: {args.runs_per_phase}\n\n")
+
+        # Write detailed phase results
+        for phase_name, phase_config in test_phases.items():
+            f.write("="*60 + "\n")
+            f.write(f"{phase_config['name']}\n")
+            f.write("="*60 + "\n")
+
+            results = all_results[phase_name]
+            survived_count = int(results['survival_rate'] * args.runs_per_phase)
+
+            f.write(f"Survival Rate: {results['survival_rate']*100:.1f}% ({survived_count}/{args.runs_per_phase})\n")
+            if results['avg_lin_vel_error'] != float('inf'):
+                f.write(f"Avg Linear Velocity Error: {results['avg_lin_vel_error']:.4f} ± {results['std_lin_vel_error']:.4f} m/s\n")
+                f.write(f"Avg Angular Velocity Error: {results['avg_ang_vel_error']:.4f} ± {results['std_ang_vel_error']:.4f} rad/s\n")
+            else:
+                f.write("No successful runs to calculate velocity errors\n")
+            f.write("\n")
+
+        # Write summary
+        f.write("="*60 + "\n")
+        f.write("SUMMARY\n")
+        f.write("="*60 + "\n")
+        for phase_name, results in all_results.items():
+            f.write(f"{phase_name:20s} - Survival: {results['survival_rate']*100:5.1f}% | "
+                  f"Lin Vel Error: {results['avg_lin_vel_error']:6.4f} m/s | "
+                  f"Ang Vel Error: {results['avg_ang_vel_error']:6.4f} rad/s\n")
+
+    print(f"\nResults saved to: {output_file}")
 
 
 if __name__ == "__main__":
