@@ -67,19 +67,24 @@ def main():
     runner.load(str(model_path), map_location=str(gs.device))
     policy = runner.get_inference_policy(device=str(gs.device))
 
+    input = None
+
     if args.input == "gamepad":
         from src.input import Gamepad
 
-        gamepad = Gamepad()
-    else:
-        gamepad = None
+        input = Gamepad()
+    elif args.input == "keyboard":
+        from src.input import Keyboard
+        input = Keyboard()
+
+
 
     obs = env.reset()
     with torch.no_grad():
         while True:
             actions = policy(obs)
             obs, _, _, _ = env.step(
-                actions, command=gamepad.command if gamepad else None
+                actions, command=input.command if input else None
             )
 
 
