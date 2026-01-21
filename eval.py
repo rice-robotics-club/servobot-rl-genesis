@@ -6,7 +6,6 @@ import genesis as gs
 import torch
 from rsl_rl.runners import OnPolicyRunner
 
-
 from src.utils import get_class, get_latest
 
 
@@ -17,7 +16,7 @@ def main():
         "--experiment",
         type=str,
         default=None,
-        help="Expiriment directory to load (default: logs/[latest])",
+        help="Experiment directory to load (default: logs/[latest])",
     )
     parser.add_argument(
         "-m",
@@ -70,6 +69,7 @@ def main():
 
     if args.input == "gamepad":
         from src.input import Gamepad
+
         gamepad = Gamepad()
     else:
         gamepad = None

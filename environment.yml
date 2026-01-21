@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.13.*
+  - python==3.13.*
   - pip
   - pytorch
   - torchvision
@@ -14,7 +14,7 @@ dependencies:
   - jsonschema-gentypes
   - tensordict
   - numpy
-  - inputs
+  - pygame
   - pip:
-      - genesis-world=0.3.*
-      - rsl-rl-lib=3.3.*
+      - genesis-world==0.3.*
+      - rsl-rl-lib==3.3.*

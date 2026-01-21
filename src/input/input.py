@@ -1,13 +1,11 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class BaseInput(ABC):
     """Base class for input methods providing updated twist velocity commands for model evaluation."""
 
-    _command: list[float]
-    """Twist field to update on input"""
-
     @property
+    @abstractmethod
     def command(self) -> list[float]:
-        """Get the current twist command from the gamepad."""
-        return self._command
+        """Get the current twist command from the gamepad, """
+        raise NotImplementedError
