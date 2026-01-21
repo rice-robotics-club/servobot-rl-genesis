@@ -1,64 +1,86 @@
 import argparse
-import os
 import pickle
-import torch
-import pygame
-
-from rsl_rl.runners import OnPolicyRunner
+from pathlib import Path
 
 import genesis as gs
+import torch
+from rsl_rl.runners import OnPolicyRunner
 
-from env import ServobotEnv
-from src.controllers import Controller
+from src.utils import get_class, get_latest
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ckpt", type=str, default=None, help="Path to checkpoint to load (default: logs/servobot/model_100.pt)")
-    parser.add_argument("-t", "--teleop", type=str, default="none", choices=["keyboard", "xbox", "ps4"])
+    parser.add_argument(
+        "-e",
+        "--experiment",
+        type=str,
+        default=None,
+        help="Experiment directory to load (default: logs/[latest])",
+    )
+    parser.add_argument(
+        "-m",
+        "--model",
+        type=str,
+        default=None,
+        help="Model iteration file to load (default: (model_[max].pt))",
+    )
+    parser.add_argument(
+        "-i", "--input", type=str, default=None, choices=["keyboard", "gamepad"]
+    )
     args = parser.parse_args()
 
-    
-    gs.init()
-
-    ckpt_dir = os.path.dirname(args.ckpt) if args.ckpt else "logs/servobot"
-    
-    env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"{ckpt_dir}/cfgs.pkl", "rb"))
-    if 'obs_groups' not in train_cfg:
-        train_cfg['obs_groups'] = {"policy": ["policy"], "critic": ["policy"]}
-    reward_cfg["reward_scales"] = {}
-    
-    
-    env = ServobotEnv(
-        num_envs=1,
-        env_cfg=env_cfg,
-        obs_cfg=obs_cfg,
-        reward_cfg=reward_cfg,
-        command_cfg=command_cfg,
-        show_viewer=True,
+    gs.init(
+        logging_level="warning",
     )
 
-    if args.ckpt is None:
-        resume_path = "logs/servobot/model_100.pt"
+    from src.env import GenesisEnv
+
+    if args.experiment:
+        exp_dir = get_latest(args.experiment, mode="exact")
     else:
-        resume_path = args.ckpt
-    runner = OnPolicyRunner(env, train_cfg, ckpt_dir, device=gs.device)
-    runner.load(resume_path, map_location=gs.device)
-    policy = runner.get_inference_policy(device=gs.device)
+        exp_dir = get_latest("logs")
+    if not exp_dir:
+        raise ValueError("No experiment directory found")
 
-    if args.teleop != "none":
-        controller = Controller(type=args.teleop)
-        controller.initialize()
+    if args.model:
+        model_path = Path(exp_dir, args.model)
+    else:
+        model_path = get_latest(Path(exp_dir, "model_"))
+    if not model_path:
+        raise ValueError("No model file found")
 
-    obs, _ = env.reset()
+    config = pickle.load(open(f"{exp_dir}/config.pkl", "rb"))
+
+    env_class: type[GenesisEnv] | None = get_class(
+        "src.env", config["env"]["class_name"]
+    )
+    if not env_class:
+        return
+    env = env_class(
+        1, config["env"], config["obs"], config["reward"], config["commands"]
+    )
+
+    runner = OnPolicyRunner(
+        env, config["runner"], str(model_path.parent), device=str(gs.device)
+    )
+    runner.load(str(model_path), map_location=str(gs.device))
+    policy = runner.get_inference_policy(device=str(gs.device))
+
+    if args.input == "gamepad":
+        from src.input import Gamepad
+
+        gamepad = Gamepad()
+    else:
+        gamepad = None
+
+    obs = env.reset()
     with torch.no_grad():
         while True:
             actions = policy(obs)
-            if args.teleop != "none":
-                command = controller.get_command()
-                obs, rews, dones, infos = env.step(actions, command=command)
-            else:
-                obs, rews, dones, infos = env.step(actions)
+            obs, _, _, _ = env.step(
+                actions, command=gamepad.command if gamepad else None
+            )
 
 
 if __name__ == "__main__":

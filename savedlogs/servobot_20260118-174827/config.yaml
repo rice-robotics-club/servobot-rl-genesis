@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=./schemas/config.json
+runner:
+  class_name: OnPolicyRunner
+  num_steps_per_env: 512
+  save_interval: 100
+  seed: 1
+  obs_groups: { "policy": ["policy"], "critic": ["policy"] }
+  experiment_name: servobot
+  logger: tensorboard
+  neptune_project: legged_gym
+  wandb_project: legged_gym
+  max_iterations: 1000
+  run_name: ""
+
+  policy:
+    class_name: ActorCritic
+    activation: elu
+    actor_obs_normalization: true
+    critic_obs_normalization: true
+    actor_hidden_dims: [512, 256, 128]
+    critic_hidden_dims: [512, 256, 128]
+    init_noise_std: 1.0
+
+  algorithm:
+    class_name: PPO
+    learning_rate: 0.001
+    num_learning_epochs: 5
+    num_mini_batches: 4
+    schedule: adaptive
+    value_loss_coef: 1.0
+    clip_param: 0.2
+    use_clipped_value_loss: true
+    desired_kl: 0.01
+    entropy_coef: 0.02
+    gamma: 0.99
+    lam: 0.95
+    max_grad_norm: 1.0
+
+env:
+  class_name: ServobotEnv
+  urdf_path: robots/servobot_description/urdf/robot.urdf
+  joints:
+    fl_hip: -0.2
+    fl_top: -0.6
+    fl_bot: 0.1
+    fr_hip: 0.2
+    fr_top: 0.6
+    fr_bot: -0.1
+    bl_hip: 0.2
+    bl_top: -1.0
+    bl_bot: 0.1
+    br_hip: -0.2
+    br_top: 1.0
+    br_bot: -0.1
+  base_init_pos: [0.0, 0.0, 0.2]
+  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+  episode_length: 20.0
+  resampling_time: 4.0
+  action_scale: 0.25
+  simulate_action_latency: True
+  clip_actions: 100.0
+  dt: 0.02
+  termination_if_pitch_greater_than: 0.7
+  termination_if_roll_greater_than: 0.7
+
+commands:
+  lin_vel_x: [0.2, 1.0]
+  lin_vel_y: [0.0, 0.0]
+  ang_vel_z: [0.0, 0.0]
+
+obs:
+  num_obs: 45
+  scales:
+    lin_vel_x: 2.0
+    lin_vel_y: 2.0
+    ang_vel_z: 0.25
+    dof_pos: 1.0
+    dof_vel: 0.5
+
+reward:
+  tracking_sigma: 0.2
+  rewards:
+    tracking_lin_vel: 10.0
+    tracking_ang_vel: 5.0
+    lin_vel_z: -1.0
+    roll_angle: -2.0
+    pitch_angle: -5.0
+    base_height: -50.0
+    action_rate: -0.01
+    similar_to_default: -0.1
+    energy: 0.0
+    survival: 0.1
+  targets:
+    base_height: .25

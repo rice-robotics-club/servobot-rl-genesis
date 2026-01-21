@@ -1,15 +1,20 @@
 name: genesis
 channels:
+  - pytorch
+  - conda-forge
   - defaults
 dependencies:
-  - python=3.13
+  - python==3.13.*
   - pip
+  - pytorch
+  - torchvision
+  - pyyaml
+  - tensorboard
+  - jsonschema
+  - jsonschema-gentypes
+  - tensordict
+  - numpy
+  - pygame
   - pip:
-      - genesis-world
-      - rsl-rl-lib == 3.1.2  
-      - torch
-      - torchvision
-      - tensorflow
-      - tensorboard
-      - PyYAML
-      - pygame
+      - genesis-world==0.3.*
+      - rsl-rl-lib==3.3.*

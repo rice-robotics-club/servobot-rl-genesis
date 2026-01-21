@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "config.json",
+  "title": "Config",
+  "description": "JSON Schema for rsl_rl configuration YAML files.  The schema uses class_name fields to determine which sub-schema applies.",
+  "$comment": "Produced with Claude Opus 4.5, use with caution.",
+  "type": "object",
+  "properties": {
+    "runner": {
+      "$ref": "runner.json"
+    },
+    "env": {
+      "$ref": "env.json"
+    },
+    "obs": {
+      "$ref": "obs.json"
+    },
+    "reward": {
+      "$ref": "reward.json"
+    },
+    "commands": {
+      "$ref": "commands.json"
+    }
+  },
+  "required": ["runner", "env", "obs", "reward", "commands"],
+  "additionalProperties": false
+}

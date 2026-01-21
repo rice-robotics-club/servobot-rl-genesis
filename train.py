@@ -2,188 +2,86 @@ import argparse
 import os
 import pickle
 import shutil
-import yaml
+import time
 from datetime import datetime
 
-from rsl_rl.runners import OnPolicyRunner, DistillationRunner
-
-# from src.kinematics import IK
-
-import numpy as np
 import genesis as gs
+import yaml
+from rsl_rl.runners import OnPolicyRunner
 
-from env import ServobotEnv
-
-JOINT_NAMES = [
-    "fl_hip",
-    "fl_top",
-    "fl_bot",
-    "fr_hip",
-    "fr_top",
-    "fr_bot",
-    "bl_hip",
-    "bl_top",
-    "bl_bot",
-    "br_hip",
-    "br_top",
-    "br_bot",
-]
-
-# def get_train_cfg(exp_name, max_iterations):
-#     train_cfg_dict = {
-#         "algorithm": {
-#             "class_name": "PPO",
-#             "clip_param": 0.2,
-#             "desired_kl": 0.01,
-#             "entropy_coef": 0.01,
-#             "gamma": 0.99,
-#             "lam": 0.95,
-#             "learning_rate": 0.001,
-#             "max_grad_norm": 1.0,
-#             "num_learning_epochs": 5,
-#             "num_mini_batches": 4,
-#             "schedule": "adaptive",
-#             "use_clipped_value_loss": True,
-#             "value_loss_coef": 1.0,
-#         },
-#         "init_member_classes": {},
-#         "policy": {
-#             "activation": "elu",
-#             "actor_hidden_dims": [512, 256, 128],
-#             "critic_hidden_dims": [512, 256, 128],
-#             "init_noise_std": 1.0,
-#             "class_name": "ActorCritic",
-#         },
-#         "runner": {
-#             "checkpoint": -1,
-#             "experiment_name": exp_name,
-#             "load_run": -1,
-#             "log_interval": 1,
-#             "max_iterations": max_iterations,
-#             "record_interval": -1,
-#             "resume": False,
-#             "resume_path": None,
-#             "run_name": "",
-#         },
-#         "runner_class_name": "OnPolicyRunner",
-#         "num_steps_per_env": 24,
-#         "save_interval": 100,
-#         "empirical_normalization": None,
-#         "seed": 1,
-#     }
-#
-#     return train_cfg_dict
-
-
-def get_cfgs():
-    # ik = IK()
-    env_cfg = {
-        "num_actions": 12,
-        # joint/link names
-        "default_joint_angles": {
-            JOINT_NAMES[i]: c
-            for (i, c) in enumerate(
-                [-0.2, -np.pi / 4 , 0.2, 0.0, np.pi / 4, 0.0, 0.2, -np.pi / 4, 0.0, -0.2, np.pi / 4, 0.0]
-            )
-        },
-        "joint_names": JOINT_NAMES,
-        # PD
-        "default_kp": 20.0,
-        "default_kv": 0.5,
-        # termination
-        "termination_if_roll_greater_than": 45,  # degree --- WAY HIGHER NOW! RUN MY BEAUTIFUL CREATURE, RUN
-        "termination_if_pitch_greater_than": 45,
-        # base pose
-        "base_init_pos": [0.0, 0.0, 0.18],
-        "base_init_quat": [1.0, 0.0, 0.0, 0.0],
-        "episode_length_s": 20.0,
-        "resampling_time_s": 4.0,
-        "action_scale": 0.25,
-        "simulate_action_latency": True,
-        "clip_actions": 100.0,
-        "domain_rand": {
-            "kp_range": [15.0, 25.0],
-            "kv_range": [0.3, 0.7],
-            "friction_range": [0.5, 1.5],
-            "payload_range": [[-0.05, -0.05, 0.0, 0.0], [0.05, 0.05, 0.1, 0.2]],  # x, y, z, mass(kg)
-            "motor_strength_range": [0.8, 1.2],
-        },
-    }
-    obs_cfg = {
-        "num_obs": 45,
-        "obs_scales": {
-            "lin_vel": 2.0,
-            "ang_vel": 0.25,
-            "dof_pos": 1.0,
-            "dof_vel": 0.05,
-        },
-    }
-    reward_cfg = {
-        "tracking_sigma": 0.25,
-        "base_height_target": 0.18,
-        "feet_height_target": 0.075,
-        "reward_scales": {
-            "tracking_lin_vel": 1.75,
-            "tracking_ang_vel": 0.75,
-            "lin_vel_z": -1.0,
-            "base_height": -50.0,
-            "action_rate": -0.005,
-            "similar_to_default": -0.1,
-            "energy": -0.0001,
-            "survival": 0.3,
-        },
-    }
-    command_cfg = {
-        "num_commands": 3,  # bigger range to teach faster gait at the cost of longer trainings
-        "lin_vel_x_range": [-1.0, 1.0],
-        "lin_vel_y_range": [-1.0, 1.0],
-        "ang_vel_range": [-0.8, 0.8],
-    }
-
-    # Add symmetry configuration
-    # Pairs: (left_idx, right_idx) where actions should be mirrored
-    # FL <-> FR: (0,1,2) <-> (3,4,5)
-    # BL <-> BR: (6,7,8) <-> (9,10,11)
-    # I have no idea how to properly give this information to RSL-RL so this is just sort of an unused variable right now
-    symmetry_cfg = {
-        "symmetric_pairs": [
-            [0, 3],  # FL_Hip <-> FR_Hip
-            [1, 4],  # FL_TopLeg <-> FR_TopLeg
-            [2, 5],  # FL_BotLeg <-> FR_BotLeg
-            [6, 9],  # BL_Hip <-> BR_Hip
-            [7, 10],  # BL_TopLeg <-> BR_TopLeg
-            [8, 11],  # BL_BotLeg <-> BR_BotLeg
-        ],
-    }
-
-    return env_cfg, obs_cfg, reward_cfg, command_cfg, symmetry_cfg
+from src.config import load_config
+from src.utils import get_class
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("train_cfg", type=str)
-    parser.add_argument("-B", "--num_envs", type=int, default=4096)
-    parser.add_argument("--max_iterations", type=int, default=101)
-    parser.add_argument("-r", "--resume", type=str, default=None, help="Path to checkpoint to resume from")
     parser.add_argument(
+        "-c",
+        "--config_path",
+        type=str,
+        default="config/servobot.yaml",
+        help="Config file path to use (default: config/servobot.yaml)",
+    )
+    parser.add_argument(
+        "-n",
+        "--num_envs",
+        type=int,
+        default=4096,
+        help="Number of environments to use (default: 4096)",
+    )
+    parser.add_argument(
+        "-m",
+        "--max_iterations",
+        type=int,
+        default=10000,
+        help="Maximum number of iterations to run (default: 10000)",
+    )
+    parser.add_argument(
+        "-r",
+        "--resume",
+        type=str,
+        default=None,
+        help="Path to checkpoint to resume from",
+    )
+    parser.add_argument(
+        "-s",
         "--save_dir",
         type=str,
         default=None,
-        help="Custom directory name for saving (default: auto-generated with timestamp)",
+        help="Custom directory name for saving logs (default: auto-generated with timestamp)",
     )
-    parser.add_argument("--view", action="store_true", help="shows view)")
-    parser.add_argument("--randomize", action="store_true", help="Enable domain randomization")
+    parser.add_argument("--headless", action="store_true", help="trains without GUI")
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Loads config and views initial configuration",
+    )
+    parser.add_argument(
+        "--no_print",
+        action="store_true",
+        help="Disables RSL_RL training info",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Prints environment debug information",
+    )
+    # parser.add_argument(
+    #     "--randomize", action="store_true", help="Enable domain randomization"
+    # )
     args = parser.parse_args()
 
     gs.init(
+        precision="32",
         logging_level="warning",
+        performance_mode=True,
     )
 
-    env_cfg, obs_cfg, reward_cfg, command_cfg, symmetry_cfg = get_cfgs()
-    with open(args.train_cfg, "r") as file:
-        train_cfg = yaml.safe_load(file)
+    from src.env import GenesisEnv
 
-    exp_name = train_cfg["runner"]["experiment_name"]
+    config = load_config(args.config_path)
+
+    exp_name = config["runner"]["experiment_name"]
 
     # Determine log directory
     if args.save_dir:
@@ -209,8 +107,7 @@ def main():
     print(f"Saving to: {log_dir}")
 
     # Copy configs for reproducibility
-    os.makedirs(f"{log_dir}/configs", exist_ok=True)
-    shutil.copy(args.train_cfg, f"{log_dir}/configs/train.yaml")
+    shutil.copy(args.config_path, f"{log_dir}/config.yaml")
 
     # Save metadata
     metadata = {
@@ -222,30 +119,49 @@ def main():
     with open(f"{log_dir}/metadata.yaml", "w") as f:
         yaml.dump(metadata, f)
 
-    pickle.dump(
-        [env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg],
-        open(f"{log_dir}/cfgs.pkl", "wb"),
+    with open(f"{log_dir}/config.pkl", "wb") as f:
+        pickle.dump(config, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # # load model via rsl-rl OR initialize fresh one
+    # if load_existing_log:
+    #     model = model.load(load_existing_log)
+    # else:
+    #     model = model.initialize(configs)
+
+    env_class: type[GenesisEnv] | None = get_class(
+        "src.env", config["env"]["class_name"]
+    )
+    if not env_class:
+        return
+    env = env_class(
+        args.num_envs,
+        config["env"],
+        config["obs"],
+        config["reward"],
+        config["commands"],
+        args.headless,
+        args.debug,
     )
 
-    env = ServobotEnv(
-        num_envs=args.num_envs,
-        env_cfg=env_cfg,
-        obs_cfg=obs_cfg,
-        reward_cfg=reward_cfg,
-        command_cfg=command_cfg,
-        show_viewer=args.view,
-        num_viewer_envs=1,
+    runner_class: type[OnPolicyRunner] | None = get_class(
+        "rsl_rl.runners", config["runner"]["class_name"]
     )
-    runner_class = eval(train_cfg.pop("runner_class_name"))
-    runner = runner_class(env, train_cfg, log_dir, device=gs.device)
+    if not runner_class:
+        return
+    runner = runner_class(env, config["runner"], log_dir, device=gs.device)  # pyright: ignore
 
-    # Load checkpoint if resuming
-    if args.resume:
-        print(f"Loading checkpoint from: {args.resume}")
-        runner.load(args.resume)
+    if args.no_print:
+        runner.logger.disable_logs = True
 
-    runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
-    print("=" * 60, "\n Training complete! \n Saved robot policy to:", log_dir, "\n", "=" * 60)
+    if not args.once:
+        runner.learn(
+            num_learning_iterations=args.max_iterations, init_at_random_ep_len=True
+        )
+    else:
+        env.reset()
+        env.step(env.actions)
+        while True:
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":
