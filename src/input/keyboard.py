@@ -40,3 +40,8 @@ class Keyboard(BaseInput):
             return [0.0, 0.0, 0.0]
         
 
+def saveTerminalSettings():
+    if sys.platform == 'win32':
+        return None
+    return termios.tcgetattr(sys.stdin)
+
