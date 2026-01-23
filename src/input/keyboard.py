@@ -26,6 +26,7 @@ class Keyboard(BaseInput):
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
         return key
 
+    @property
     def command(self):
         key = self.getKey(self._settings)
         if key == 'w':
