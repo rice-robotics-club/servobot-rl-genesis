@@ -54,6 +54,7 @@ class ServobotEnv(GenesisEnv):
         self.obs_dict = tensordict.TensorDict(
             {"policy": self.policy_buf}, batch_size=[self.num_envs], device=gs.device
         )
+        self.curriculum_phase = 0
 
         self.init_reward_functions()
 
@@ -118,6 +119,31 @@ class ServobotEnv(GenesisEnv):
             self.rew_buf += rew
             self.episode_sums[name] += rew
 
+        # -----------------------------------------------------------
+        # Curriculum Update (Simplified)
+        # -----------------------------------------------------------
+        # # example of curriculum learning setup
+        # curriculum_cfg = {
+        #     "phase 0": {"reward_threshold": {"tracking_lin_vel":6},"update_params":{"command_cfg":{"lin_vel_x":[0.2,2]}}},
+        #     "phase 1": {"reward_threshold": {"tracking_lin_vel":8},"update_params":{"command_cfg":{"lin_vel_x":[0.2,2]}}},
+        #     "phase 2": {"reward_threshold": {"tracking_lin_vel":10},"update_params":{"command_cfg":{"lin_vel_x":[0.2,2]}}},
+        # }
+        phase_cfg = self.curriculum_cfg.get(f"phase {self.curriculum_phase}")
+        
+        if phase_cfg:
+            all_met = True
+            for k, v in phase_cfg["reward_threshold"].items():
+                # Use &= to check if ALL thresholds are met in one pass
+                all_met &= (self.episode_sums[k].mean().item() >= v)
+
+            if all_met:
+                # Direct update assuming correct structure (no safety checks)
+                for attr in phase_cfg["update_params"]:
+                    for key,val in phase_cfg["update_params"][attr].items():
+                        getattr(self, attr)[key] = val 
+                
+                self.curriculum_phase += 1
+        # -----------------------------------------------------------
         if command:
             self.commands[:, 0] = (
                 (command[0] * 0.5 + 0.5)
