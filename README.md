@@ -40,3 +40,14 @@ To conduct teacher student training:
 - Must resume from either normally trained model (loaded as teacher) or from teacher student model (both teacher and student loaded)
 - If using an RNN-equiped model as teacher, set teacher_recurrent: true
 - If needed to remove RNN layer of student, set class_name: StudentTeacher
+
+## Config Schemas
+
+There exists a JSON schema for the configuration of training at [config/schemas/config.json](config/schemas/config.json). This allows for intellisense
+to be used when editing the config to mitigate improper formatting. Additionally, the types of the config objects when imported from yaml files
+are provided at [src/config/config.py](src/config/config.py), which are generated via jsonschema-gentypes. To regenerate the config types when 
+changing the config schema, run the following command at the top level of the repository:
+
+```bash
+jsonschema-gentypes --json-schema config/schemas/config.json --python src/config/config.py
+```

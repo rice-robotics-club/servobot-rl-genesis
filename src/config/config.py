@@ -56,6 +56,22 @@ class Config(TypedDict, total=False):
     Required property
     """
 
+    curriculum: "CurriculumConfig"
+    r"""
+    Curriculum_Config.
+
+    Configuration option specifying staged updates to command ranges and reward weights, with corresponding reward thresholds for transfer from one stage to the next.
+    """
+
+
+
+CurriculumConfig = list["_CurriculumConfigItem"]
+r"""
+Curriculum_Config.
+
+Configuration option specifying staged updates to command ranges and reward weights, with corresponding reward thresholds for transfer from one stage to the next.
+"""
+
 
 
 class EnvConfig(TypedDict, total=False):
@@ -93,10 +109,10 @@ class EnvConfig(TypedDict, total=False):
     r""" Velocity derivative gain for joint PD controller """
 
     termination_if_roll_greater_than: int | float
-    r""" Terminate episode if base roll angle exceeds this value (degrees) """
+    r""" Terminate episode if base roll angle exceeds this value (radians) """
 
     termination_if_pitch_greater_than: int | float
-    r""" Terminate episode if base pitch angle exceeds this value (degrees) """
+    r""" Terminate episode if base pitch angle exceeds this value (radians) """
 
     base_init_pos: list[int | float]
     r"""
@@ -270,6 +286,25 @@ _CommandConfigAdditionalproperties = list[int | float]
 r"""
 minLength: 2
 maxLength: 2
+"""
+
+
+
+class _CurriculumConfigItem(TypedDict, total=False):
+    reward_threshold: dict[str, int | float]
+    update_params: "_CurriculumConfigItemUpdateParams"
+
+
+class _CurriculumConfigItemUpdateParams(TypedDict, total=False):
+    command_cfg: dict[str, "_CurriculumConfigItemUpdateParamsCommandCfgAdditionalproperties"]
+    reward_cfg: dict[str, int | float]
+
+
+_CurriculumConfigItemUpdateParamsCommandCfgAdditionalproperties = tuple[int | float, int | float, None]
+r"""
+minItems: 2
+maxItems: 2
+items: False
 """
 
 

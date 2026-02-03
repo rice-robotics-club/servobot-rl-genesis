@@ -20,6 +20,9 @@
     },
     "commands": {
       "$ref": "commands.json"
+    },
+    "curriculum": {
+      "$ref": "curriculum.json"
     }
   },
   "required": ["runner", "env", "obs", "reward", "commands"],

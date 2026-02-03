@@ -92,3 +92,14 @@ reward:
     survival: 0.1
   targets:
     base_height: .25
+
+# curriculum:
+#   - reward_threshold:
+#       tracking_lin_vel: 5.0
+#     update_params:
+#       command_cfg:
+#         lin_vel_x: [0.2, 1.0]
+#         lin_vel_y: [0.0, 0.0]
+#         ang_vel_z: [0.0, 0.0]
+#       reward_cfg:
+#         energy: 0.1
