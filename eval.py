@@ -71,10 +71,11 @@ def main():
 
     if args.input == "gamepad":
         from src.input import Gamepad
-
+        print("Gamepad input initialized.")
         input = Gamepad()
     elif args.input == "keyboard":
         from src.input import Keyboard
+        print("Keyboard input initialized.")
         input = Keyboard()
 
 

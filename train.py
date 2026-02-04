@@ -15,6 +15,18 @@ from src.utils import get_class
 
 def main():
     parser = argparse.ArgumentParser()
+    ''' 
+    Args:
+        -c, --config_path: Config file path to use (default: config/servobot.yaml)
+        -n, --num_envs: Number of environments to use (default: 4096)
+        -m, --max_iterations: Maximum number of iterations to run (default: 10000)
+        -r, --resume: Path to checkpoint to resume from
+        -s, --save_dir: Custom directory name for saving logs (default: auto-generated with timestamp)
+        --headless: trains without GUI
+        --once: Loads config and views initial configuration
+        --no_print: Disables RSL_RL training info
+        --debug: Prints environment debug information
+    '''
     parser.add_argument(
         "-c",
         "--config_path",
