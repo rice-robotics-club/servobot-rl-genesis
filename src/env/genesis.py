@@ -12,6 +12,7 @@ from genesis.utils.geom import (
 from rsl_rl import env
 
 from src.config import CommandConfig, EnvConfig, ObsConfig, RewardConfig
+from src.config.config import CurriculumConfig
 
 if TYPE_CHECKING:
     from genesis.engine.entities import RigidEntity
@@ -27,6 +28,7 @@ class GenesisEnv(env.VecEnv):
         obs_cfg: ObsConfig,
         reward_cfg: RewardConfig,
         command_cfg: CommandConfig,
+        curriculum_cfg: CurriculumConfig,
         headless: bool = False,
         debug: bool = False,
     ) -> None:
@@ -37,6 +39,7 @@ class GenesisEnv(env.VecEnv):
         self.rewards = reward_cfg["rewards"]
         self.targets = reward_cfg["targets"]
         self.command_cfg = command_cfg
+        self.curriculum_cfg = curriculum_cfg
 
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]

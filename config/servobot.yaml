@@ -93,7 +93,7 @@ reward:
   targets:
     base_height: .25
 
-# curriculum:
+curriculum: []
 #   - reward_threshold:
 #       tracking_lin_vel: 5.0
 #     update_params:

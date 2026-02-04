@@ -139,6 +139,7 @@ def main():
         config["obs"],
         config["reward"],
         config["commands"],
+        config["curriculum"],
         args.headless,
         args.debug,
     )

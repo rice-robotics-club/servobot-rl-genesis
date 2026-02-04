@@ -56,11 +56,13 @@ class Config(TypedDict, total=False):
     Required property
     """
 
-    curriculum: "CurriculumConfig"
+    curriculum: Required["CurriculumConfig"]
     r"""
     Curriculum_Config.
 
     Configuration option specifying staged updates to command ranges and reward weights, with corresponding reward thresholds for transfer from one stage to the next.
+
+    Required property
     """
 
 
@@ -291,8 +293,12 @@ maxLength: 2
 
 
 class _CurriculumConfigItem(TypedDict, total=False):
-    reward_threshold: dict[str, int | float]
-    update_params: "_CurriculumConfigItemUpdateParams"
+    reward_threshold: Required[dict[str, int | float]]
+    r""" Required property """
+
+    update_params: Required["_CurriculumConfigItemUpdateParams"]
+    r""" Required property """
+
 
 
 class _CurriculumConfigItemUpdateParams(TypedDict, total=False):

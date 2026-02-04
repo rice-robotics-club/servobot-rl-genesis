@@ -25,11 +25,19 @@ class ServobotEnv(GenesisEnv):
         obs_cfg,
         reward_cfg,
         command_cfg,
+        curriculum_cfg,
         headless: bool = False,
         debug: bool = False,
     ):
         super().__init__(
-            num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, headless, debug
+            num_envs,
+            env_cfg,
+            obs_cfg,
+            reward_cfg,
+            command_cfg,
+            curriculum_cfg,
+            headless,
+            debug,
         )
 
         self.kp = get_or_default(env_cfg, "kp", 20.0)
@@ -128,20 +136,20 @@ class ServobotEnv(GenesisEnv):
         #     "phase 1": {"reward_threshold": {"tracking_lin_vel":8},"update_params":{"command_cfg":{"lin_vel_x":[0.2,2]}}},
         #     "phase 2": {"reward_threshold": {"tracking_lin_vel":10},"update_params":{"command_cfg":{"lin_vel_x":[0.2,2]}}},
         # }
-        phase_cfg = self.curriculum_cfg.get(f"phase {self.curriculum_phase}")
-        
-        if phase_cfg:
+
+        if self.curriculum_phase < len(self.curriculum_cfg):
+            phase_cfg = self.curriculum_cfg[self.curriculum_phase]
             all_met = True
             for k, v in phase_cfg["reward_threshold"].items():
                 # Use &= to check if ALL thresholds are met in one pass
-                all_met &= (self.episode_sums[k].mean().item() >= v)
+                all_met &= self.episode_sums[k].mean().item() >= v
 
             if all_met:
                 # Direct update assuming correct structure (no safety checks)
                 for attr in phase_cfg["update_params"]:
-                    for key,val in phase_cfg["update_params"][attr].items():
-                        getattr(self, attr)[key] = val 
-                
+                    for key, val in phase_cfg["update_params"][attr].items():
+                        getattr(self, attr)[key] = val
+
                 self.curriculum_phase += 1
         # -----------------------------------------------------------
         if command:
