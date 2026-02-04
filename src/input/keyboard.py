@@ -1,6 +1,6 @@
 import sys
 
-from input import BaseInput
+from .input import BaseInput
 
 if sys.platform == 'win32':
     import msvcrt
@@ -12,7 +12,13 @@ class Keyboard(BaseInput):
     """Input class for keyboards."""
 
     def __init__(self, name: None | str = None):
-
+        print('''Keyboard input initialized. Controls:
+            W: Forward
+            S: Backward
+            A: Turn Left
+            D: Turn Right
+            Any other key: Stop
+              ''')
         self._settings = saveTerminalSettings()
 
     def getKey(self, settings):
