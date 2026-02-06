@@ -1,7 +1,6 @@
 from typing import Sequence
 
 import genesis as gs
-import numpy as np
 import tensordict
 import torch
 from genesis.utils.geom import (
@@ -128,24 +127,24 @@ class ServobotEnv(GenesisEnv):
                 self.episode_length_buf % int(self.resampling_time / self.dt) == 0
             )
 
-        if self.debug:
-            self.scene.clear_debug_objects()
+        # visualize commanded and actual velocity
+        self.scene.clear_debug_objects()
 
-            cmd_vec = torch.zeros(3)
-            cmd_vec[:2] = self.commands[0, :2]
-            cmd_vec[2] = 0.0
-            cmd_vec: torch.Tensor = transform_by_quat(cmd_vec, self.base_quat[0, :])  # type: ignore
+        cmd_vec = torch.zeros(3)
+        cmd_vec[:2] = self.commands[0, :2]
+        cmd_vec[2] = 0.0
+        cmd_vec: torch.Tensor = transform_by_quat(cmd_vec, self.base_quat[0, :])  # type: ignore
 
-            self.cmd_debug_arrow = self.scene.draw_debug_arrow(
-                self.base_pos[0, :].cpu(),
-                cmd_vec.cpu(),
-                color=(0, 0, 1, 0.5),
-            )
-            self.vel_debug_arrow = self.scene.draw_debug_arrow(
-                self.base_pos[0, :].cpu(),
-                self.base_lin_vel[0, :].cpu(),
-                color=(1, 0, 0, 0.5),
-            )
+        self.cmd_debug_arrow = self.scene.draw_debug_arrow(
+            self.base_pos[0, :].cpu(),
+            cmd_vec.cpu(),
+            color=(0, 0, 1, 0.5),
+        )
+        self.vel_debug_arrow = self.scene.draw_debug_arrow(
+            self.base_pos[0, :].cpu(),
+            self.base_lin_vel[0, :].cpu(),
+            color=(1, 0, 0, 0.5),
+        )
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length
