@@ -14,7 +14,9 @@ from src.utils import get_class
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Train a reinforcement learning agent in the Genesis environment using RSL_RL."
+    )
     ''' 
     Args:
         -c, --config_path: Config file path to use (default: config/servobot.yaml)
