@@ -4,7 +4,7 @@ runner:
   num_steps_per_env: 512
   save_interval: 100
   seed: 1
-  obs_groups: { "policy": ["policy"], "critic": ["policy"] }
+  obs_groups: { "policy": ["policy"], "teacher": ["policy","teacher"] }
   experiment_name: servobot
   logger: tensorboard
   neptune_project: legged_gym
@@ -64,7 +64,8 @@ commands:
   ang_vel_z: [0.0, 0.0]
 
 obs:
-  num_obs: 45
+  num_obs: 39
+  num_teacher_obs: 6
   scales:
     lin_vel_x: 2.0
     lin_vel_y: 2.0
