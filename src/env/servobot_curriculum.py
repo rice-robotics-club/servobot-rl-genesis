@@ -1,5 +1,4 @@
-
-from env.servobot import ServobotEnv
+from .servobot import ServobotEnv
 
 
 class ServobotCurriculumEnv(ServobotEnv):
@@ -21,17 +20,17 @@ class ServobotCurriculumEnv(ServobotEnv):
         self.current_step = 0
 
 
-''' 
+"""
 Curriculum.yaml
- 
+
 config1:
     name: "Easy"
-    env: 
+    env:
         blah blah blah
     reward:
         blah blah blah
-        value 
-        
+        value
+
     commands:
         blah blah blah
-'''
+"""

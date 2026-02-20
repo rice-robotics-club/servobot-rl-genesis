@@ -1,4 +1,5 @@
-from .genesis import GenesisEnv
+from .base import BaseEnv
 from .servobot import ServobotEnv
+from .servobot_student import ServobotStudentEnv
 
-__all__ = ["GenesisEnv", "ServobotEnv"]
+__all__ = ["BaseEnv", "ServobotEnv", "ServobotStudentEnv"]

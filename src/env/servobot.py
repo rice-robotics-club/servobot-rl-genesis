@@ -1,7 +1,6 @@
 from typing import Sequence
 
 import genesis as gs
-import tensordict
 import torch
 from genesis.utils.geom import (
     inv_quat,
@@ -10,52 +9,17 @@ from genesis.utils.geom import (
     transform_quat_by_quat,
 )
 
-from src.env.genesis import GenesisEnv, get_or_default
+from src.config import Config
+from src.env.base import BaseEnv
 
 
 def gs_rand_float(lower, upper, shape, device):
     return (upper - lower) * torch.rand(size=shape, device=device) + lower
 
 
-class ServobotEnv(GenesisEnv):
-    def __init__(
-        self,
-        num_envs,
-        env_cfg,
-        obs_cfg,
-        reward_cfg,
-        command_cfg,
-        headless: bool = False,
-        debug: bool = False,
-    ):
-        super().__init__(
-            num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, headless, debug
-        )
-
-        self.kp = get_or_default(env_cfg, "kp", 20.0)
-        self.kv = get_or_default(env_cfg, "kv", 0.5)
-        self.tracking_sigma = get_or_default(reward_cfg, "tracking_sigma", 0.25)
-        self.clip_actions = get_or_default(env_cfg, "clip_actions", 100.0)
-        self.simulate_action_latency = get_or_default(
-            env_cfg, "simulate_action_latency", False
-        )
-        self.action_scale = get_or_default(env_cfg, "action_scale", 0.25)
-        self.termination_if_pitch_greater_than = get_or_default(
-            env_cfg, "termination_if_pitch_greater_than", 45
-        )
-        self.termination_if_roll_greater_than = get_or_default(
-            env_cfg, "termination_if_roll_greater_than", 45
-        )
-
-        self.robot.set_dofs_kp([self.kp] * self.num_actions, self.motors_dof_idx)
-        self.robot.set_dofs_kv([self.kv] * self.num_actions, self.motors_dof_idx)
-
-        self.policy_buf = torch.zeros(self.num_envs, self.num_obs, device=gs.device)
-        self.obs_dict = tensordict.TensorDict(
-            {"policy": self.policy_buf}, batch_size=[self.num_envs], device=gs.device
-        )
-
-        self.init_reward_functions()
+class ServobotEnv(BaseEnv):
+    def __init__(self, num_envs: int, cfg: Config, device: torch.device | str):
+        super().__init__(num_envs, cfg, device)
 
     def update_observations(self):
         self.policy_buf = torch.concatenate(
@@ -74,39 +38,7 @@ class ServobotEnv(GenesisEnv):
         self.obs_dict["policy"] = self.policy_buf
 
     def step(self, actions: torch.Tensor, command: Sequence[float] | None = None):
-        self.actions = torch.clip(actions, -self.clip_actions, self.clip_actions)
-        exec_actions = (
-            self.last_actions if self.simulate_action_latency else self.actions
-        )
-        target_dof_pos = exec_actions * self.action_scale + self.default_dof_pos
-        self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
-
-        self.scene.step()
-
-        # update buffers
-        self.episode_length_buf += 1
-        self.base_pos = self.robot.get_pos()
-        self.base_quat = self.robot.get_quat()
-        self.base_euler = quat_to_xyz(
-            transform_quat_by_quat(self.inv_base_init_quat, self.base_quat),
-            rpy=True,
-            degrees=False,
-        )  # pyright: ignore
-        inv_base_quat = inv_quat(self.base_quat)
-        self.base_lin_vel = transform_by_quat(self.robot.get_vel(), inv_base_quat)  # pyright: ignore
-        self.base_ang_vel = transform_by_quat(self.robot.get_ang(), inv_base_quat)  # pyright: ignore
-        self.projected_gravity: torch.Tensor = transform_by_quat(
-            self.global_gravity, inv_base_quat
-        )  # pyright: ignore
-        self.dof_pos = self.robot.get_dofs_position(self.motors_dof_idx)
-        self.dof_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
-
-        # compute reward
-        self.rew_buf.zero_()
-        for name, reward_func in self.reward_functions.items():
-            rew = reward_func() * self.rewards[name]
-            self.rew_buf += rew
-            self.episode_sums[name] += rew
+        out = super().step(actions)
 
         if command:
             self.commands[:, 0] = (
@@ -127,48 +59,18 @@ class ServobotEnv(GenesisEnv):
                 self.episode_length_buf % int(self.resampling_time / self.dt) == 0
             )
 
-        # visualize commanded and actual velocity
-        self.scene.clear_debug_objects()
-
-        cmd_vec = torch.zeros(3)
-        cmd_vec[:2] = self.commands[0, :2]
-        cmd_vec[2] = 0.0
-        cmd_vec: torch.Tensor = transform_by_quat(cmd_vec, self.base_quat[0, :])  # type: ignore
-
-        self.cmd_debug_arrow = self.scene.draw_debug_arrow(
-            self.base_pos[0, :].cpu(),
-            cmd_vec.cpu(),
-            color=(0, 0, 1, 0.5),
-        )
-        self.vel_debug_arrow = self.scene.draw_debug_arrow(
-            self.base_pos[0, :].cpu(),
-            self.base_lin_vel[0, :].cpu(),
-            color=(1, 0, 0, 0.5),
-        )
-
         # check termination and reset
-        self.reset_buf = self.episode_length_buf > self.max_episode_length
 
         self.reset_buf |= (
-            torch.abs(self.base_euler[:, 1]) > self.termination_if_pitch_greater_than
+            torch.abs(self.buffers["base_euler"][:, 1])
+            > self.cfg.termination_if_pitch_greater_than
         )
         self.reset_buf |= (
-            torch.abs(self.base_euler[:, 0]) > self.termination_if_roll_greater_than
+            torch.abs(self.buffers["base_euler"][:, 0])
+            > self.cfg.termination_if_roll_greater_than
         )
 
-        self.extras["time_outs"] = (
-            self.episode_length_buf > self.max_episode_length
-        ).to(dtype=gs.tc_float)
-
-        self.reset_idx(self.reset_buf)
-
-        # update observations
-        self.update_observations()
-
-        self.last_actions.copy_(self.actions)
-        self.last_dof_vel.copy_(self.dof_vel)
-
-        return self.obs_dict, self.rew_buf, self.reset_buf, self.extras
+        return out
 
     # ------------ reward functions----------------
     def _reward_tracking_lin_vel(self):

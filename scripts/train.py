@@ -1,4 +1,3 @@
-import argparse
 import os
 import pickle
 import shutil
@@ -6,99 +5,23 @@ import time
 from datetime import datetime
 
 import genesis as gs
+import hydra
 import yaml
 from rsl_rl.runners import OnPolicyRunner
+from servo import Config
 
-from src.config import load_config
 from src.utils import get_class
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    ''' 
-    Args:
-        -c, --config_path: Config file path to use (default: config/servobot.yaml)
-        -n, --num_envs: Number of environments to use (default: 4096)
-        -m, --max_iterations: Maximum number of iterations to run (default: 10000)
-        -r, --resume: Path to checkpoint to resume from
-        -s, --save_dir: Custom directory name for saving logs (default: auto-generated with timestamp)
-        --headless: trains without GUI
-        --once: Loads config and views initial configuration
-        --no_print: Disables RSL_RL training info
-        --debug: Prints environment debug information
-    '''
-    parser.add_argument(
-        "-c",
-        "--config_path",
-        type=str,
-        default="config/servobot.yaml",
-        help="Config file path to use (default: config/servobot.yaml)",
-    )
-    parser.add_argument(
-        "-n",
-        "--num_envs",
-        type=int,
-        default=4096,
-        help="Number of environments to use (default: 4096)",
-    )
-    parser.add_argument(
-        "-m",
-        "--max_iterations",
-        type=int,
-        default=10000,
-        help="Maximum number of iterations to run (default: 10000)",
-    )
-    parser.add_argument(
-        "-r",
-        "--resume",
-        type=str,
-        default=None,
-        help="Path to checkpoint to resume from",
-    )
-    parser.add_argument(
-        "-s",
-        "--save_dir",
-        type=str,
-        default=None,
-        help="Custom directory name for saving logs (default: auto-generated with timestamp)",
-    )
-    parser.add_argument("--headless", action="store_true", help="trains without GUI")
-    parser.add_argument(
-        "--once",
-        action="store_true",
-        help="Loads config and views initial configuration",
-    )
-    parser.add_argument(
-        "--no_print",
-        action="store_true",
-        help="Disables RSL_RL training info",
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Prints environment debug information",
-    )
-    # parser.add_argument(
-    #     "--randomize", action="store_true", help="Enable domain randomization"
-    # )
-    args = parser.parse_args()
+@hydra.main(config_path="config", config_name="servobot")
+def main(cfg: Config):
 
-    gs.init(
-        precision="32",
-        logging_level="warning",
-        performance_mode=True,
-    )
-
-    from src.env import GenesisEnv
-
-    config = load_config(args.config_path)
-
-    exp_name = config["runner"]["experiment_name"]
+    exp_name = cfg.runner.experiment_name
 
     # Determine log directory
-    if args.save_dir:
+    if cfg.log_dir:
         # Use custom directory name
-        log_dir = f"logs/{args.save_dir}"
+        log_dir = f"logs/{cfg.log_dir}"
     else:
         # Auto-generate with timestamp
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")

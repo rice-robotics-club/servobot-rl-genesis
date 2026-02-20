@@ -1,19 +1,13 @@
-from .config import (
-    CommandConfig,
-    Config,
-    EnvConfig,
-    ObsConfig,
-    RewardConfig,
-    RunnerConfig,
-)
-from .load import load_config
+from .config import Config
+from .env import EnvConfig
+from .obs import ObsConfig
+from .reward import RewardConfig
+from .runner import RunnerConfig
 
 __all__ = [
-    "CommandConfig",
     "Config",
     "EnvConfig",
     "ObsConfig",
     "RewardConfig",
     "RunnerConfig",
-    "load_config",
 ]
