@@ -101,16 +101,6 @@ class ServobotEnv(GenesisEnv):
         self.dof_pos = self.robot.get_dofs_position(self.motors_dof_idx)
         self.dof_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
 
-        if self.debug:
-            # print("base_pos", self.base_pos)
-            # print("base_quat", self.base_quat)
-            print("base_euler_pitch", self.base_euler[:, 1])
-            # print("base_lin_vel", self.base_lin_vel)
-            # print("base_ang_vel", self.base_ang_vel)
-            # print("projected_gravity", self.projected_gravity)
-            # print("dof_pos", self.dof_pos)
-            # print("dof_vel", self.dof_vel)
-
         # compute reward
         self.rew_buf.zero_()
         for name, reward_func in self.reward_functions.items():
@@ -136,6 +126,25 @@ class ServobotEnv(GenesisEnv):
             self._resample_commands(
                 self.episode_length_buf % int(self.resampling_time / self.dt) == 0
             )
+
+        # visualize commanded and actual velocity
+        self.scene.clear_debug_objects()
+
+        cmd_vec = torch.zeros(3)
+        cmd_vec[:2] = self.commands[0, :2]
+        cmd_vec[2] = 0.0
+        cmd_vec: torch.Tensor = transform_by_quat(cmd_vec, self.base_quat[0, :])  # type: ignore
+
+        self.cmd_debug_arrow = self.scene.draw_debug_arrow(
+            self.base_pos[0, :].cpu(),
+            cmd_vec.cpu(),
+            color=(0, 0, 1, 0.5),
+        )
+        self.vel_debug_arrow = self.scene.draw_debug_arrow(
+            self.base_pos[0, :].cpu(),
+            self.base_lin_vel[0, :].cpu(),
+            color=(1, 0, 0, 0.5),
+        )
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length

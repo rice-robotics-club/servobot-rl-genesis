@@ -96,6 +96,23 @@ class GenesisEnv(env.VecEnv):
             ),
         )  # pyright: ignore
 
+        self.imu = self.scene.add_sensor(
+            gs.sensors.IMU(
+                entity_idx=self.robot.idx,  # type: ignore
+                link_idx_local=self.robot.base_link_idx,  # type: ignore
+                acc_cross_axis_coupling=(0.0, 0.01, 0.02),
+                gyro_cross_axis_coupling=(0.03, 0.04, 0.05),
+                acc_noise=(0.01, 0.01, 0.01),
+                gyro_noise=(0.01, 0.01, 0.01),
+                acc_random_walk=(0.001, 0.001, 0.001),
+                gyro_random_walk=(0.001, 0.001, 0.001),
+                delay=self.dt,
+                jitter=0.01,  # type: ignore
+                interpolate=True,  # type: ignore
+                draw_debug=True,
+            )
+        )
+
         self.scene.build(n_envs=num_envs)
 
         self.motors_dof_idx = torch.tensor(
