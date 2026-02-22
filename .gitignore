@@ -2,6 +2,7 @@ logs/
 log/
 build/
 install/
-__pycache__/
+__pycache__
 .idea/
 .vscode/
+*.egg-info
