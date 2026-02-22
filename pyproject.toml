@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "servobot-rl-genesis"
+version = "0.1.0"
+requires-python = ">= 3.11"
+dependencies = [
+  "numpy",
+  "torch",
+  "torchvision",
+  "pyyaml",
+  "tensorboard",
+  "jsonschema",
+  "jsonschema-gentypes",
+  "tensordict",
+  "numpy",
+  "pygame",
+  "genesis-world==0.3.*",
+  "rsl-rl-lib==3.3.*",
+]
+
+[project.scripts]
+train = "scripts.train:main"
+serve = "scripts.serve:main"
+update_schema = "scripts.update_schema:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scripts*", "src*"]

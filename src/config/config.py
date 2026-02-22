@@ -72,12 +72,15 @@ class EnvConfig(TypedDict, total=False):
     Required property
     """
 
-    urdf_path: Required[str]
+    robot_description_path: Required[str]
     r"""
-    Path to the robot URDF file
+    Path to the robot description file
 
     Required property
     """
+
+    robot_description_type: "_EnvConfigRobotDescriptionType"
+    r""" Type of the robot file """
 
     joints: Required[dict[str, int | float]]
     r"""
@@ -93,10 +96,10 @@ class EnvConfig(TypedDict, total=False):
     r""" Velocity derivative gain for joint PD controller """
 
     termination_if_roll_greater_than: int | float
-    r""" Terminate episode if base roll angle exceeds this value (degrees) """
+    r""" Terminate episode if base roll angle exceeds this value (radians) """
 
     termination_if_pitch_greater_than: int | float
-    r""" Terminate episode if base pitch angle exceeds this value (degrees) """
+    r""" Terminate episode if base pitch angle exceeds this value (radians) """
 
     base_init_pos: list[int | float]
     r"""
@@ -271,6 +274,15 @@ r"""
 minLength: 2
 maxLength: 2
 """
+
+
+
+_EnvConfigRobotDescriptionType = Literal['URDF'] | Literal['MJCF']
+r""" Type of the robot file """
+_ENVCONFIGROBOTDESCRIPTIONTYPE_URDF: Literal['URDF'] = "URDF"
+r"""The values for the 'Type of the robot file' enum"""
+_ENVCONFIGROBOTDESCRIPTIONTYPE_MJCF: Literal['MJCF'] = "MJCF"
+r"""The values for the 'Type of the robot file' enum"""
 
 
 
