@@ -89,29 +89,29 @@ class GenesisEnv(env.VecEnv):
         )
 
         self.robot: RigidEntity = self.scene.add_entity(
-            gs.morphs.URDF(
-                file=self.cfg["urdf_path"],
+            getattr(gs.morphs, self.cfg["robot_description_type"])(
+                file=self.cfg["robot_description_path"],
                 pos=self.base_init_pos,
                 quat=self.base_init_quat,
             ),
         )  # pyright: ignore
 
-        self.imu = self.scene.add_sensor(
-            gs.sensors.IMU(
-                entity_idx=self.robot.idx,  # type: ignore
-                link_idx_local=self.robot.base_link_idx,  # type: ignore
-                acc_cross_axis_coupling=(0.0, 0.01, 0.02),
-                gyro_cross_axis_coupling=(0.03, 0.04, 0.05),
-                acc_noise=(0.01, 0.01, 0.01),
-                gyro_noise=(0.01, 0.01, 0.01),
-                acc_random_walk=(0.001, 0.001, 0.001),
-                gyro_random_walk=(0.001, 0.001, 0.001),
-                delay=self.dt,
-                jitter=0.01,  # type: ignore
-                interpolate=True,  # type: ignore
-                draw_debug=True,
-            )
-        )
+        # self.imu = self.scene.add_sensor(
+        #     gs.sensors.IMU(
+        #         entity_idx=self.robot.idx,  # type: ignore
+        #         link_idx_local=self.robot.base_link_idx,  # type: ignore
+        #         acc_cross_axis_coupling=(0.0, 0.01, 0.02),
+        #         gyro_cross_axis_coupling=(0.03, 0.04, 0.05),
+        #         acc_noise=(0.01, 0.01, 0.01),
+        #         gyro_noise=(0.01, 0.01, 0.01),
+        #         acc_random_walk=(0.001, 0.001, 0.001),
+        #         gyro_random_walk=(0.001, 0.001, 0.001),
+        #         delay=self.dt,
+        #         jitter=0.01,  # type: ignore
+        #         interpolate=True,  # type: ignore
+        #         draw_debug=True,
+        #     )
+        # )
 
         self.scene.build(n_envs=num_envs)
 
@@ -121,6 +121,14 @@ class GenesisEnv(env.VecEnv):
             device=gs.device,
         )
         self.actions_dof_idx = torch.argsort(self.motors_dof_idx)
+
+        self.default_dof_pos = torch.tensor(
+            [env_cfg["joints"][name] for name in self.joint_names],
+            dtype=gs.tc_float,
+            device=gs.device,
+        )
+
+        self.robot.set_dofs_position(self.default_dof_pos, self.motors_dof_idx)
 
         self.global_gravity = torch.tensor(
             [0.0, 0.0, -1.0], dtype=gs.tc_float, device=gs.device
@@ -133,14 +141,7 @@ class GenesisEnv(env.VecEnv):
             self.base_init_quat, dtype=gs.tc_float, device=gs.device
         )
         self.inv_base_init_quat = inv_quat(self.init_base_quat)
-        self.init_dof_pos = torch.tensor(
-            [env_cfg["joints"][joint.name] for joint in self.robot.joints[1:]],
-            dtype=gs.tc_float,
-            device=gs.device,
-        )
-        self.init_qpos = torch.concatenate(
-            (self.init_base_pos, self.init_base_quat, self.init_dof_pos)
-        )
+        self.init_qpos = self.robot.get_qpos()[0]
         self.init_projected_gravity: torch.Tensor = transform_by_quat(
             self.global_gravity, self.inv_base_init_quat
         )  # pyright: ignore
@@ -197,11 +198,6 @@ class GenesisEnv(env.VecEnv):
         self.base_euler: torch.Tensor = torch.empty(
             (self.num_envs, 3), dtype=gs.tc_float, device=gs.device
         )
-        self.default_dof_pos = torch.tensor(
-            [env_cfg["joints"][name] for name in self.joint_names],
-            dtype=gs.tc_float,
-            device=gs.device,
-        )
         self.extras = dict()  # extra information for logging
         self.extras["observations"] = dict()
         self.reward_functions: dict = {}
@@ -246,7 +242,7 @@ class GenesisEnv(env.VecEnv):
             self.base_pos.copy_(self.init_base_pos)
             self.base_quat.copy_(self.init_base_quat)
             self.projected_gravity.copy_(self.init_projected_gravity)
-            self.dof_pos.copy_(self.init_dof_pos)
+            self.dof_pos.copy_(self.default_dof_pos)
             self.base_pos.copy_(self.init_base_pos)
             self.base_lin_vel.zero_()
             self.base_ang_vel.zero_()
@@ -274,7 +270,7 @@ class GenesisEnv(env.VecEnv):
                 out=self.projected_gravity,
             )
             torch.where(
-                envs_idx[:, None], self.init_dof_pos, self.dof_pos, out=self.dof_pos
+                envs_idx[:, None], self.default_dof_pos, self.dof_pos, out=self.dof_pos
             )
             torch.where(
                 envs_idx[:, None], self.init_base_pos, self.base_pos, out=self.base_pos

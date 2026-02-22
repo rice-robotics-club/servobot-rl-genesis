@@ -79,8 +79,12 @@ class EnvConfig(TypedDict, total=False):
     Required property
     """
 
-    robot_description_type: "_EnvConfigRobotDescriptionType"
-    r""" Type of the robot file """
+    robot_description_type: Required["_EnvConfigRobotDescriptionType"]
+    r"""
+    Type of the robot file
+
+    Required property
+    """
 
     joints: Required[dict[str, int | float]]
     r"""

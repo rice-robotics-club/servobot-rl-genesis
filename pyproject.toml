@@ -17,7 +17,7 @@ dependencies = [
   "tensordict",
   "numpy",
   "pygame",
-  "genesis-world==0.3.*",
+  "genesis-world==0.4.0",
   "rsl-rl-lib==3.3.*",
 ]
 

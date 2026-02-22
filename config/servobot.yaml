@@ -38,7 +38,8 @@ runner:
 
 env:
   class_name: ServobotEnv
-  urdf_path: robots/servobot_description/urdf/robot.urdf
+  robot_description_path: robots/servobot_description/urdf/robot.urdf
+  robot_description_type: URDF
   joints:
     fl_hip: -0.2
     fl_top: -0.6

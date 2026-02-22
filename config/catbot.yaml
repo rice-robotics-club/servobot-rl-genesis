@@ -1,11 +1,11 @@
 # yaml-language-server: $schema=./schemas/config.json
 runner:
-  class_name: DistillationRunner
+  class_name: OnPolicyRunner
   num_steps_per_env: 512
   save_interval: 100
   seed: 1
-  obs_groups: { "policy": ["policy"], "teacher": ["policy", "teacher"] }
-  experiment_name: servobot
+  obs_groups: { "policy": ["policy"], "critic": ["policy"] }
+  experiment_name: catbot
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
@@ -13,41 +13,47 @@ runner:
   run_name: ""
 
   policy:
-    class_name: StudentTeacherRecurrent
+    class_name: ActorCritic
     activation: elu
-    student_obs_normalization: true
-    teacher_obs_normalization: true
-    student_hidden_dims: [512, 256, 128]
-    teacher_hidden_dims: [512, 256, 128]
+    actor_obs_normalization: true
+    critic_obs_normalization: true
+    actor_hidden_dims: [512, 256, 128]
+    critic_hidden_dims: [512, 256, 128]
     init_noise_std: 1.0
 
   algorithm:
-    class_name: Distillation
+    class_name: PPO
     learning_rate: 0.001
     num_learning_epochs: 5
-    gradient_length: 15
+    num_mini_batches: 4
+    schedule: adaptive
+    value_loss_coef: 1.0
+    clip_param: 0.2
+    use_clipped_value_loss: true
+    desired_kl: 0.01
+    entropy_coef: 0.02
+    gamma: 0.99
+    lam: 0.95
     max_grad_norm: 1.0
-    loss_type: mse
-    optimizer: adam
 
 env:
   class_name: ServobotEnv
-  robot_description_path: robots/servobot_description/urdf/robot.urdf
-  robot_description_type: URDF
+  robot_description_path: robots/catbot_description/robot.xml
+  robot_description_type: MJCF
   joints:
-    fl_hip: -0.2
-    fl_top: -0.6
-    fl_bot: 0.1
-    fr_hip: 0.2
-    fr_top: 0.6
-    fr_bot: -0.1
-    bl_hip: 0.2
-    bl_top: -1.0
-    bl_bot: 0.1
-    br_hip: -0.2
-    br_top: 1.0
-    br_bot: -0.1
-  base_init_pos: [0.0, 0.0, 0.2]
+    FL_hip: 0.0
+    FL_a: 0.0
+    FL_l: 0.0
+    FR_hip: 0.0
+    FR_a: 0.0
+    FR_l: 0.0
+    BL_hip: 0.0
+    BL_a: 0.0
+    BL_l: 0.0
+    BR_hip: 0.0
+    BR_a: 0.0
+    BR_l: 0.0
+  base_init_pos: [0.0, 0.0, 0.4]
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
@@ -59,13 +65,12 @@ env:
   termination_if_roll_greater_than: 0.7
 
 commands:
-  lin_vel_x: [0.2, 1.0]
+  lin_vel_x: [-1.0, 1.0]
   lin_vel_y: [0.0, 0.0]
   ang_vel_z: [0.0, 0.0]
 
 obs:
-  num_obs: 39
-  num_teacher_obs: 6
+  num_obs: 45
   scales:
     lin_vel_x: 2.0
     lin_vel_y: 2.0
@@ -87,4 +92,4 @@ reward:
     energy: 0.0
     survival: 0.1
   targets:
-    base_height: .25
+    base_height: .35
