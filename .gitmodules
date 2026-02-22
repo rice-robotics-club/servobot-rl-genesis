@@ -1,3 +1,6 @@
 [submodule "servobot_description"]
 	path = robots/servobot_description
 	url = https://github.com/rice-robotics-club/servobot_description.git
+[submodule "robots/catbot_description"]
+	path = robots/catbot_description
+	url = https://github.com/rice-robotics-club/catbot_description.git
