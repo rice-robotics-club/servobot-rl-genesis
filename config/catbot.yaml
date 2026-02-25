@@ -41,18 +41,18 @@ env:
   robot_description_path: robots/catbot_description/robot.xml
   robot_description_type: MJCF
   joints:
-    FL_a: 0.0
-    FL_hip: 0.0
-    FL_l: 0.0
-    FR_a: 0.0
-    FR_hip: 0.0
-    FR_l: 0.0
     BL_a: 0.0
     BL_hip: 0.0
     BL_l: 0.0
     BR_a: 0.0
     BR_hip: 0.0
     BR_l: 0.0
+    FL_a: 0.0
+    FL_hip: 0.0
+    FL_l: 0.0
+    FR_a: 0.0
+    FR_hip: 0.0
+    FR_l: 0.0
   base_init_pos: [0.0, 0.0, 0.4]
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
