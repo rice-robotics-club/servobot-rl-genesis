@@ -29,6 +29,7 @@ class GenesisEnv(env.VecEnv):
         command_cfg: CommandConfig,
         headless: bool = False,
         debug: bool = False,
+        minecraft: bool = False,
     ) -> None:
         super().__init__()
 
@@ -62,7 +63,7 @@ class GenesisEnv(env.VecEnv):
         self.scene = gs.Scene(
             sim_options=gs.options.SimOptions(
                 dt=self.dt,
-                substeps=2,
+                substeps=20,
             ),
             rigid_options=gs.options.RigidOptions(
                 enable_self_collision=False,
@@ -70,6 +71,8 @@ class GenesisEnv(env.VecEnv):
                 # For this locomotion policy, there are usually no more than 20 collision pairs. Setting a low value
                 # can save memory. Violating this condition will raise an exception.
                 max_collision_pairs=100,
+                iterations=100,
+                constraint_timeconst=0.005,
             ),
             viewer_options=gs.options.ViewerOptions(
                 camera_pos=(2.0, 0.0, 2.5),
@@ -77,16 +80,29 @@ class GenesisEnv(env.VecEnv):
                 camera_fov=40,
                 max_FPS=int(1.0 / self.dt),
             ),
-            vis_options=gs.options.VisOptions(rendered_envs_idx=[0]),
+            vis_options=gs.options.VisOptions(
+                rendered_envs_idx=[0],
+                **({"background_color": (0.471, 0.655, 1.0)} if minecraft else {}),
+            ),
             show_viewer=not headless,
         )
 
-        self.scene.add_entity(
-            gs.morphs.URDF(
-                file="urdf/plane/plane.urdf",
-                fixed=True,
+        if minecraft:
+            self.scene.add_entity(
+                gs.morphs.Plane(),
+                surface=gs.surfaces.Rough(
+                    diffuse_texture=gs.textures.ImageTexture(
+                        image_path="assets/grass_texture.jpg",
+                    ),
+                ),
             )
-        )
+        else:
+            self.scene.add_entity(
+                gs.morphs.URDF(
+                    file="urdf/plane/plane.urdf",
+                    fixed=True,
+                )
+            )
 
         self.robot: RigidEntity = self.scene.add_entity(
             getattr(gs.morphs, self.cfg["robot_description_type"])(

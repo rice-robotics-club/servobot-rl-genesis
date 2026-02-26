@@ -28,6 +28,11 @@ def main():
     parser.add_argument(
         "-i", "--input", type=str, default=None, choices=["keyboard", "gamepad"]
     )
+    parser.add_argument(
+        "--minecraft",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
     args = parser.parse_args()
 
     gs.init(
@@ -58,7 +63,8 @@ def main():
     if not env_class:
         return
     env = env_class(
-        1, config["env"], config["obs"], config["reward"], config["commands"]
+        1, config["env"], config["obs"], config["reward"], config["commands"],
+        minecraft=args.minecraft,
     )
 
     runner = OnPolicyRunner(

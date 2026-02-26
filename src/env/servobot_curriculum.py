@@ -12,9 +12,10 @@ class ServobotCurriculumEnv(ServobotEnv):
         command_cfg,
         headless: bool = False,
         debug: bool = False,
+        minecraft: bool = False,
     ):
         super().__init__(
-            num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, headless, debug
+            num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, headless, debug, minecraft
         )
         self.curriculum_enabled = env_cfg.get("curriculum_enabled", True)
         self.curriculum_steps = env_cfg.get("curriculum_steps", 1000)

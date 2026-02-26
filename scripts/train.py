@@ -80,6 +80,11 @@ def main():
         action="store_true",
         help="Prints environment debug information",
     )
+    parser.add_argument(
+        "--minecraft",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
     # parser.add_argument(
     #     "--randomize", action="store_true", help="Enable domain randomization"
     # )
@@ -155,6 +160,7 @@ def main():
         config["commands"],
         args.headless,
         args.debug,
+        args.minecraft,
     )
 
     runner_class: type[OnPolicyRunner] | None = get_class(
