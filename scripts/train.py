@@ -160,7 +160,7 @@ def main():
         config["commands"],
         args.headless,
         args.debug,
-        args.minecraft,
+        **({"minecraft": True} if args.minecraft else {}),
     )
 
     runner_class: type[OnPolicyRunner] | None = get_class(

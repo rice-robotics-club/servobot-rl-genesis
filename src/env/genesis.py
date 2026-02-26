@@ -29,7 +29,7 @@ class GenesisEnv(env.VecEnv):
         command_cfg: CommandConfig,
         headless: bool = False,
         debug: bool = False,
-        minecraft: bool = False,
+        **kwargs,
     ) -> None:
         super().__init__()
 
@@ -82,15 +82,17 @@ class GenesisEnv(env.VecEnv):
             ),
             vis_options=gs.options.VisOptions(
                 rendered_envs_idx=[0],
-                **({"background_color": (0.471, 0.655, 1.0)} if minecraft else {}),
+                **({"background_color": (0.471, 0.655, 1.0)} if kwargs.get("minecraft") else {}),
             ),
             show_viewer=not headless,
         )
 
-        if minecraft:
+        if kwargs.get("minecraft"):
             self.scene.add_entity(
                 gs.morphs.Plane(),
-                surface=gs.surfaces.Rough(
+                surface=gs.surfaces.Plastic(
+                    roughness=1.0,
+                    ior=1.0,
                     diffuse_texture=gs.textures.ImageTexture(
                         image_path="assets/grass_texture.jpg",
                     ),

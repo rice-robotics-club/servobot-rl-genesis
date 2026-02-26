@@ -64,7 +64,7 @@ def main():
         return
     env = env_class(
         1, config["env"], config["obs"], config["reward"], config["commands"],
-        minecraft=args.minecraft,
+        **({"minecraft": True} if args.minecraft else {}),
     )
 
     runner = OnPolicyRunner(

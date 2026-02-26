@@ -27,10 +27,10 @@ class ServobotEnv(GenesisEnv):
         command_cfg,
         headless: bool = False,
         debug: bool = False,
-        minecraft: bool = False,
+        **kwargs,
     ):
         super().__init__(
-            num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, headless, debug, minecraft
+            num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, headless, debug, **kwargs
         )
 
         self.kp = get_or_default(env_cfg, "kp", 20.0)
