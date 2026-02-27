@@ -31,6 +31,7 @@ def main():
     args = parser.parse_args()
 
     gs.init(
+        precision="32",
         logging_level="warning",
     )
 
@@ -71,22 +72,20 @@ def main():
 
     if args.input == "gamepad":
         from src.input import Gamepad
+
         print("Gamepad input initialized.")
         input = Gamepad()
     elif args.input == "keyboard":
         from src.input import Keyboard
+
         print("Keyboard input initialized.")
         input = Keyboard()
-
-
 
     obs = env.reset()
     with torch.no_grad():
         while True:
             actions = policy(obs)
-            obs, _, _, _ = env.step(
-                actions, command=input.command if input else None
-            )
+            obs, _, _, _ = env.step(actions)
 
 
 if __name__ == "__main__":

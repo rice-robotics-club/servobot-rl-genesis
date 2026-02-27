@@ -17,7 +17,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Train a reinforcement learning agent in the Genesis environment using RSL_RL."
     )
-    ''' 
+    """
     Args:
         -c, --config_path: Config file path to use (default: config/servobot.yaml)
         -n, --num_envs: Number of environments to use (default: 4096)
@@ -28,7 +28,7 @@ def main():
         --once: Loads config and views initial configuration
         --no_print: Disables RSL_RL training info
         --debug: Prints environment debug information
-    '''
+    """
     parser.add_argument(
         "-c",
         "--config_path",
@@ -40,7 +40,7 @@ def main():
         "-n",
         "--num_envs",
         type=int,
-        default=4096,
+        default=1,
         help="Number of environments to use (default: 4096)",
     )
     parser.add_argument(
@@ -85,15 +85,15 @@ def main():
     # )
     args = parser.parse_args()
 
+    config = load_config(args.config_path)
+
     gs.init(
+        backend=gs.gpu,
         precision="32",
         logging_level="warning",
         performance_mode=True,
+        seed=config["runner"]["seed"] if "seed" in config["runner"] else None,
     )
-
-    from src.env import GenesisEnv
-
-    config = load_config(args.config_path)
 
     exp_name = config["runner"]["experiment_name"]
 
@@ -141,6 +141,8 @@ def main():
     #     model = model.load(load_existing_log)
     # else:
     #     model = model.initialize(configs)
+
+    from src.env import GenesisEnv
 
     env_class: type[GenesisEnv] | None = get_class(
         "src.env", config["env"]["class_name"]

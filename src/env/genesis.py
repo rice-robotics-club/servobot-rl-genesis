@@ -55,9 +55,10 @@ class GenesisEnv(env.VecEnv):
             env_cfg, "base_init_quat", [1.0, 0.0, 0.0, 0.0]
         )
         self.resampling_time = get_or_default(env_cfg, "resampling_time", 4.0)
-        self.max_episode_length = math.ceil(
-            get_or_default(env_cfg, "max_episode_length", 20) / self.dt
-        )
+        self.episode_length_s = get_or_default(env_cfg, "episode_length", 20.0)
+        self.max_episode_length = math.ceil(self.episode_length_s / self.dt)
+        self.kp = get_or_default(env_cfg, "kp", 20.0)
+        self.kd = get_or_default(env_cfg, "kd", 0.5)
 
         self.scene = gs.Scene(
             sim_options=gs.options.SimOptions(
@@ -69,7 +70,7 @@ class GenesisEnv(env.VecEnv):
                 tolerance=1e-5,
                 # For this locomotion policy, there are usually no more than 20 collision pairs. Setting a low value
                 # can save memory. Violating this condition will raise an exception.
-                max_collision_pairs=100,
+                max_collision_pairs=20,
             ),
             viewer_options=gs.options.ViewerOptions(
                 camera_pos=(2.0, 0.0, 2.5),
@@ -122,6 +123,19 @@ class GenesisEnv(env.VecEnv):
         )
         self.actions_dof_idx = torch.argsort(self.motors_dof_idx)
 
+        # After scene.build(), for the linkage DOFs not in motors_dof_idx:
+        all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
+        linkage_dof_idx = all_dof_idx[~torch.isin(all_dof_idx, self.motors_dof_idx)]
+        self.robot.set_dofs_kp([0.0] * len(linkage_dof_idx), linkage_dof_idx)
+        self.robot.set_dofs_kv([0.0] * len(linkage_dof_idx), linkage_dof_idx)
+
+        self.robot.set_dofs_kp(
+            [self.kp] * len(self.motors_dof_idx), self.motors_dof_idx
+        )
+        self.robot.set_dofs_kv(
+            [self.kd] * len(self.motors_dof_idx), self.motors_dof_idx
+        )
+
         self.default_dof_pos = torch.tensor(
             [env_cfg["joints"][name] for name in self.joint_names],
             dtype=gs.tc_float,
@@ -154,12 +168,6 @@ class GenesisEnv(env.VecEnv):
         )
         self.projected_gravity = torch.empty(
             (self.num_envs, 3), dtype=gs.tc_float, device=gs.device
-        )
-        self.policy_buf = torch.empty(
-            (self.num_envs, self.num_obs), dtype=gs.tc_float, device=gs.device
-        )
-        self.obs_dict = tensordict.TensorDict(
-            {}, batch_size=[self.num_envs], device=gs.device
         )
         self.rew_buf = torch.empty(
             (self.num_envs,), dtype=gs.tc_float, device=gs.device
@@ -199,7 +207,6 @@ class GenesisEnv(env.VecEnv):
             (self.num_envs, 3), dtype=gs.tc_float, device=gs.device
         )
         self.extras = dict()  # extra information for logging
-        self.extras["observations"] = dict()
         self.reward_functions: dict = {}
         self.episode_sums: dict[str, torch.Tensor] = {}
 
@@ -252,7 +259,6 @@ class GenesisEnv(env.VecEnv):
             self.last_dof_vel.zero_()
             self.episode_length_buf.zero_()
             self.reset_buf.fill_(True)
-            return
         else:
             torch.where(
                 envs_idx[:, None], self.init_base_pos, self.base_pos, out=self.base_pos
@@ -285,12 +291,17 @@ class GenesisEnv(env.VecEnv):
             self.reset_buf.masked_fill_(envs_idx, True)
 
         # fill extras
-        n_envs = envs_idx.sum()
+        n_envs = envs_idx.sum() if envs_idx is not None else self.num_envs
         self.extras["episode"] = {}
         for key, value in self.episode_sums.items():
-            mean = torch.where(n_envs > 0, value[envs_idx].sum() / n_envs, 0)
-            self.extras["episode"]["rew_" + key] = mean / self.max_episode_length
-            value.masked_fill_(envs_idx, 0.0)
+            if envs_idx is None:
+                mean = value.mean()
+                value.zero_()
+            else:
+                mean = value[envs_idx].sum() / n_envs if n_envs > 0 else 0.0
+                value.masked_fill_(envs_idx, 0.0)
+
+            self.extras["episode"]["rew_" + key] = mean / self.episode_length_s
 
         # random sample command upon reset
         self._resample_commands(envs_idx)

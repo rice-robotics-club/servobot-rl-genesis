@@ -1,10 +1,10 @@
 # yaml-language-server: $schema=./schemas/config.json
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 512
+  num_steps_per_env: 24
   save_interval: 100
   seed: 1
-  obs_groups: { "policy": ["policy"], "critic": ["policy"] }
+  obs_groups: { "policy": ["main"], "critic": ["main"] }
   experiment_name: catbot
   logger: tensorboard
   neptune_project: legged_gym
@@ -31,13 +31,13 @@ runner:
     clip_param: 0.2
     use_clipped_value_loss: true
     desired_kl: 0.01
-    entropy_coef: 0.02
+    entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
     max_grad_norm: 1.0
 
 env:
-  class_name: ServobotEnv
+  class_name: CatbotEnv
   robot_description_path: robots/catbot_description/robot.xml
   robot_description_type: MJCF
   joints:
@@ -53,7 +53,7 @@ env:
     BR_hip: 0.0
     BR_a: 0.0
     BR_l: 0.0
-  base_init_pos: [0.0, 0.0, 0.4]
+  base_init_pos: [0.0, 0.0, 0.3]
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
@@ -61,12 +61,14 @@ env:
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
-  termination_if_pitch_greater_than: 0.7
-  termination_if_roll_greater_than: 0.7
+  termination_if_pitch_greater_than: 40 # degrees (matches go2_env.py convention)
+  termination_if_roll_greater_than: 40 # degrees (matches go2_env.py convention)
+  kp: 20.0
+  kd: 0.5
 
 commands:
-  lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [0.0, 0.0]
+  lin_vel_x: [0.0, 0.0]
+  lin_vel_y: [1.0, 1.0]
   ang_vel_z: [0.0, 0.0]
 
 obs:
@@ -76,20 +78,20 @@ obs:
     lin_vel_y: 2.0
     ang_vel_z: 0.25
     dof_pos: 1.0
-    dof_vel: 0.5
+    dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.2
+  tracking_sigma: 0.25
   rewards:
-    tracking_lin_vel: 10.0
-    tracking_ang_vel: 5.0
+    tracking_lin_vel: 1.0
+    tracking_ang_vel: 0.2
     lin_vel_z: -1.0
-    roll_angle: -2.0
-    pitch_angle: -5.0
-    base_height: -50.0
-    action_rate: -0.01
-    similar_to_default: -0.1
+    roll_angle: 0.0
+    pitch_angle: 0.0
+    base_height: -5.0
+    action_rate: -0.005
+    similar_to_default: -0.05
     energy: 0.0
-    survival: 0.1
+    survival: 0.0
   targets:
-    base_height: .35
+    base_height: .3
