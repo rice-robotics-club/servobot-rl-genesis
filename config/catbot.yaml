@@ -47,9 +47,6 @@ env:
     BR_a: 0.0
     BR_hip: 0.0
     BR_l: 0.0
-<<<<<<< HEAD
-  base_init_pos: [0.0, 0.0, 0.3]
-=======
     FL_a: 0.0
     FL_hip: 0.0
     FL_l: 0.0
@@ -57,7 +54,6 @@ env:
     FR_hip: 0.0
     FR_l: 0.0
   base_init_pos: [0.0, 0.0, 0.4]
->>>>>>> 003266c20e751f12cf7d72b1ec2f911095447552
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
