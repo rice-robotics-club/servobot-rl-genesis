@@ -17,14 +17,16 @@ dependencies = [
   "tensordict",
   "numpy",
   "pygame",
-  "genesis-world==0.4.0",
+  "genesis-world @ git+https://github.com/Genesis-Embodied-AI/Genesis.git",
   "rsl-rl-lib==3.3.*",
+  "setuptools",
 ]
 
 [project.scripts]
 train = "scripts.train:main"
 evaluate = "scripts.eval:main"
 update_schema = "scripts.update_schema:main"
+evaluate = "scripts.eval:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -35,18 +35,18 @@ env:
   robot_description_path: robots/servobot_description/urdf/robot.urdf
   robot_description_type: URDF
   joints:
-    fl_hip: -0.2
-    fl_top: -0.6
-    fl_bot: 0.1
-    fr_hip: 0.2
-    fr_top: 0.6
-    fr_bot: -0.1
+    bl_bot: 0.1
     bl_hip: 0.2
     bl_top: -1.0
-    bl_bot: 0.1
+    br_bot: -0.1
     br_hip: -0.2
     br_top: 1.0
-    br_bot: -0.1
+    fl_bot: 0.1
+    fl_hip: -0.2
+    fl_top: -0.6
+    fr_bot: -0.1
+    fr_hip: 0.2
+    fr_top: 0.6
   base_init_pos: [0.0, 0.0, 0.2]
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
