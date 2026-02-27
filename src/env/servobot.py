@@ -227,7 +227,7 @@ class ServobotEnv(GenesisEnv):
         torques = self.kp * pos_error + self.kv * vel_error
 
         # Energy = |torque * velocity|
-        return torch.sum(torch.abs(torques * self.dof_vel), dim=1)
+        return (-1) * torch.sum(torch.abs(torques * self.dof_vel), dim=1)
 
     def _reward_survival(self):
         # Small constant reward for survival
