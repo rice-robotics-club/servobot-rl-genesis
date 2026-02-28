@@ -93,7 +93,7 @@ def main():
     config = load_config(args.config_path)
 
     gs.init(
-        backend=gs.gpu,
+        backend=gs.gpu,  # type: ignore
         precision="32",
         logging_level="warning",
         performance_mode=True,

@@ -64,7 +64,11 @@ def main():
     if not env_class:
         return
     env = env_class(
-        1, config["env"], config["obs"], config["reward"], config["commands"],
+        1,
+        config["env"],
+        config["obs"],
+        config["reward"],
+        config["commands"],
         **({"minecraft": True} if args.minecraft else {}),
     )
 
@@ -91,7 +95,9 @@ def main():
     with torch.no_grad():
         while True:
             actions = policy(obs)
-            obs, _, _, _ = env.step(actions)
+            obs, _, _, _ = env.step(
+                actions, input.command if input is not None else None
+            )
 
 
 if __name__ == "__main__":

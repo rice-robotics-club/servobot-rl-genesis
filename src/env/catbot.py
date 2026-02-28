@@ -217,7 +217,7 @@ class CatbotEnv:
         else:
             torch.where(envs_idx[:, None], commands, self.commands, out=self.commands)
 
-    def step(self, actions):
+    def step(self, actions, command=None):
         self.actions = torch.clip(
             actions, -self.cfg["clip_actions"], self.cfg["clip_actions"]
         )
@@ -257,10 +257,45 @@ class CatbotEnv:
             self.rew_buf += rew
             self.episode_sums[name] += rew
 
-        # resample commands
-        self._resample_commands(
-            self.episode_length_buf % int(self.cfg["resampling_time"] / self.dt) == 0
-        )
+        if command:
+            self.commands[:, 0] = (
+                (command[0] * 0.5 + 0.5)
+                * (self.command_cfg["lin_vel_x"][1] - self.command_cfg["lin_vel_x"][0])
+            ) + self.command_cfg["lin_vel_x"][0]
+            self.commands[:, 1] = (
+                (command[1] * 0.5 + 0.5)
+                * (self.command_cfg["lin_vel_y"][1] - self.command_cfg["lin_vel_y"][0])
+            ) + self.command_cfg["lin_vel_y"][0]
+            self.commands[:, 2] = (
+                (command[2] * 0.5 + 0.5)
+                * (self.command_cfg["ang_vel_z"][1] - self.command_cfg["ang_vel_z"][0])
+            ) + self.command_cfg["ang_vel_z"][0]
+        else:
+            # resample commands
+            self._resample_commands(
+                self.episode_length_buf % int(self.cfg["resampling_time"] / self.dt)
+                == 0
+            )
+
+        if self.scene.viewer:
+            # visualize commanded and actual velocity
+            self.scene.clear_debug_objects()
+
+            cmd_vec = torch.zeros(3)
+            cmd_vec[:2] = self.commands[0, :2]
+            cmd_vec[2] = 0.0
+            cmd_vec: torch.Tensor = transform_by_quat(cmd_vec, self.base_quat[0, :])  # type: ignore
+
+            self.cmd_debug_arrow = self.scene.draw_debug_arrow(
+                self.base_pos[0, :].cpu(),
+                cmd_vec.cpu(),
+                color=(0, 0, 1, 0.5),
+            )
+            self.vel_debug_arrow = self.scene.draw_debug_arrow(
+                self.base_pos[0, :].cpu(),
+                self.base_lin_vel[0, :].cpu(),
+                color=(1, 0, 0, 0.5),
+            )
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length
@@ -313,6 +348,7 @@ class CatbotEnv:
             self.last_dof_vel.zero_()
             self.episode_length_buf.zero_()
             self.reset_buf.fill_(True)
+            return
         else:
             torch.where(
                 envs_idx[:, None], self.init_base_pos, self.base_pos, out=self.base_pos
