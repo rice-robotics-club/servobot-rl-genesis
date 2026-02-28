@@ -93,51 +93,91 @@ class EnvConfig(TypedDict, total=False):
     Required property
     """
 
-    kp: int | float
-    r""" Position proportional gain for joint PD controller """
+    kp: Required[int | float]
+    r"""
+    Position proportional gain for joint PD controller
 
-    kd: int | float
-    r""" Velocity derivative gain for joint PD controller """
+    Required property
+    """
 
-    termination_if_roll_greater_than: int | float
-    r""" Terminate episode if base roll angle exceeds this value (radians) """
+    kd: Required[int | float]
+    r"""
+    Velocity derivative gain for joint PD controller
 
-    termination_if_pitch_greater_than: int | float
-    r""" Terminate episode if base pitch angle exceeds this value (radians) """
+    Required property
+    """
 
-    base_init_pos: list[int | float]
+    termination_if_roll_greater_than: Required[int | float]
+    r"""
+    Terminate episode if base roll angle exceeds this value (radians)
+
+    Required property
+    """
+
+    termination_if_pitch_greater_than: Required[int | float]
+    r"""
+    Terminate episode if base pitch angle exceeds this value (radians)
+
+    Required property
+    """
+
+    base_init_pos: Required[list[int | float]]
     r"""
     Initial base position [x, y, z] in meters
 
     minItems: 3
     maxItems: 3
+
+    Required property
     """
 
-    base_init_quat: list[int | float]
+    base_init_quat: Required[list[int | float]]
     r"""
     Initial base orientation quaternion [w, x, y, z]
 
     minItems: 4
     maxItems: 4
+
+    Required property
     """
 
-    episode_length: int | float
-    r""" Maximum episode length in seconds """
+    episode_length: Required[int | float]
+    r"""
+    Maximum episode length in seconds
 
-    resampling_time: int | float
-    r""" Time interval for resampling goals/actions in seconds """
+    Required property
+    """
 
-    action_scale: int | float
-    r""" Scaling multiplier applied to actions """
+    resampling_time: Required[int | float]
+    r"""
+    Time interval for resampling goals/actions in seconds
+
+    Required property
+    """
+
+    action_scale: Required[int | float]
+    r"""
+    Scaling multiplier applied to actions
+
+    Required property
+    """
 
     simulate_action_latency: bool
     r""" Whether to simulate action latency """
 
-    clip_actions: int | float
-    r""" Action clipping magnitude """
+    clip_actions: Required[int | float]
+    r"""
+    Action clipping magnitude
 
-    dt: int | float
-    r""" Time duration for each simulation step in seconds, defaults to 1e-2 """
+    Required property
+    """
+
+    dt: Required[int | float]
+    r"""
+    Time duration for each simulation step in seconds, defaults to 1e-2
+
+    Required property
+    """
 
 
 
@@ -159,8 +199,12 @@ class ObsConfig(TypedDict, total=False):
 class RewardConfig(TypedDict, total=False):
     r""" Reward_Config. """
 
-    tracking_sigma: int | float
-    r""" Standard deviation of the tracking reward """
+    tracking_sigma: Required[int | float]
+    r"""
+    Standard deviation of the tracking reward
+
+    Required property
+    """
 
     rewards: Required[dict[str, int | float]]
     r"""

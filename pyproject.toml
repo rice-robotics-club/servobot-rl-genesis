@@ -26,7 +26,6 @@ dependencies = [
 train = "scripts.train:main"
 evaluate = "scripts.eval:main"
 update_schema = "scripts.update_schema:main"
-evaluate = "scripts.eval:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

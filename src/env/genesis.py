@@ -83,7 +83,11 @@ class GenesisEnv(env.VecEnv):
             ),
             vis_options=gs.options.VisOptions(
                 rendered_envs_idx=[0],
-                **({"background_color": (0.471, 0.655, 1.0)} if kwargs.get("minecraft") else {}),
+                **(
+                    {"background_color": (0.471, 0.655, 1.0)}
+                    if kwargs.get("minecraft")
+                    else {}
+                ),
             ),
             show_viewer=not headless,
         )
@@ -227,6 +231,10 @@ class GenesisEnv(env.VecEnv):
         self.extras = dict()  # extra information for logging
         self.reward_functions: dict = {}
         self.episode_sums: dict[str, torch.Tensor] = {}
+        self.obs_dict = tensordict.TensorDict(
+            {},
+            batch_size=(self.num_envs,),
+        )
 
     @abstractmethod
     def step(

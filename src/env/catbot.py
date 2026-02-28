@@ -11,6 +11,8 @@ from genesis.utils.geom import (
 )
 from tensordict import TensorDict
 
+from src.config import CommandConfig, EnvConfig, ObsConfig, RewardConfig
+
 if TYPE_CHECKING:
     from genesis.engine.entities import RigidEntity
 
@@ -23,47 +25,27 @@ def gs_rand(lower, upper, batch_shape):
 
 
 class CatbotEnv:
-    """
-    Locomotion environment for Catbot, mirroring the structure of go2_env.py.
-
-    Config key differences vs. go2_env.py:
-      - env_cfg["joints"]        : dict of joint_name -> default_angle (replaces joint_names + default_joint_angles)
-      - env_cfg["episode_length"]: episode duration in seconds       (replaces episode_length_s)
-      - env_cfg["resampling_time"]: command resample period in seconds (replaces resampling_time_s)
-      - obs_cfg["scales"]        : obs scale dict                    (replaces obs_scales)
-          keys: lin_vel_x, lin_vel_y, ang_vel_z, dof_pos, dof_vel
-      - reward_cfg["rewards"]    : reward scale dict                 (replaces reward_scales)
-      - reward_cfg["targets"]    : target value dict (e.g. base_height)
-      - command_cfg              : dict with keys lin_vel_x, lin_vel_y, ang_vel_z,
-                                   each a [min, max] list              (replaces *_range keys + num_commands)
-
-    termination_if_pitch/roll_greater_than values in env_cfg are interpreted in DEGREES,
-    consistent with go2_env.py
-    """
-
     def __init__(
         self,
         num_envs,
-        env_cfg,
-        obs_cfg,
-        reward_cfg,
-        command_cfg,
+        env_cfg: EnvConfig,
+        obs_cfg: ObsConfig,
+        reward_cfg: RewardConfig,
+        command_cfg: CommandConfig,
         headless=False,
         debug=False,
     ):
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
         self.num_privileged_obs = None
-        self.joint_names = sorted(env_cfg["joints"].keys())
-        self.num_actions = len(self.joint_names)
-        self.num_commands = len(command_cfg)  # lin_vel_x, lin_vel_y, ang_vel_z
+        self.num_commands = len(command_cfg)
         self.device = gs.device
 
-        self.simulate_action_latency = env_cfg.get("simulate_action_latency", True)
-        self.dt = env_cfg.get("dt", 0.02)
-        self.max_episode_length = math.ceil(
-            env_cfg.get("episode_length", 20.0) / self.dt
-        )
+        self.simulate_action_latency = True  # there is a 1 step latency on real robot
+        self.dt = 0.02  # control frequency on real robot is 50hz
+        self.max_episode_length = math.ceil(env_cfg["episode_length"] / self.dt)
+        self.joint_names = sorted(env_cfg["joints"].keys())
+        self.num_actions = len(self.joint_names)
 
         self.cfg = env_cfg
         self.obs_cfg = obs_cfg
@@ -72,6 +54,7 @@ class CatbotEnv:
 
         self.obs_scales = obs_cfg["scales"]
         self.reward_scales = reward_cfg["rewards"]
+        self.targets = reward_cfg["targets"]
 
         # create scene
         self.scene = gs.Scene(
@@ -94,7 +77,7 @@ class CatbotEnv:
             show_viewer=not headless,
         )
 
-        # add plane
+        # add plain
         self.scene.add_entity(
             gs.morphs.URDF(
                 file="urdf/plane/plane.urdf",
@@ -104,35 +87,30 @@ class CatbotEnv:
 
         # add robot
         self.robot: RigidEntity = self.scene.add_entity(
-            getattr(gs.morphs, env_cfg["robot_description_type"])(
-                file=env_cfg["robot_description_path"],
-                pos=env_cfg["base_init_pos"],
-                quat=env_cfg["base_init_quat"],
+            gs.morphs.MJCF(
+                file=self.cfg["robot_description_path"],
+                pos=self.cfg["base_init_pos"],
+                quat=self.cfg["base_init_quat"],
             ),
-        )  # pyright: ignore
+        )  # type: ignore
 
         # build
         self.scene.build(n_envs=num_envs)
 
-        # names to indices (local DOF indices relative to the robot entity)
+        # names to indices
         self.motors_dof_idx = torch.tensor(
             [self.robot.get_joint(name).dofs_idx_local[0] for name in self.joint_names],
             dtype=gs.tc_int,
             device=gs.device,
         )
 
-        # zero out PD gains for non-motor (linkage) DOFs
         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
         linkage_dof_idx = all_dof_idx[~torch.isin(all_dof_idx, self.motors_dof_idx)]
         self.robot.set_dofs_kp([0.0] * len(linkage_dof_idx), linkage_dof_idx)
         self.robot.set_dofs_kv([0.0] * len(linkage_dof_idx), linkage_dof_idx)
 
-        self.robot.set_dofs_kp(
-            [env_cfg.get("kp", 20.0)] * self.num_actions, self.motors_dof_idx
-        )
-        self.robot.set_dofs_kv(
-            [env_cfg.get("kd", 0.5)] * self.num_actions, self.motors_dof_idx
-        )
+        self.robot.set_dofs_kp([self.cfg["kp"]] * self.num_actions, self.motors_dof_idx)
+        self.robot.set_dofs_kv([self.cfg["kd"]] * self.num_actions, self.motors_dof_idx)
 
         self.default_dof_pos = torch.tensor(
             [env_cfg["joints"][name] for name in self.joint_names],
@@ -141,6 +119,8 @@ class CatbotEnv:
         )
         self.robot.set_dofs_position(self.default_dof_pos, self.motors_dof_idx)
 
+        # PD control parameters
+
         # Define global gravity direction vector
         self.global_gravity = torch.tensor(
             [0.0, 0.0, -1.0], dtype=gs.tc_float, device=gs.device
@@ -148,16 +128,16 @@ class CatbotEnv:
 
         # Initial state
         self.init_base_pos = torch.tensor(
-            env_cfg["base_init_pos"], dtype=gs.tc_float, device=gs.device
+            self.cfg["base_init_pos"], dtype=gs.tc_float, device=gs.device
         )
         self.init_base_quat = torch.tensor(
-            env_cfg["base_init_quat"], dtype=gs.tc_float, device=gs.device
+            self.cfg["base_init_quat"], dtype=gs.tc_float, device=gs.device
         )
         self.inv_base_init_quat = inv_quat(self.init_base_quat)
         self.init_qpos = self.robot.get_qpos()[0]
-        self.init_projected_gravity = transform_by_quat(
+        self.init_projected_gravity: torch.Tensor = transform_by_quat(
             self.global_gravity, self.inv_base_init_quat
-        )
+        )  # type: ignore
 
         # initialize buffers
         self.base_lin_vel = torch.empty(
@@ -198,15 +178,14 @@ class CatbotEnv:
             device=gs.device,
             dtype=gs.tc_float,
         )
-        # commands_limits: list of [lower_tensor, upper_tensor], each shape (num_commands,)
-        self.commands_limits = [
+        self.commands_limits: tuple[torch.Tensor, torch.Tensor] = tuple(
             torch.tensor(values, dtype=gs.tc_float, device=gs.device)
             for values in zip(
-                command_cfg["lin_vel_x"],
-                command_cfg["lin_vel_y"],
-                command_cfg["ang_vel_z"],
+                self.command_cfg["lin_vel_x"],
+                self.command_cfg["lin_vel_y"],
+                self.command_cfg["ang_vel_z"],
             )
-        ]
+        )  # type: ignore
         self.actions = torch.zeros(
             (self.num_envs, self.num_actions), dtype=gs.tc_float, device=gs.device
         )
@@ -240,16 +219,12 @@ class CatbotEnv:
 
     def step(self, actions):
         self.actions = torch.clip(
-            actions,
-            -self.cfg.get("clip_actions", 100.0),
-            self.cfg.get("clip_actions", 100.0),
+            actions, -self.cfg["clip_actions"], self.cfg["clip_actions"]
         )
         exec_actions = (
             self.last_actions if self.simulate_action_latency else self.actions
         )
-        target_dof_pos = (
-            exec_actions * self.cfg.get("action_scale", 0.25) + self.default_dof_pos
-        )
+        target_dof_pos = exec_actions * self.cfg["action_scale"] + self.default_dof_pos
         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
         self.scene.step()
 
@@ -257,15 +232,21 @@ class CatbotEnv:
         self.episode_length_buf += 1
         self.base_pos = self.robot.get_pos()
         self.base_quat = self.robot.get_quat()
-        self.base_euler = quat_to_xyz(
+        self.base_euler: torch.Tensor = quat_to_xyz(
             transform_quat_by_quat(self.inv_base_init_quat, self.base_quat),
             rpy=True,
-            degrees=True,
-        )
+            degrees=False,
+        )  # type: ignore
         inv_base_quat = inv_quat(self.base_quat)
-        self.base_lin_vel = transform_by_quat(self.robot.get_vel(), inv_base_quat)
-        self.base_ang_vel = transform_by_quat(self.robot.get_ang(), inv_base_quat)
-        self.projected_gravity = transform_by_quat(self.global_gravity, inv_base_quat)
+        self.base_lin_vel: torch.Tensor = transform_by_quat(
+            self.robot.get_vel(), inv_base_quat
+        )  # type: ignore
+        self.base_ang_vel: torch.Tensor = transform_by_quat(
+            self.robot.get_ang(), inv_base_quat
+        )  # type: ignore
+        self.projected_gravity: torch.Tensor = transform_by_quat(
+            self.global_gravity, inv_base_quat
+        )  # type: ignore
         self.dof_pos = self.robot.get_dofs_position(self.motors_dof_idx)
         self.dof_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
 
@@ -278,26 +259,26 @@ class CatbotEnv:
 
         # resample commands
         self._resample_commands(
-            self.episode_length_buf
-            % int(self.cfg.get("resampling_time", 4.0) / self.dt)
-            == 0
+            self.episode_length_buf % int(self.cfg["resampling_time"] / self.dt) == 0
         )
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length
-        self.reset_buf |= torch.abs(self.base_euler[:, 1]) > self.cfg.get(
-            "termination_if_pitch_greater_than", 10
+        self.reset_buf |= (
+            torch.abs(self.base_euler[:, 1])
+            > self.cfg["termination_if_pitch_greater_than"]
         )
-        self.reset_buf |= torch.abs(self.base_euler[:, 0]) > self.cfg.get(
-            "termination_if_roll_greater_than", 10
+        self.reset_buf |= (
+            torch.abs(self.base_euler[:, 0])
+            > self.cfg["termination_if_roll_greater_than"]
         )
 
-        # compute timeout
+        # Compute timeout
         self.extras["time_outs"] = (
             self.episode_length_buf > self.max_episode_length
         ).to(dtype=gs.tc_float)
 
-        # reset environments that need it
+        # Reset environment if necessary
         self._reset_idx(self.reset_buf)
 
         # update observations
@@ -310,9 +291,6 @@ class CatbotEnv:
 
     def get_observations(self):
         return self.obs_dict
-
-    def get_privileged_observations(self):
-        return None
 
     def _reset_idx(self, envs_idx=None):
         # reset state
@@ -368,18 +346,16 @@ class CatbotEnv:
 
         # fill extras
         n_envs = envs_idx.sum() if envs_idx is not None else self.num_envs
-        episode_length_s = self.cfg.get("episode_length", 20.0)
         self.extras["episode"] = {}
         for key, value in self.episode_sums.items():
             if envs_idx is None:
                 mean = value.mean()
-                value.zero_()
             else:
                 mean = torch.where(n_envs > 0, value[envs_idx].sum() / n_envs, 0.0)
-                value.masked_fill_(envs_idx, 0.0)
-            self.extras["episode"]["rew_" + key] = mean / episode_length_s
+            self.extras["episode"]["rew_" + key] = mean / self.cfg["episode_length"]
+            value.masked_fill_(envs_idx, 0.0)
 
-        # resample commands on reset
+        # random sample command upon reset
         self._resample_commands(envs_idx)
 
     def _update_observation(self):
@@ -389,10 +365,10 @@ class CatbotEnv:
                 self.projected_gravity,  # 3
                 self.commands * self.commands_scale,  # 3
                 (self.dof_pos - self.default_dof_pos)
-                * self.obs_scales["dof_pos"],  # num_actions
-                self.dof_vel * self.obs_scales["dof_vel"],  # num_actions
-                self.actions,  # num_actions
-            ),  # type: ignore
+                * self.obs_scales["dof_pos"],  # 12
+                self.dof_vel * self.obs_scales["dof_vel"],  # 12
+                self.actions,  # 12
+            ),
             dim=-1,
         )
 
@@ -401,18 +377,18 @@ class CatbotEnv:
         self._update_observation()
         return self.obs_dict
 
-    # ------------ reward functions ----------------
+    # ------------ reward functions----------------
     def _reward_tracking_lin_vel(self):
         # Tracking of linear velocity commands (xy axes)
         lin_vel_error = torch.sum(
             torch.square(self.commands[:, :2] - self.base_lin_vel[:, :2]), dim=1
         )
-        return torch.exp(-lin_vel_error / self.reward_cfg.get("tracking_sigma", 0.25))
+        return torch.exp(-lin_vel_error / self.reward_cfg["tracking_sigma"])
 
     def _reward_tracking_ang_vel(self):
         # Tracking of angular velocity commands (yaw)
         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
-        return torch.exp(-ang_vel_error / self.reward_cfg.get("tracking_sigma", 0.25))
+        return torch.exp(-ang_vel_error / self.reward_cfg["tracking_sigma"])
 
     def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
@@ -428,36 +404,4 @@ class CatbotEnv:
 
     def _reward_base_height(self):
         # Penalize base height away from target
-        return torch.square(
-            self.base_pos[:, 2] - self.reward_cfg["targets"]["base_height"]
-        )
-
-    def _reward_roll_angle(self):
-        # Penalize roll angle (radians, converted from degrees via base_euler)
-        return torch.square(self.base_euler[:, 0] * (math.pi / 180.0))
-
-    def _reward_pitch_angle(self):
-        # Penalize pitch angle (radians, converted from degrees via base_euler)
-        return torch.square(self.base_euler[:, 1] * (math.pi / 180.0))
-
-    def _reward_energy(self):
-        # Penalize energy consumption: |torque * velocity|
-        # torque estimated from PD law: kp*(target - pos) + kd*(0 - vel)
-        exec_actions = (
-            self.last_actions if self.simulate_action_latency else self.actions
-        )
-        target_dof_pos = (
-            exec_actions * self.cfg.get("action_scale", 0.25) + self.default_dof_pos
-        )
-        torques = self.cfg.get("kp", 20.0) * (
-            target_dof_pos - self.dof_pos
-        ) + self.cfg.get("kd", 0.5) * (-self.dof_vel)
-        return torch.sum(torch.abs(torques * self.dof_vel), dim=1)
-
-    def _reward_survival(self):
-        # Small constant reward scaled by commanded speed magnitude
-        speed_magnitude = torch.norm(self.commands[:, :2], dim=1)
-        return (
-            torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_float)
-            * speed_magnitude
-        )
+        return torch.square(self.base_pos[:, 2] - self.targets["base_height"])
