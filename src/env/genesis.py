@@ -62,8 +62,8 @@ class GenesisEnv(env.VecEnv):
 
         self.scene = gs.Scene(
             sim_options=gs.options.SimOptions(
-                dt=self.dt,
-                substeps=20,
+                dt=self.dt / 4,
+                substeps=2,
             ),
             rigid_options=gs.options.RigidOptions(
                 enable_self_collision=False,

@@ -19,7 +19,7 @@ dependencies = [
   "pygame",
   "genesis-world @ git+https://github.com/Genesis-Embodied-AI/Genesis.git",
   "rsl-rl-lib==3.3.*",
-  "setuptools",
+  "setuptools<78",
 ]
 
 [project.scripts]
