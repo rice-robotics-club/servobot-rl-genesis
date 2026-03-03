@@ -34,7 +34,7 @@ class ServobotEnv(GenesisEnv):
         )
 
         self.kp = get_or_default(env_cfg, "kp", 20.0)
-        self.kv = get_or_default(env_cfg, "kv", 0.5)
+        self.kv = get_or_default(env_cfg, "kd", 0.5)
         self.tracking_sigma = get_or_default(reward_cfg, "tracking_sigma", 0.25)
         self.clip_actions = get_or_default(env_cfg, "clip_actions", 100.0)
         self.simulate_action_latency = get_or_default(
@@ -48,18 +48,17 @@ class ServobotEnv(GenesisEnv):
             env_cfg, "termination_if_roll_greater_than", 45
         )
 
-        self.robot.set_dofs_kp([self.kp] * self.num_actions, self.motors_dof_idx)
-        self.robot.set_dofs_kv([self.kv] * self.num_actions, self.motors_dof_idx)
-
-        self.policy_buf = torch.zeros(self.num_envs, self.num_obs, device=gs.device)
         self.obs_dict = tensordict.TensorDict(
-            {"policy": self.policy_buf}, batch_size=[self.num_envs], device=gs.device
+            {"main": torch.zeros(self.num_envs, self.num_obs, device=gs.device)},
+            batch_size=[self.num_envs],
+            device=gs.device,
         )
 
         self.init_reward_functions()
+        self.update_observations()
 
     def update_observations(self):
-        self.policy_buf = torch.concatenate(
+        self.obs_dict["main"] = torch.concatenate(
             (
                 self.base_ang_vel * self.obs_scales["ang_vel_z"],  # 3
                 self.projected_gravity,  # 3
@@ -71,8 +70,6 @@ class ServobotEnv(GenesisEnv):
             ),
             dim=-1,
         )
-
-        self.obs_dict["policy"] = self.policy_buf
 
     def step(self, actions: torch.Tensor, command: Sequence[float] | None = None):
         self.actions = torch.clip(actions, -self.clip_actions, self.clip_actions)
@@ -128,24 +125,25 @@ class ServobotEnv(GenesisEnv):
                 self.episode_length_buf % int(self.resampling_time / self.dt) == 0
             )
 
-        # visualize commanded and actual velocity
-        self.scene.clear_debug_objects()
+        if self.scene.viewer:
+            # visualize commanded and actual velocity
+            self.scene.clear_debug_objects()
 
-        cmd_vec = torch.zeros(3)
-        cmd_vec[:2] = self.commands[0, :2]
-        cmd_vec[2] = 0.0
-        cmd_vec: torch.Tensor = transform_by_quat(cmd_vec, self.base_quat[0, :])  # type: ignore
+            cmd_vec = torch.zeros(3)
+            cmd_vec[:2] = self.commands[0, :2]
+            cmd_vec[2] = 0.0
+            cmd_vec: torch.Tensor = transform_by_quat(cmd_vec, self.base_quat[0, :])  # type: ignore
 
-        self.cmd_debug_arrow = self.scene.draw_debug_arrow(
-            self.base_pos[0, :].cpu(),
-            cmd_vec.cpu(),
-            color=(0, 0, 1, 0.5),
-        )
-        self.vel_debug_arrow = self.scene.draw_debug_arrow(
-            self.base_pos[0, :].cpu(),
-            self.base_lin_vel[0, :].cpu(),
-            color=(1, 0, 0, 0.5),
-        )
+            self.cmd_debug_arrow = self.scene.draw_debug_arrow(
+                self.base_pos[0, :].cpu(),
+                cmd_vec.cpu(),
+                color=(0, 0, 1, 0.5),
+            )
+            self.vel_debug_arrow = self.scene.draw_debug_arrow(
+                self.base_pos[0, :].cpu(),
+                self.base_lin_vel[0, :].cpu(),
+                color=(1, 0, 0, 0.5),
+            )
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length

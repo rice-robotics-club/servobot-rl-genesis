@@ -24,9 +24,8 @@ dependencies = [
 
 [project.scripts]
 train = "scripts.train:main"
-serve = "scripts.serve:main"
-update_schema = "scripts.update_schema:main"
 evaluate = "scripts.eval:main"
+update_schema = "scripts.update_schema:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

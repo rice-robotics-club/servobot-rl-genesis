@@ -23,6 +23,6 @@
       }
     }
   },
-  "required": ["rewards", "targets"],
+  "required": ["rewards", "targets", "tracking_sigma"],
   "additionalProperties": false
 }
