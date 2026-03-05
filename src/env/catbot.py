@@ -10,6 +10,7 @@ from genesis.utils.geom import (
     transform_quat_by_quat,
 )
 from tensordict import TensorDict
+from src.env.genesis import get_or_default
 
 from src.config import CommandConfig, EnvConfig, ObsConfig, RewardConfig
 
@@ -41,11 +42,19 @@ class CatbotEnv:
         self.num_commands = len(command_cfg)
         self.device = gs.device
 
-        self.simulate_action_latency = True  # there is a 1 step latency on real robot
         self.dt = 0.02  # control frequency on real robot is 50hz
         self.max_episode_length = math.ceil(env_cfg["episode_length"] / self.dt)
         self.joint_names = sorted(env_cfg["joints"].keys())
         self.num_actions = len(self.joint_names)
+
+        self.kp = get_or_default(env_cfg, "kp", 20.0)
+        self.kv = get_or_default(env_cfg, "kd", 0.5)
+        self.tracking_sigma = get_or_default(reward_cfg, "tracking_sigma", 0.25)
+        self.clip_actions = get_or_default(env_cfg, "clip_actions", 100.0)
+        self.simulate_action_latency = get_or_default(
+            env_cfg, "simulate_action_latency", False
+        )
+        self.action_scale = get_or_default(env_cfg, "action_scale", 0.25)
 
         self.cfg = env_cfg
         self.obs_cfg = obs_cfg
@@ -219,7 +228,7 @@ class CatbotEnv:
 
     def step(self, actions, command=None):
         self.actions = torch.clip(
-            actions, -self.cfg["clip_actions"], self.cfg["clip_actions"]
+            actions, -self.clip_actions, self.clip_actions
         )
         exec_actions = (
             self.last_actions if self.simulate_action_latency else self.actions
@@ -419,12 +428,12 @@ class CatbotEnv:
         lin_vel_error = torch.sum(
             torch.square(self.commands[:, :2] - self.base_lin_vel[:, :2]), dim=1
         )
-        return torch.exp(-lin_vel_error / self.reward_cfg["tracking_sigma"])
+        return torch.exp(-lin_vel_error / self.tracking_sigma)
 
     def _reward_tracking_ang_vel(self):
         # Tracking of angular velocity commands (yaw)
         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
-        return torch.exp(-ang_vel_error / self.reward_cfg["tracking_sigma"])
+        return torch.exp(-ang_vel_error / self.tracking_sigma)
 
     def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
@@ -441,3 +450,33 @@ class CatbotEnv:
     def _reward_base_height(self):
         # Penalize base height away from target
         return torch.square(self.base_pos[:, 2] - self.targets["base_height"])
+    
+    def _reward_energy(self):
+        # Penalize energy consumption (torque * velocity)
+        # For PD control: torque = kp * (target - current) + kv * (0 - vel)
+        # This is inspired by this paper: https://arxiv.org/pdf/2111.01674
+        # Should help the robot develop more efficient and 'natural' gaits over time
+
+        # Calculate target positions from actions
+        exec_actions = (
+            self.last_actions if self.simulate_action_latency else self.actions
+        )
+        target_dof_pos = exec_actions * self.action_scale + self.default_dof_pos
+
+        # Calculate PD torques
+        pos_error = target_dof_pos - self.dof_pos
+        vel_error = -self.dof_vel  # target velocity is 0
+        # These are actually different for each env if domain randomization is on
+        torques = self.kp * pos_error + self.kv * vel_error
+
+        # Energy = |torque * velocity|
+        return (-1) * torch.sum(torch.abs(torques * self.dof_vel), dim=1) # should be negative since it's a penalty
+
+    def _reward_survival(self):
+        # Small constant reward for survival
+        # Scales with target velocity magnitude, which is inspired by https://arxiv.org/pdf/2111.01674
+        speed_magnitude = torch.norm(self.commands[:, :2], dim=1)
+        return (
+            torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_float)
+            * speed_magnitude
+        )
