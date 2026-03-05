@@ -83,15 +83,15 @@ obs:
 reward:
   tracking_sigma: 0.25
   rewards:
-    tracking_lin_vel: 1.0
-    tracking_ang_vel: 0.2
-    lin_vel_z: -1.0
+    tracking_lin_vel: 100
+    tracking_ang_vel: 20
+    lin_vel_z: -100
     # roll_angle: 0.0
     # pitch_angle: 0.0
-    base_height: -50.0
-    action_rate: -0.005
-    similar_to_default: -0.1
-    energy: 0.0001
-    survival: 0.0001
+    base_height: -5000
+    action_rate: -0.5
+    similar_to_default: -10
+    energy: 0.01
+    survival: 0.1
   targets:
     base_height: .3
