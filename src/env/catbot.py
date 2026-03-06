@@ -35,6 +35,7 @@ class CatbotEnv:
         command_cfg: CommandConfig,
         headless=False,
         debug=False,
+        **kwargs,
     ):
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
@@ -82,17 +83,36 @@ class CatbotEnv:
                 camera_fov=40,
                 max_FPS=int(1.0 / self.dt),
             ),
-            vis_options=gs.options.VisOptions(rendered_envs_idx=[0]),
+            vis_options=gs.options.VisOptions(
+                rendered_envs_idx=[0],
+                **(
+                    {"background_color": (0.471, 0.655, 1.0)}
+                    if kwargs.get("minecraft")
+                    else {}
+                ),
+            ),
             show_viewer=not headless,
         )
 
         # add plain
-        self.scene.add_entity(
-            gs.morphs.URDF(
-                file="urdf/plane/plane.urdf",
-                fixed=True,
+        if kwargs.get("minecraft"):
+            self.scene.add_entity(
+                gs.morphs.Plane(),
+                surface=gs.surfaces.Plastic(
+                    roughness=1.0,
+                    ior=1.0,
+                    diffuse_texture=gs.textures.ImageTexture(
+                        image_path="assets/grass_texture.jpg",
+                    ),
+                ),
             )
-        )
+        else:
+            self.scene.add_entity(
+                gs.morphs.URDF(
+                    file="urdf/plane/plane.urdf",
+                    fixed=True,
+                )
+            )
 
         # add robot
         self.robot: RigidEntity = self.scene.add_entity(
@@ -300,9 +320,10 @@ class CatbotEnv:
                 cmd_vec.cpu(),
                 color=(0, 0, 1, 0.5),
             )
+            vel_vec: torch.Tensor = transform_by_quat(self.base_lin_vel[0, :], self.base_quat[0, :])  # type: ignore
             self.vel_debug_arrow = self.scene.draw_debug_arrow(
                 self.base_pos[0, :].cpu(),
-                self.base_lin_vel[0, :].cpu(),
+                vel_vec.cpu(),
                 color=(1, 0, 0, 0.5),
             )
 
@@ -439,6 +460,14 @@ class CatbotEnv:
         # Penalize z axis base linear velocity
         return torch.square(self.base_lin_vel[:, 2])
 
+    def _reward_roll_angle(self):
+        # Penalize roll angle
+        return torch.square(self.base_euler[:, 0])
+
+    def _reward_pitch_angle(self):
+        # Penalize pitch angle
+        return torch.square(self.base_euler[:, 1])
+
     def _reward_action_rate(self):
         # Penalize changes in actions
         return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
@@ -470,7 +499,7 @@ class CatbotEnv:
         torques = self.kp * pos_error + self.kv * vel_error
 
         # Energy = |torque * velocity|
-        return (-1) * torch.sum(torch.abs(torques * self.dof_vel), dim=1) # should be negative since it's a penalty
+        return torch.sum(torch.abs(torques * self.dof_vel), dim=1) 
 
     def _reward_survival(self):
         # Small constant reward for survival

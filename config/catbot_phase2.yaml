@@ -57,7 +57,7 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.25
+  action_scale: 0.35
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
@@ -81,17 +81,17 @@ obs:
     dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.25
+  tracking_sigma: 0.20
   rewards:
-    tracking_lin_vel: 100
-    tracking_ang_vel: 20
+    tracking_lin_vel: 200
+    tracking_ang_vel: 60
     lin_vel_z: -100
     roll_angle: -10
     pitch_angle: -10
-    base_height: -5000
+    base_height: -500
     action_rate: -1
-    similar_to_default: -10
-    energy: -0.1
+    similar_to_default: -2
+    energy: -0.05
     survival: 0.2
   targets:
     base_height: .3
