@@ -91,7 +91,7 @@ reward:
     base_height: -50.0
     action_rate: -0.005
     similar_to_default: -0.05
-    energy: 0.0002
-    survival: 0.1
+    # energy: 0.0002
+    # survival: 0.1
   targets:
     base_height: .3
