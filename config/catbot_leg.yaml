@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=./schemas/config.json
+runner:
+  class_name: OnPolicyRunner
+  num_steps_per_env: 24
+  save_interval: 100
+  seed: 1
+  obs_groups: { "policy": ["main"], "critic": ["main"] }
+  experiment_name: catbot
+  logger: tensorboard
+  neptune_project: legged_gym
+  wandb_project: legged_gym
+  max_iterations: 1000
+  run_name: ""
+
+  policy:
+    class_name: ActorCritic
+    activation: elu
+    actor_obs_normalization: true
+    critic_obs_normalization: true
+    actor_hidden_dims: [512, 256, 128]
+    critic_hidden_dims: [512, 256, 128]
+    init_noise_std: 1.0
+
+  algorithm:
+    class_name: PPO
+    learning_rate: 0.001
+    num_learning_epochs: 5
+    num_mini_batches: 4
+    schedule: adaptive
+    value_loss_coef: 1.0
+    clip_param: 0.2
+    use_clipped_value_loss: true
+    desired_kl: 0.01
+    entropy_coef: 0.01
+    gamma: 0.99
+    lam: 0.95
+    max_grad_norm: 1.0
+
+env:
+  class_name: CatbotLegEnv
+  robot_description_path: robots/catbot_leg_description/urdf/robot.urdf
+  robot_description_type: URDF
+  joints:
+    a: 0.0
+    l: 0.0
+  base_init_pos: [0.0, 0.0, 0.0]
+  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+  episode_length: 20.0
+  resampling_time: 4.0
+  action_scale: 0.25
+  simulate_action_latency: True
+  clip_actions: 100.0
+  dt: 0.02
+  kp: 20.0
+  kd: 0.5
+
+commands:
+  vel: [-1.0, 1.0]
+
+obs:
+  num_obs: 13
+  scales:
+    vel: 1.0
+    ang_vel: 1.0
+    dof_pos: 1.0
+    dof_vel: 0.05
+
+reward:
+  tracking_sigma: 0.25
+  rewards:
+    tracking_vel: 20.0 # 1.0
+    lin_vel_z: 1.0 # -1.0
+    # roll_angle: 0.0
+    # pitch_angle: 0.0
+    base_height: -0.1
+    action_rate: -0.005 # -0.005
+    similar_to_default: -0.01
+    # energy: 0.0002
+    # survival: 0.1
+  targets:
+    base_height: .3
