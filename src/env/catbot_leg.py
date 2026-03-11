@@ -496,3 +496,18 @@ class CatbotLegEnv:
     def _reward_base_height(self):
         # Penalize base height away from target
         return torch.square(self.imu_pos[:, 2] - self.targets["base_height"])
+    
+    def _reward_soft_landing(self):
+        # Reward for soft landing after a jump or fall, based on rapid positive z acceleration with a negative z velocity
+        # This encourages the robot to learn to land softly instead of crashing to the ground
+        # Only gives reward when the robot is moving downwards (negative z velocity),
+        # and has a rapid positive z acceleration (which indicates a landing impact).
+        # this should have a negative weight in config
+        z_acc = (self.imu_lin_vel[:, 2] - self.last_dof_vel[:, 1]) / self.dt
+        return torch.where(
+            self.imu_lin_vel[:, 2] < 0,  # only consider when moving downwards
+            torch.clamp(z_acc, min=0.0),  # reward positive acceleration (impact)
+            torch.zeros_like(z_acc),  # no reward when not moving downwards
+        )
+
+

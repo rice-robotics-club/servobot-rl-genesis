@@ -1,0 +1,57 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   config/catbot_leg.yaml
+	modified:   src/env/catbot_leg.py
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/config/catbot_leg.yaml b/config/catbot_leg.yaml
+index 72bb4b4..d54421b 100644
+--- a/config/catbot_leg.yaml
++++ b/config/catbot_leg.yaml
+@@ -68,7 +68,7 @@ obs:
+     dof_vel: 0.05
+ 
+ reward:
+-  tracking_sigma: 0.25
++  tracking_sigma: 0.15
+   rewards:
+     tracking_vel: 1.0 # 1.0
+     lin_vel_z: 0.5 # -1.0
+@@ -79,5 +79,6 @@ reward:
+     similar_to_default: -0.01
+     # energy: 0.0002
+     # survival: 0.1
++    soft_landing: -0.025
+   targets:
+     base_height: .3
+diff --git a/src/env/catbot_leg.py b/src/env/catbot_leg.py
+index c785088..82984e9 100644
+--- a/src/env/catbot_leg.py
++++ b/src/env/catbot_leg.py
+@@ -496,3 +496,18 @@ class CatbotLegEnv:
+     def _reward_base_height(self):
+         # Penalize base height away from target
+         return torch.square(self.imu_pos[:, 2] - self.targets["base_height"])
++    
++    def _reward_soft_landing(self):
++        # Reward for soft landing after a jump or fall, based on rapid positive z acceleration with a negative z velocity
++        # This encourages the robot to learn to land softly instead of crashing to the ground
++        # Only gives reward when the robot is moving downwards (negative z velocity),
++        # and has a rapid positive z acceleration (which indicates a landing impact).
++        # this should have a negative weight in config
++        z_acc = (self.imu_lin_vel[:, 2] - self.last_dof_vel[:, 1]) / self.dt
++        return torch.where(
++            self.imu_lin_vel[:, 2] < 0,  # only consider when moving downwards
++            torch.clamp(z_acc, min=0.0),  # reward positive acceleration (impact)
++            torch.zeros_like(z_acc),  # no reward when not moving downwards
++        )
++
++
