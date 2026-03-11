@@ -53,6 +53,8 @@ env:
   dt: 0.02
   kp: 20.0
   kd: 0.5
+  termination_if_pitch_greater_than: 0.7 
+  termination_if_roll_greater_than: 0.7
 
 commands:
   vel: [-1.0, 1.0]
