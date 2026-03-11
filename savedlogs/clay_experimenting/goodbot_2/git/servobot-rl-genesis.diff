@@ -1,0 +1,25 @@
+--- git status ---
+On branch working
+Your branch is up to date with 'origin/working'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   scripts/train.py
+ 
+
+
+--- git diff ---
+diff --git a/scripts/train.py b/scripts/train.py
+index 05b81f4..acff957 100644
+--- a/scripts/train.py
++++ b/scripts/train.py
+@@ -175,6 +175,9 @@ def main():
+     if args.no_print:
+         runner.logger.disable_logs = True
+ 
++    if args.resume:
++        runner.load(args.resume)
++
+     if not args.once:
+         runner.learn(
+             num_learning_iterations=args.max_iterations, init_at_random_ep_len=True
