@@ -309,8 +309,12 @@ class CatbotLegEnv:
             self.scene.clear_debug_objects()
 
             cmd_vec = torch.zeros(3)
-            cmd_vec[1] = self.commands[0, 0]
+            cmd_vec[1] = -self.commands[0, 0]
             cmd_vec: torch.Tensor = transform_by_quat(cmd_vec, self.imu_quat[0, :])  # type: ignore
+
+            yaw_vec = torch.zeros(3)
+            yaw_vec[1] = -self.yaw_vel[0]
+            yaw_vec: torch.Tensor = transform_by_quat(yaw_vec, self.imu_quat[0, :])  # type: ignore
 
             self.cmd_debug_arrow = self.scene.draw_debug_arrow(
                 self.imu_pos[0, :].cpu(),
@@ -319,7 +323,7 @@ class CatbotLegEnv:
             )
             self.vel_debug_arrow = self.scene.draw_debug_arrow(
                 self.imu_pos[0, :].cpu(),
-                self.imu_lin_vel[0, :].cpu(),
+                yaw_vec.cpu(),
                 color=(1, 0, 0, 0.5),
             )
 
@@ -474,9 +478,7 @@ class CatbotLegEnv:
 
     # ------------ reward functions----------------
     def _reward_tracking_vel(self):
-        lin_vel_error = torch.sum(
-            torch.square(self.commands[:, 0] - self.yaw_vel), dim=1
-        )
+        lin_vel_error = torch.sum(torch.square(self.commands - self.yaw_vel), dim=1)
         return torch.exp(-lin_vel_error / self.reward_cfg["tracking_sigma"])
 
     def _reward_lin_vel_z(self):
