@@ -1,5 +1,6 @@
 import argparse
 import pickle
+import time
 from pathlib import Path
 
 import genesis as gs
@@ -26,12 +27,18 @@ def main():
         help="Model iteration file to load (default: (model_[max].pt))",
     )
     parser.add_argument(
-        "-i", "--input", type=str, default=None, choices=["keyboard", "gamepad"]
+        "-i", "--input", type=str, default=None, choices=["keyboard", "gamepad", "fullspeedahead", "ninjamoves"], help="Input method to use (default: none)"
     )
     parser.add_argument(
         "--minecraft",
         action="store_true",
         help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--slowmo",
+        type=float,
+        default=1.0,
+        help="Playback speed multiplier (e.g. 0.5 = half speed, 0.1 = 10x slower)",
     )
     args = parser.parse_args()
 
@@ -90,6 +97,16 @@ def main():
 
         print("Keyboard input initialized.")
         input = Keyboard()
+    elif args.input == "fullspeedahead":
+        from src.input import FullSpeedAhead
+
+        print("Full speed ahead input initialized.")
+        input = FullSpeedAhead()
+    elif args.input == "ninjamoves":
+        from src.input import NinjaMoves
+
+        print("Ninja moves input initialized.")
+        input = NinjaMoves()
 
     obs = env.reset()
     with torch.no_grad():
@@ -98,6 +115,14 @@ def main():
             obs, _, _, _ = env.step(
                 actions, input.command if input is not None else None
             )
+            if args.slowmo != 1.0:
+                extra = env.dt * (1.0 / args.slowmo - 1.0)
+                end = time.monotonic() + extra
+                while time.monotonic() < end:
+                    if env.scene.viewer:
+                        env.scene.viewer.update()
+                    else:
+                        time.sleep(env.dt)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "obs.json",
+  "title": "Obs_Config",
+  "description": "List of observation names, with optional scale values",
+  "type": "object",
+  "properties": {
+    "num_obs": {
+      "type": "integer"
+    },
+    "scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    }
+  },
+  "required": ["num_obs", "scales"],
+  "additionalProperties": false
+}

@@ -1,0 +1,4 @@
+max_iterations: 400
+num_envs: 1000
+resumed_from: savedlogs/goodbot_2/model_598.pt
+timestamp: '2026-03-05T19:06:05.842361'

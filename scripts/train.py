@@ -175,6 +175,9 @@ def main():
     if args.no_print:
         runner.logger.disable_logs = True
 
+    if args.resume:
+        runner.load(args.resume)
+
     if not args.once:
         runner.learn(
             num_learning_iterations=args.max_iterations, init_at_random_ep_len=True
