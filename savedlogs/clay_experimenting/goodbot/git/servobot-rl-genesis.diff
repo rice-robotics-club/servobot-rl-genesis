@@ -1,0 +1,135 @@
+--- git status ---
+On branch working
+Your branch is up to date with 'origin/working'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .DS_Store
+	modified:   config/catbot.yaml
+	modified:   src/env/catbot.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	savedlogs/goodbot/
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/.DS_Store b/.DS_Store
+index cad468b..a5e6221 100644
+Binary files a/.DS_Store and b/.DS_Store differ
+diff --git a/config/catbot.yaml b/config/catbot.yaml
+index 21be297..c9b879e 100644
+--- a/config/catbot.yaml
++++ b/config/catbot.yaml
+@@ -86,12 +86,12 @@ reward:
+     tracking_lin_vel: 100
+     tracking_ang_vel: 20
+     lin_vel_z: -100
+-    # roll_angle: 0.0
+-    # pitch_angle: 0.0
++    roll_angle: -10
++    pitch_angle: -10
+     base_height: -5000
+-    action_rate: -0.5
++    action_rate: -1
+     similar_to_default: -10
+-    energy: 0.01
+-    survival: 0.1
++    energy: -0.1
++    survival: 0.2
+   targets:
+     base_height: .3
+diff --git a/src/env/catbot.py b/src/env/catbot.py
+index aa74bce..b251f4a 100644
+--- a/src/env/catbot.py
++++ b/src/env/catbot.py
+@@ -35,6 +35,7 @@ class CatbotEnv:
+         command_cfg: CommandConfig,
+         headless=False,
+         debug=False,
++        **kwargs,
+     ):
+         self.num_envs = num_envs
+         self.num_obs = obs_cfg["num_obs"]
+@@ -82,17 +83,36 @@ class CatbotEnv:
+                 camera_fov=40,
+                 max_FPS=int(1.0 / self.dt),
+             ),
+-            vis_options=gs.options.VisOptions(rendered_envs_idx=[0]),
++            vis_options=gs.options.VisOptions(
++                rendered_envs_idx=[0],
++                **(
++                    {"background_color": (0.471, 0.655, 1.0)}
++                    if kwargs.get("minecraft")
++                    else {}
++                ),
++            ),
+             show_viewer=not headless,
+         )
+ 
+         # add plain
+-        self.scene.add_entity(
+-            gs.morphs.URDF(
+-                file="urdf/plane/plane.urdf",
+-                fixed=True,
++        if kwargs.get("minecraft"):
++            self.scene.add_entity(
++                gs.morphs.Plane(),
++                surface=gs.surfaces.Plastic(
++                    roughness=1.0,
++                    ior=1.0,
++                    diffuse_texture=gs.textures.ImageTexture(
++                        image_path="assets/grass_texture.jpg",
++                    ),
++                ),
++            )
++        else:
++            self.scene.add_entity(
++                gs.morphs.URDF(
++                    file="urdf/plane/plane.urdf",
++                    fixed=True,
++                )
+             )
+-        )
+ 
+         # add robot
+         self.robot: RigidEntity = self.scene.add_entity(
+@@ -300,9 +320,10 @@ class CatbotEnv:
+                 cmd_vec.cpu(),
+                 color=(0, 0, 1, 0.5),
+             )
++            vel_vec: torch.Tensor = transform_by_quat(self.base_lin_vel[0, :], self.base_quat[0, :])  # type: ignore
+             self.vel_debug_arrow = self.scene.draw_debug_arrow(
+                 self.base_pos[0, :].cpu(),
+-                self.base_lin_vel[0, :].cpu(),
++                vel_vec.cpu(),
+                 color=(1, 0, 0, 0.5),
+             )
+ 
+@@ -439,6 +460,14 @@ class CatbotEnv:
+         # Penalize z axis base linear velocity
+         return torch.square(self.base_lin_vel[:, 2])
+ 
++    def _reward_roll_angle(self):
++        # Penalize roll angle
++        return torch.square(self.base_euler[:, 0])
++
++    def _reward_pitch_angle(self):
++        # Penalize pitch angle
++        return torch.square(self.base_euler[:, 1])
++
+     def _reward_action_rate(self):
+         # Penalize changes in actions
+         return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
+@@ -470,7 +499,7 @@ class CatbotEnv:
+         torques = self.kp * pos_error + self.kv * vel_error
+ 
+         # Energy = |torque * velocity|
+-        return (-1) * torch.sum(torch.abs(torques * self.dof_vel), dim=1) # should be negative since it's a penalty
++        return torch.sum(torch.abs(torques * self.dof_vel), dim=1) 
+ 
+     def _reward_survival(self):
+         # Small constant reward for survival

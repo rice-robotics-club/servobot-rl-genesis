@@ -10,6 +10,7 @@ from genesis.utils.geom import (
     transform_quat_by_quat,
 )
 from tensordict import TensorDict
+from src.env.genesis import get_or_default
 
 from src.config import CommandConfig, EnvConfig, ObsConfig, RewardConfig
 
@@ -34,6 +35,7 @@ class CatbotEnv:
         command_cfg: CommandConfig,
         headless=False,
         debug=False,
+        **kwargs,
     ):
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
@@ -41,11 +43,19 @@ class CatbotEnv:
         self.num_commands = len(command_cfg)
         self.device = gs.device
 
-        self.simulate_action_latency = True  # there is a 1 step latency on real robot
         self.dt = 0.02  # control frequency on real robot is 50hz
         self.max_episode_length = math.ceil(env_cfg["episode_length"] / self.dt)
         self.joint_names = sorted(env_cfg["joints"].keys())
         self.num_actions = len(self.joint_names)
+
+        self.kp = get_or_default(env_cfg, "kp", 20.0)
+        self.kv = get_or_default(env_cfg, "kd", 0.5)
+        self.tracking_sigma = get_or_default(reward_cfg, "tracking_sigma", 0.25)
+        self.clip_actions = get_or_default(env_cfg, "clip_actions", 100.0)
+        self.simulate_action_latency = get_or_default(
+            env_cfg, "simulate_action_latency", False
+        )
+        self.action_scale = get_or_default(env_cfg, "action_scale", 0.25)
 
         self.cfg = env_cfg
         self.obs_cfg = obs_cfg
@@ -73,17 +83,36 @@ class CatbotEnv:
                 camera_fov=40,
                 max_FPS=int(1.0 / self.dt),
             ),
-            vis_options=gs.options.VisOptions(rendered_envs_idx=[0]),
+            vis_options=gs.options.VisOptions(
+                rendered_envs_idx=[0],
+                **(
+                    {"background_color": (0.471, 0.655, 1.0)}
+                    if kwargs.get("minecraft")
+                    else {}
+                ),
+            ),
             show_viewer=not headless,
         )
 
         # add plain
-        self.scene.add_entity(
-            gs.morphs.URDF(
-                file="urdf/plane/plane.urdf",
-                fixed=True,
+        if kwargs.get("minecraft"):
+            self.scene.add_entity(
+                gs.morphs.Plane(),
+                surface=gs.surfaces.Plastic(
+                    roughness=1.0,
+                    ior=1.0,
+                    diffuse_texture=gs.textures.ImageTexture(
+                        image_path="assets/grass_texture.jpg",
+                    ),
+                ),
             )
-        )
+        else:
+            self.scene.add_entity(
+                gs.morphs.URDF(
+                    file="urdf/plane/plane.urdf",
+                    fixed=True,
+                )
+            )
 
         # add robot
         self.robot: RigidEntity = self.scene.add_entity(
@@ -219,7 +248,7 @@ class CatbotEnv:
 
     def step(self, actions, command=None):
         self.actions = torch.clip(
-            actions, -self.cfg["clip_actions"], self.cfg["clip_actions"]
+            actions, -self.clip_actions, self.clip_actions
         )
         exec_actions = (
             self.last_actions if self.simulate_action_latency else self.actions
@@ -291,9 +320,10 @@ class CatbotEnv:
                 cmd_vec.cpu(),
                 color=(0, 0, 1, 0.5),
             )
+            vel_vec: torch.Tensor = transform_by_quat(self.base_lin_vel[0, :], self.base_quat[0, :])  # type: ignore
             self.vel_debug_arrow = self.scene.draw_debug_arrow(
                 self.base_pos[0, :].cpu(),
-                self.base_lin_vel[0, :].cpu(),
+                vel_vec.cpu(),
                 color=(1, 0, 0, 0.5),
             )
 
@@ -419,16 +449,24 @@ class CatbotEnv:
         lin_vel_error = torch.sum(
             torch.square(self.commands[:, :2] - self.base_lin_vel[:, :2]), dim=1
         )
-        return torch.exp(-lin_vel_error / self.reward_cfg["tracking_sigma"])
+        return torch.exp(-lin_vel_error / self.tracking_sigma)
 
     def _reward_tracking_ang_vel(self):
         # Tracking of angular velocity commands (yaw)
         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
-        return torch.exp(-ang_vel_error / self.reward_cfg["tracking_sigma"])
+        return torch.exp(-ang_vel_error / self.tracking_sigma)
 
     def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
         return torch.square(self.base_lin_vel[:, 2])
+
+    def _reward_roll_angle(self):
+        # Penalize roll angle
+        return torch.square(self.base_euler[:, 0])
+
+    def _reward_pitch_angle(self):
+        # Penalize pitch angle
+        return torch.square(self.base_euler[:, 1])
 
     def _reward_action_rate(self):
         # Penalize changes in actions
@@ -441,3 +479,33 @@ class CatbotEnv:
     def _reward_base_height(self):
         # Penalize base height away from target
         return torch.square(self.base_pos[:, 2] - self.targets["base_height"])
+    
+    def _reward_energy(self):
+        # Penalize energy consumption (torque * velocity)
+        # For PD control: torque = kp * (target - current) + kv * (0 - vel)
+        # This is inspired by this paper: https://arxiv.org/pdf/2111.01674
+        # Should help the robot develop more efficient and 'natural' gaits over time
+
+        # Calculate target positions from actions
+        exec_actions = (
+            self.last_actions if self.simulate_action_latency else self.actions
+        )
+        target_dof_pos = exec_actions * self.action_scale + self.default_dof_pos
+
+        # Calculate PD torques
+        pos_error = target_dof_pos - self.dof_pos
+        vel_error = -self.dof_vel  # target velocity is 0
+        # These are actually different for each env if domain randomization is on
+        torques = self.kp * pos_error + self.kv * vel_error
+
+        # Energy = |torque * velocity|
+        return torch.sum(torch.abs(torques * self.dof_vel), dim=1) 
+
+    def _reward_survival(self):
+        # Small constant reward for survival
+        # Scales with target velocity magnitude, which is inspired by https://arxiv.org/pdf/2111.01674
+        speed_magnitude = torch.norm(self.commands[:, :2], dim=1)
+        return (
+            torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_float)
+            * speed_magnitude
+        )

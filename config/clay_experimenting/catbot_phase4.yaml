@@ -4,8 +4,8 @@ runner:
   num_steps_per_env: 24
   save_interval: 100
   seed: 1
-  obs_groups: { "policy": ["policy"], "critic": ["policy"] }
-  experiment_name: servobot
+  obs_groups: { "policy": ["main"], "critic": ["main"] }
+  experiment_name: catbot
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
@@ -31,33 +31,33 @@ runner:
     clip_param: 0.2
     use_clipped_value_loss: true
     desired_kl: 0.01
-    entropy_coef: 0.02
+    entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
     max_grad_norm: 1.0
 
 env:
-  class_name: ServobotEnv
-  robot_description_path: robots/servobot_description/urdf/robot.urdf
-  robot_description_type: URDF
+  class_name: CatbotEnv
+  robot_description_path: robots/catbot_description/robot.xml
+  robot_description_type: MJCF
   joints:
-    bl_bot: 0.1
-    bl_hip: 0.2
-    bl_top: -1.0
-    br_bot: -0.1
-    br_hip: -0.2
-    br_top: 1.0
-    fl_bot: 0.1
-    fl_hip: -0.2
-    fl_top: -0.6
-    fr_bot: -0.1
-    fr_hip: 0.2
-    fr_top: 0.6
-  base_init_pos: [0.0, 0.0, 0.2]
+    BL_a: 0.0
+    BL_hip: 0.0
+    BL_l: 0.0
+    BR_a: 0.0
+    BR_hip: 0.0
+    BR_l: 0.0
+    FL_a: 0.0
+    FL_hip: 0.0
+    FL_l: 0.0
+    FR_a: 0.0
+    FR_hip: 0.0
+    FR_l: 0.0
+  base_init_pos: [0.0, 0.0, 0.4]
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.25
+  action_scale: 0.35
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
@@ -68,8 +68,8 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [0.0, 0.0]
-  ang_vel_z: [0.0, 0.0]
+  lin_vel_y: [-0.5, 0.5]
+  ang_vel_z: [-0.1, 0.1]
 
 obs:
   num_obs: 45
@@ -78,20 +78,20 @@ obs:
     lin_vel_y: 2.0
     ang_vel_z: 0.25
     dof_pos: 1.0
-    dof_vel: 0.5
+    dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.2
+  tracking_sigma: 0.15
   rewards:
-    tracking_lin_vel: 10.0
-    tracking_ang_vel: 5.0
-    lin_vel_z: -1.0
-    roll_angle: -2.0
-    pitch_angle: -5.0
-    base_height: -50.0
-    action_rate: -0.01
-    similar_to_default: -0.1
-    energy: 0.0
-    survival: 0.1
+    tracking_lin_vel: 200
+    tracking_ang_vel: 60
+    lin_vel_z: -100
+    roll_angle: -20
+    pitch_angle: -20
+    base_height: -1000
+    action_rate: -1
+    similar_to_default: 0
+    energy: -0.05
+    survival: 0.2
   targets:
-    base_height: .25
+    base_height: .3
