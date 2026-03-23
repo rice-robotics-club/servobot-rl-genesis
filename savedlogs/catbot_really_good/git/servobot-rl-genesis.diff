@@ -1,0 +1,58 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   config/clay_experimenting/catbot_phase3_stability_survival.yaml
+	modified:   config/clay_experimenting/catbot_phase4_fine_tuning.yaml
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/config/clay_experimenting/catbot_phase3_stability_survival.yaml b/config/clay_experimenting/catbot_phase3_stability_survival.yaml
+index 888e4f7..4c75a41 100644
+--- a/config/clay_experimenting/catbot_phase3_stability_survival.yaml
++++ b/config/clay_experimenting/catbot_phase3_stability_survival.yaml
+@@ -57,7 +57,7 @@ env:
+   base_init_quat: [1.0, 0.0, 0.0, 0.0]
+   episode_length: 20.0
+   resampling_time: 4.0
+-  action_scale: 0.35
++  action_scale: 0.25
+   simulate_action_latency: True
+   clip_actions: 100.0
+   dt: 0.02
+@@ -70,7 +70,7 @@ env:
+ 
+ commands:
+   lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-0.5, 0.5]
++  lin_vel_y: [-1.0, 1.0]
+   ang_vel_z: [-0.1, 0.1]
+ 
+ obs:
+@@ -83,7 +83,7 @@ obs:
+     dof_vel: 0.05
+ 
+ reward:
+-  tracking_sigma: 0.18
++  tracking_sigma: 0.025
+   rewards:
+     tracking_lin_vel: 200
+     tracking_ang_vel: 60
+diff --git a/config/clay_experimenting/catbot_phase4_fine_tuning.yaml b/config/clay_experimenting/catbot_phase4_fine_tuning.yaml
+index 88692e8..daa87da 100644
+--- a/config/clay_experimenting/catbot_phase4_fine_tuning.yaml
++++ b/config/clay_experimenting/catbot_phase4_fine_tuning.yaml
+@@ -70,7 +70,7 @@ env:
+ 
+ commands:
+   lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-0.5, 0.5]
++  lin_vel_y: [-1.0, 1.0]
+   ang_vel_z: [-0.1, 0.1]
+ 
+ obs:

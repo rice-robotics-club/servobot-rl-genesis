@@ -57,7 +57,7 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.35
+  action_scale: 0.25
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
@@ -70,7 +70,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-0.5, 0.5]
+  lin_vel_y: [-1.0, 1.0]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -83,7 +83,7 @@ obs:
     dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.18
+  tracking_sigma: 0.025
   rewards:
     tracking_lin_vel: 200
     tracking_ang_vel: 60
