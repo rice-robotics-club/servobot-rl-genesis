@@ -65,6 +65,8 @@ env:
   termination_if_roll_greater_than: 0.7
   kp: 20.0
   kd: 0.5
+  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+  termination_if_body_contact_height: 0.05
 
 commands:
   lin_vel_x: [-1.0, 1.0]
@@ -81,16 +83,16 @@ obs:
     dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.20
+  tracking_sigma: 0.15
   rewards:
     tracking_lin_vel: 200
     tracking_ang_vel: 60
     lin_vel_z: -100
-    roll_angle: -10
-    pitch_angle: -10
-    base_height: -500
+    roll_angle: -20
+    pitch_angle: -20
+    base_height: -1000
     action_rate: -1
-    similar_to_default: -2
+    similar_to_default: 0
     energy: -0.05
     survival: 0.2
   targets:

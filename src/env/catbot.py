@@ -230,6 +230,24 @@ class CatbotEnv:
         )
         self.extras = dict()  # extra information for logging
 
+        # Set up end effector (foot) link tracking for body contact termination
+        foot_link_names = get_or_default(env_cfg, "foot_link_names", [])
+        foot_idx_local_set = {
+            self.robot.get_link(name).idx_local for name in foot_link_names
+        }
+        self.non_foot_link_idx = torch.tensor(
+            [
+                link.idx_local
+                for link in self.robot._links
+                if link.idx_local not in foot_idx_local_set
+            ],
+            dtype=gs.tc_int,
+            device=gs.device,
+        )
+        self.body_contact_height_threshold = get_or_default(
+            env_cfg, "termination_if_body_contact_height", None
+        )
+
         # prepare reward functions and multiply reward scales by dt
         self.reward_functions, self.episode_sums = dict(), dict()
         for name in self.reward_scales.keys():
@@ -337,6 +355,10 @@ class CatbotEnv:
             torch.abs(self.base_euler[:, 0])
             > self.cfg["termination_if_roll_greater_than"]
         )
+        if self.body_contact_height_threshold is not None and len(self.non_foot_link_idx) > 0:
+            # Terminate if any non-foot link touches the ground
+            non_foot_pos = self.robot.get_links_pos(self.non_foot_link_idx)  # (n_envs, n_links, 3)
+            self.reset_buf |= (non_foot_pos[..., 2] < self.body_contact_height_threshold).any(dim=-1)
 
         # Compute timeout
         self.extras["time_outs"] = (

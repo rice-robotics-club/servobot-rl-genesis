@@ -65,7 +65,7 @@ class CatbotLegEnv:
                 substeps=2,
             ),
             rigid_options=gs.options.RigidOptions(
-                enable_self_collision=True,
+                enable_self_collision=False,
                 tolerance=1e-5,
                 max_collision_pairs=20,
             ),

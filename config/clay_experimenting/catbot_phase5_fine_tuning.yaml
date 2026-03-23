@@ -65,6 +65,8 @@ env:
   termination_if_roll_greater_than: 0.7
   kp: 20.0
   kd: 0.5
+  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+  termination_if_body_contact_height: 0.05
 
 commands:
   lin_vel_x: [-1.0, 1.0]
@@ -90,8 +92,8 @@ reward:
     pitch_angle: -200
     base_height: -1000
     action_rate: -2
-    similar_to_default: 0
+    similar_to_default: -0.1
     energy: -0.05
-    survival: 0.2
+    survival: 0.3
   targets:
     base_height: .25

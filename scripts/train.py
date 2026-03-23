@@ -28,6 +28,9 @@ def main():
         --once: Loads config and views initial configuration
         --no_print: Disables RSL_RL training info
         --debug: Prints environment debug information
+
+    example usage:
+        python scripts/train.py -c config/servobot.yaml -n 4096 -m 10000 --headless
     """
     parser.add_argument(
         "-c",
