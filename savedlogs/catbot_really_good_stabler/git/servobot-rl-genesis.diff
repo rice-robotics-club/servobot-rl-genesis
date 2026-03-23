@@ -1,0 +1,13 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	config/clay_experimenting/catbot_phase4_energy.yaml
+	savedlogs/catbot_really_good/events.out.tfevents.1774288760.solar.32514.0
+
+nothing added to commit but untracked files present (use "git add" to track) 
+
+
+--- git diff ---
