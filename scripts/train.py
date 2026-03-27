@@ -100,7 +100,7 @@ def main():
         seed=config["runner"]["seed"] if "seed" in config["runner"] else None,
     )
 
-    exp_name = config["runner"]["experiment_name"]
+    exp_name = config["runner"]["run_name"]
 
     # Determine log directory
     if args.save_dir:

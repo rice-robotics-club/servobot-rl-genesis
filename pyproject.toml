@@ -18,7 +18,7 @@ dependencies = [
   "numpy",
   "pygame",
   "genesis-world @ git+https://github.com/Genesis-Embodied-AI/Genesis.git",
-  "rsl-rl-lib==3.3.*",
+  "rsl-rl-lib==5.*",
   "setuptools==81.0.0",
 ]
 
@@ -26,6 +26,8 @@ dependencies = [
 train = "scripts.train:main"
 evaluate = "scripts.eval:main"
 update_schema = "scripts.update_schema:main"
+onnx = "scripts.onnx:main"
+
 
 [tool.setuptools.packages.find]
 where = ["."]
