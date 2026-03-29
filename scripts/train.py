@@ -84,6 +84,13 @@ def main():
         help="Prints environment debug information",
     )
     parser.add_argument(
+        "--nre",
+        type=int,
+        default=1,
+        dest="num_rendered_envs",
+        help="Number of environments to render in the viewer (default: 1)",
+    )
+    parser.add_argument(
         "--minecraft",
         action="store_true",
         help=argparse.SUPPRESS,
@@ -165,6 +172,7 @@ def main():
         config["commands"],
         args.headless,
         args.debug,
+        num_rendered_envs=args.num_rendered_envs,
         **({"minecraft": True} if args.minecraft else {}),
     )
 

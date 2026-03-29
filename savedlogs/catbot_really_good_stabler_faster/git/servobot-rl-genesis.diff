@@ -1,0 +1,136 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   scripts/train.py
+	modified:   src/env/catbot.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	config/clay_experimenting/catbot_phase5_natural_gait.yaml
+	savedlogs/catbot_really_good_stabler/events.out.tfevents.1774296224.solar.52905.0
+	savedlogs/catbot_really_good_stabler/events.out.tfevents.1774398109.solar.20530.0
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/scripts/train.py b/scripts/train.py
+index 6bc2eab..cb21f3e 100644
+--- a/scripts/train.py
++++ b/scripts/train.py
+@@ -83,6 +83,13 @@ def main():
+         action="store_true",
+         help="Prints environment debug information",
+     )
++    parser.add_argument(
++        "--nre",
++        type=int,
++        default=1,
++        dest="num_rendered_envs",
++        help="Number of environments to render in the viewer (default: 1)",
++    )
+     parser.add_argument(
+         "--minecraft",
+         action="store_true",
+@@ -165,6 +172,7 @@ def main():
+         config["commands"],
+         args.headless,
+         args.debug,
++        num_rendered_envs=args.num_rendered_envs,
+         **({"minecraft": True} if args.minecraft else {}),
+     )
+ 
+diff --git a/src/env/catbot.py b/src/env/catbot.py
+index 4ae55b5..322b82b 100644
+--- a/src/env/catbot.py
++++ b/src/env/catbot.py
+@@ -84,7 +84,7 @@ class CatbotEnv:
+                 max_FPS=int(1.0 / self.dt),
+             ),
+             vis_options=gs.options.VisOptions(
+-                rendered_envs_idx=[0],
++                rendered_envs_idx=list(range(min(kwargs.get("num_rendered_envs", 1), num_envs))),
+                 **(
+                     {"background_color": (0.471, 0.655, 1.0)}
+                     if kwargs.get("minecraft")
+@@ -248,6 +248,18 @@ class CatbotEnv:
+             env_cfg, "termination_if_body_contact_height", None
+         )
+ 
++        # Foot position tracking for clearance reward
++        self.foot_link_idx = torch.tensor(
++            [self.robot.get_link(name).idx_local for name in foot_link_names],
++            dtype=gs.tc_int,
++            device=gs.device,
++        ) if foot_link_names else None
++        n_feet = len(foot_link_names)
++        self.foot_pos = torch.zeros(
++            (self.num_envs, n_feet, 3), dtype=gs.tc_float, device=gs.device
++        )
++        self.last_foot_pos = torch.zeros_like(self.foot_pos)
++
+         # prepare reward functions and multiply reward scales by dt
+         self.reward_functions, self.episode_sums = dict(), dict()
+         for name in self.reward_scales.keys():
+@@ -275,6 +287,11 @@ class CatbotEnv:
+         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
+         self.scene.step()
+ 
++        # update foot positions
++        if self.foot_link_idx is not None:
++            self.last_foot_pos.copy_(self.foot_pos)
++            self.foot_pos = self.robot.get_links_pos(self.foot_link_idx)
++
+         # update buffers
+         self.episode_length_buf += 1
+         self.base_pos = self.robot.get_pos()
+@@ -398,6 +415,8 @@ class CatbotEnv:
+             self.actions.zero_()
+             self.last_actions.zero_()
+             self.last_dof_vel.zero_()
++            self.foot_pos.zero_()
++            self.last_foot_pos.zero_()
+             self.episode_length_buf.zero_()
+             self.reset_buf.fill_(True)
+             return
+@@ -429,6 +448,8 @@ class CatbotEnv:
+             self.actions.masked_fill_(envs_idx[:, None], 0.0)
+             self.last_actions.masked_fill_(envs_idx[:, None], 0.0)
+             self.last_dof_vel.masked_fill_(envs_idx[:, None], 0.0)
++            self.foot_pos.masked_fill_(envs_idx[:, None, None], 0.0)
++            self.last_foot_pos.masked_fill_(envs_idx[:, None, None], 0.0)
+             self.episode_length_buf.masked_fill_(envs_idx, 0)
+             self.reset_buf.masked_fill_(envs_idx, True)
+ 
+@@ -531,3 +552,27 @@ class CatbotEnv:
+             torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_float)
+             * speed_magnitude
+         )
++
++    def _reward_foot_clearance(self):
++        # Reward feet lifting during swing phase.
++        # Uses horizontal foot speed as a proxy for swing: a foot moving
++        # horizontally relative to the last timestep is likely in swing, not stance.
++        # Only active when the robot has a non-zero velocity command so it doesn't
++        # learn to prance on the spot.
++        if self.foot_link_idx is None:
++            return torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
++
++        # Horizontal foot speed (world frame) via finite difference
++        foot_vel_xy = torch.norm(
++            (self.foot_pos[..., :2] - self.last_foot_pos[..., :2]) / self.dt, dim=-1
++        )  # (n_envs, n_feet)
++
++        foot_height = self.foot_pos[..., 2]  # (n_envs, n_feet)
++
++        # Gate clearance reward on the foot actually swinging (moving horizontally)
++        swing_mask = (foot_vel_xy > 0.05).float()
++        clearance = foot_height * swing_mask  # (n_envs, n_feet)
++
++        # Scale by command speed so reward is zero when standing still
++        cmd_speed = torch.norm(self.commands[:, :2], dim=1, keepdim=True)  # (n_envs, 1)
++        return (clearance * cmd_speed).sum(dim=1)

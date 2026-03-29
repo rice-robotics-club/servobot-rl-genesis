@@ -1,0 +1,4 @@
+max_iterations: 500
+num_envs: 1000
+resumed_from: logs/catbot_really_good_stabler_resumed_20260326-213402/model_2095.pt
+timestamp: '2026-03-26T21:54:22.401918'

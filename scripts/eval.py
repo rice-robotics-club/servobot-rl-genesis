@@ -40,6 +40,13 @@ def main():
         default=1.0,
         help="Playback speed multiplier (e.g. 0.5 = half speed, 0.1 = 10x slower)",
     )
+    parser.add_argument(
+        "--nre",
+        type=int,
+        default=1,
+        dest="num_rendered_envs",
+        help="Number of environments to render in the viewer (default: 1)",
+    )
     args = parser.parse_args()
 
     gs.init(
@@ -71,11 +78,12 @@ def main():
     if not env_class:
         return
     env = env_class(
-        1,
+        args.num_rendered_envs,
         config["env"],
         config["obs"],
         config["reward"],
         config["commands"],
+        num_rendered_envs=args.num_rendered_envs,
         **({"minecraft": True} if args.minecraft else {}),
     )
 
