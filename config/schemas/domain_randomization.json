@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "domain_randomization.json",
+  "title": "DomainRandConfig",
+  "description": "Domain randomization configuration",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Master switch for all domain randomization"
+    },
+    "on_reset": {
+      "type": "object",
+      "description": "Physics parameters re-randomized per-env at each episode reset",
+      "properties": {
+        "kp": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[min, max] uniform range for PD proportional gain"
+        },
+        "kd": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[min, max] uniform range for PD derivative gain"
+        },
+        "friction": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[min, max] uniform scale on foot link friction coefficients"
+        },
+        "mass_shift": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[min, max] kg additive offset applied to every link mass"
+        },
+        "com_shift": {
+          "type": "number",
+          "description": "Standard deviation (meters) of Gaussian COM shift applied per link"
+        }
+      },
+      "additionalProperties": false
+    },
+    "obs_noise": {
+      "type": "object",
+      "description": "Additive Gaussian noise (in physical units) applied to observations every step",
+      "properties": {
+        "ang_vel": {
+          "type": "number",
+          "description": "Angular velocity noise std dev (rad/s)"
+        },
+        "dof_pos": {
+          "type": "number",
+          "description": "Joint position noise std dev (rad)"
+        },
+        "dof_vel": {
+          "type": "number",
+          "description": "Joint velocity noise std dev (rad/s)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pushes": {
+      "type": "object",
+      "description": "Periodic random velocity impulses applied to the robot base",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "interval_s": {
+          "type": "number",
+          "description": "Seconds between pushes per environment"
+        },
+        "max_vel_xy": {
+          "type": "number",
+          "description": "Maximum push magnitude (m/s) in the horizontal plane"
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

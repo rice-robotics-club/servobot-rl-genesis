@@ -20,6 +20,9 @@
     },
     "commands": {
       "$ref": "commands.json"
+    },
+    "domain_randomization": {
+      "$ref": "domain_randomization.json"
     }
   },
   "required": ["runner", "env", "obs", "reward", "commands"],

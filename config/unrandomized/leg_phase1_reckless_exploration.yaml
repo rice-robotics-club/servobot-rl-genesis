@@ -1,7 +1,6 @@
-# yaml-language-server: $schema=./schemas/config.json
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 24
+  num_steps_per_env: 96
   save_interval: 100
   seed: 1
   obs_groups: { "policy": ["main"], "critic": ["main"] }
@@ -30,30 +29,20 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.01
+    desired_kl: 0.02
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
     max_grad_norm: 1.0
 
 env:
-  class_name: CatbotEnv
-  robot_description_path: robots/catbot_description/robot.xml
-  robot_description_type: MJCF
+  class_name: CatbotLegEnv
+  robot_description_path: robots/catbot_leg_description/urdf/robot.urdf
+  robot_description_type: URDF
   joints:
-    BL_a: 0.0
-    BL_hip: 0.0
-    BL_l: 0.0
-    BR_a: 0.0
-    BR_hip: 0.0
-    BR_l: 0.0
-    FL_a: 0.0
-    FL_hip: 0.0
-    FL_l: 0.0
-    FR_a: 0.0
-    FR_hip: 0.0
-    FR_l: 0.0
-  base_init_pos: [0.0, 0.0, 0.4]
+    a: 0.0
+    l: 0.0
+  base_init_pos: [0.0, 0.0, 0.0]
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
@@ -61,39 +50,37 @@ env:
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
-  termination_if_pitch_greater_than: 0.7
-  termination_if_roll_greater_than: 0.7
   kp: 20.0
   kd: 0.5
-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
-  termination_if_body_contact_height: 0.05
+  termination_if_pitch_greater_than: 0.7 
+  termination_if_roll_greater_than: 0.7
 
 commands:
-  lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1, 1.0]
-  ang_vel_z: [-0.1, 0.1]
+  vel: [-1.0, 1.0]
 
 obs:
-  num_obs: 45
+  num_obs: 13
   scales:
-    lin_vel_x: 2.0
-    lin_vel_y: 2.0
-    ang_vel_z: 0.25
+    vel: 1.0
+    ang_vel: 1.0
     dof_pos: 1.0
     dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.025
+  tracking_sigma: 0.15
   rewards:
-    tracking_lin_vel: 100
-    tracking_ang_vel: 20
-    lin_vel_z: 0
-    roll_angle: 0
-    pitch_angle: 0
-    base_height: -5000
-    action_rate: -1
-    similar_to_default: 0
-    energy: 0
-    survival: 0.2
+    tracking_vel: 1.0 # 1.0
+    lin_vel_z: 0.5 # -1.0
+    # roll_angle: 0.0
+    # pitch_angle: 0.0
+    base_height: -0.1
+    action_rate: -0.005 # -0.005
+    similar_to_default: -0.01
+    energy: 0.0002
+    # survival: 0.1
+    soft_landing: -0.025
   targets:
     base_height: .3
+
+domain_randomization:
+  enabled: false

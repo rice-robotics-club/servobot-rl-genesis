@@ -1,4 +1,0 @@
-max_iterations: 400
-num_envs: 1000
-resumed_from: savedlogs/catbot_really_good/model_1197.pt
-timestamp: '2026-03-23T13:06:45.892110'

@@ -43,8 +43,8 @@ def main():
         "-n",
         "--num_envs",
         type=int,
-        default=1,
-        help="Number of environments to use (default: 4096)",
+        default=1000,
+        help="Number of environments to use (default: 1000)",
     )
     parser.add_argument(
         "-m",
@@ -172,6 +172,7 @@ def main():
         config["commands"],
         args.headless,
         args.debug,
+        domain_rand_cfg=config.get("domain_randomization"),
         num_rendered_envs=args.num_rendered_envs,
         **({"minecraft": True} if args.minecraft else {}),
     )

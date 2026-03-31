@@ -1,7 +1,6 @@
-# yaml-language-server: $schema=./schemas/config.json
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 24
+  num_steps_per_env: 96
   save_interval: 100
   seed: 1
   obs_groups: { "policy": ["main"], "critic": ["main"] }
@@ -30,7 +29,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.01
+    desired_kl: 0.02
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -53,8 +52,10 @@ env:
   dt: 0.02
   kp: 20.0
   kd: 0.5
-  termination_if_pitch_greater_than: 0.7 
+  termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
+  foot_link_names: ["160mm"]
+  termination_if_body_contact_height: 0.05
 
 commands:
   vel: [-1.0, 1.0]
@@ -82,3 +83,6 @@ reward:
     soft_landing: -0.025
   targets:
     base_height: .3
+
+domain_randomization:
+  enabled: false

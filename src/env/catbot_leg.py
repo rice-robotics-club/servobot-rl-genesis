@@ -12,7 +12,8 @@ from genesis.utils.geom import (
 )
 from tensordict import TensorDict
 
-from src.config import CommandConfig, EnvConfig, ObsConfig, RewardConfig
+from src.config import CommandConfig, DomainRandConfig, EnvConfig, ObsConfig, RewardConfig
+from src.env.genesis import get_or_default
 
 if TYPE_CHECKING:
     from genesis.engine.entities import RigidEntity
@@ -36,6 +37,8 @@ class CatbotLegEnv:
         command_cfg: CommandConfig,
         headless=False,
         debug=False,
+        domain_rand_cfg: DomainRandConfig | None = None,
+        **kwargs,
     ):
         self.num_envs = num_envs
         self.num_obs = obs_cfg["num_obs"]
@@ -57,6 +60,10 @@ class CatbotLegEnv:
         self.obs_scales = obs_cfg["scales"]
         self.reward_scales = reward_cfg["rewards"]
         self.targets = reward_cfg["targets"]
+        self.dr_cfg: DomainRandConfig = domain_rand_cfg or {}
+
+        dr_on_reset = self.dr_cfg.get("on_reset", {}) if self.dr_cfg.get("enabled", False) else {}
+        _needs_dof_batching = "kp" in dr_on_reset or "kd" in dr_on_reset
 
         # create scene
         self.scene = gs.Scene(
@@ -68,6 +75,7 @@ class CatbotLegEnv:
                 enable_self_collision=False,
                 tolerance=1e-5,
                 max_collision_pairs=20,
+                batch_dofs_info=_needs_dof_batching,
             ),
             viewer_options=gs.options.ViewerOptions(
                 camera_pos=(2.0, 0.0, 2.5),
@@ -235,6 +243,36 @@ class CatbotLegEnv:
         )
         self.extras = dict()  # extra information for logging
 
+        # foot position buffer — populated after foot_link_idx is set up below
+        self.foot_pos = torch.zeros(
+            (self.num_envs, 1, 3), dtype=gs.tc_float, device=gs.device
+        )
+
+        self.kp = get_or_default(env_cfg, "kp", 20.0)
+        self.kv = get_or_default(env_cfg, "kd", 0.5)
+
+        foot_link_names = get_or_default(env_cfg, "foot_link_names", [])
+        foot_idx_local_set = {
+            self.robot.get_link(name).idx_local for name in foot_link_names
+        }
+        self.foot_link_idx = torch.tensor(
+            [self.robot.get_link(name).idx_local for name in foot_link_names],
+            dtype=gs.tc_int,
+            device=gs.device,
+        ) if foot_link_names else None
+        self.non_foot_link_idx = torch.tensor(
+            [
+                link.idx_local
+                for link in self.robot._links
+                if link.idx_local not in foot_idx_local_set
+            ],
+            dtype=gs.tc_int,
+            device=gs.device,
+        )
+        self.body_contact_height_threshold = get_or_default(
+            env_cfg, "termination_if_body_contact_height", None
+        )
+
         # prepare reward functions and multiply reward scales by dt
         self.reward_functions, self.episode_sums = dict(), dict()
         for name in self.reward_scales.keys():
@@ -284,6 +322,8 @@ class CatbotLegEnv:
         self.dof_pos = self.robot.get_dofs_position(self.motors_dof_idx)
         self.dof_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
         self.yaw_vel = self.robot.get_dofs_velocity(self.yaw_idx)
+        if self.foot_link_idx is not None:
+            self.foot_pos = self.robot.get_links_pos(self.foot_link_idx)
 
         # compute reward
         self.rew_buf.zero_()
@@ -329,6 +369,10 @@ class CatbotLegEnv:
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length
+        if self.body_contact_height_threshold is not None and len(self.non_foot_link_idx) > 0:
+            non_foot_pos = self.robot.get_links_pos(self.non_foot_link_idx)
+            print(f"[DEBUG] non_foot z range: min={non_foot_pos[0, :, 2].min().item():.4f}  max={non_foot_pos[0, :, 2].max().item():.4f}  threshold={self.body_contact_height_threshold}")
+            self.reset_buf |= (non_foot_pos[..., 2] < self.body_contact_height_threshold).any(dim=-1)
 
         # Compute timeout
         self.extras["time_outs"] = (
@@ -370,6 +414,8 @@ class CatbotLegEnv:
             self.last_dof_vel.zero_()
             self.episode_length_buf.zero_()
             self.reset_buf.fill_(True)
+            self.foot_pos.zero_()
+            self._randomize_on_reset(None)
             return
         else:
             torch.where(
@@ -413,17 +459,33 @@ class CatbotLegEnv:
             self.extras["episode"]["rew_" + key] = mean / self.cfg["episode_length"]
             value.masked_fill_(envs_idx, 0.0)
 
+        # domain randomization on reset
+        self._randomize_on_reset(envs_idx)
+
         # random sample command upon reset
         self._resample_commands(envs_idx)
 
     def _update_observation(self):
+        ang_vel = self.imu_ang_vel
+        dof_pos = self.dof_pos - self.default_dof_pos
+        dof_vel = self.dof_vel
+
+        noise_cfg = self.dr_cfg.get("obs_noise", {}) if self.dr_cfg.get("enabled", False) else {}
+        if noise_cfg:
+            if "ang_vel" in noise_cfg:
+                ang_vel = ang_vel + torch.randn_like(ang_vel) * noise_cfg["ang_vel"]
+            if "dof_pos" in noise_cfg:
+                dof_pos = dof_pos + torch.randn_like(dof_pos) * noise_cfg["dof_pos"]
+            if "dof_vel" in noise_cfg:
+                dof_vel = dof_vel + torch.randn_like(dof_vel) * noise_cfg["dof_vel"]
+
         self.obs_dict["main"] = torch.concatenate(
             (
-                self.imu_ang_vel * self.obs_scales["ang_vel"],  # 3
+                ang_vel * self.obs_scales["ang_vel"],  # 3
                 self.projected_gravity,  # 3
                 self.commands * self.commands_scale,  # 1
-                (self.dof_pos - self.default_dof_pos) * self.obs_scales["dof_pos"],  # 2
-                self.dof_vel * self.obs_scales["dof_vel"],  # 2
+                dof_pos * self.obs_scales["dof_pos"],  # 2
+                dof_vel * self.obs_scales["dof_vel"],  # 2
                 self.actions,  # 2
             ),
             dim=-1,
@@ -476,7 +538,80 @@ class CatbotLegEnv:
             sol_params,
         )
 
+    # ------------ domain randomization ----------------
+
+    def _randomize_on_reset(self, envs_idx):
+        if not self.dr_cfg.get("enabled", False):
+            return
+        on_reset = self.dr_cfg.get("on_reset", {})
+        if not on_reset:
+            return
+
+        if envs_idx is None:
+            env_indices = None
+            n = self.num_envs
+        else:
+            env_indices = torch.where(envs_idx)[0]
+            n = len(env_indices)
+            if n == 0:
+                return
+
+        if "kp" in on_reset:
+            lo, hi = on_reset["kp"]
+            kp_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(lo, hi)
+            self.robot.set_dofs_kp(kp_rand, self.motors_dof_idx, envs_idx=env_indices)
+
+        if "kd" in on_reset:
+            lo, hi = on_reset["kd"]
+            kd_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(lo, hi)
+            self.robot.set_dofs_kv(kd_rand, self.motors_dof_idx, envs_idx=env_indices)
+
+        if "friction" in on_reset and self.foot_link_idx is not None:
+            lo, hi = on_reset["friction"]
+            n_feet = len(self.foot_link_idx)
+            friction_rand = torch.empty(n, n_feet, device=gs.device).uniform_(lo, hi)
+            self.robot.set_friction_ratio(
+                friction_rand, links_idx_local=self.foot_link_idx, envs_idx=env_indices
+            )
+
+        if "mass_shift" in on_reset:
+            lo, hi = on_reset["mass_shift"]
+            n_links = self.robot.n_links
+            mass_rand = torch.empty(n, n_links, device=gs.device).uniform_(lo, hi)
+            self.robot.set_mass_shift(mass_rand, envs_idx=env_indices)
+
+        if "com_shift" in on_reset:
+            std = on_reset["com_shift"]
+            n_links = self.robot.n_links
+            com_rand = torch.randn(n, n_links, 3, device=gs.device) * std
+            self.robot.set_COM_shift(com_rand, envs_idx=env_indices)
+
     # ------------ reward functions----------------
+    def _reward_foot_clearance(self):
+        # Reward foot height when the leg is actively swinging (yaw velocity as proxy).
+        # Gates on command magnitude so standing still gives no reward.
+        if self.foot_link_idx is None:
+            return torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
+
+        foot_height = self.foot_pos[:, 0, 2]  # (n_envs,) — single foot
+        swing_mask = (torch.abs(self.yaw_vel[:, 0]) > 0.05).float()
+        cmd_magnitude = torch.abs(self.commands[:, 0])
+        return foot_height * swing_mask * cmd_magnitude
+
+    def _reward_energy(self):
+        exec_actions = (
+            self.last_actions if self.simulate_action_latency else self.actions
+        )
+        target_dof_pos = exec_actions * self.cfg["action_scale"] + self.default_dof_pos
+        pos_error = target_dof_pos - self.dof_pos
+        vel_error = -self.dof_vel
+        torques = self.kp * pos_error + self.kv * vel_error
+        return torch.sum(torch.abs(torques * self.dof_vel), dim=1)
+
+    def _reward_survival(self):
+        # Scales with command magnitude so standing still gives no survival reward
+        return torch.abs(self.commands[:, 0])
+
     def _reward_tracking_vel(self):
         lin_vel_error = torch.sum(torch.square(self.commands - self.yaw_vel), dim=1)
         return torch.exp(-lin_vel_error / self.reward_cfg["tracking_sigma"])

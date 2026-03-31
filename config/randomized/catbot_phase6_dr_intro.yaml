@@ -1,7 +1,15 @@
-# yaml-language-server: $schema=./schemas/config.json
+# Phase 6 - DR Introduction
+# Picks up from phase 5. Reward structure is identical — no new objectives.
+# Goal: teach the policy to cope with sensor noise and surface variation
+#       without disrupting the natural gait it already learned.
+# Key additions:
+#   - obs noise: light IMU and joint noise (closest to real hardware baseline)
+#   - friction: ±20% range on foot links (covers most floor surfaces)
+#   - kp/kd and pushes deliberately held back — too much change at once
+#     risks collapsing the phase 5 gait before DR has any benefit
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 24
+  num_steps_per_env: 96
   save_interval: 100
   seed: 1
   obs_groups: { "policy": ["main"], "critic": ["main"] }
@@ -30,7 +38,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.01
+    desired_kl: 0.02
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -57,7 +65,7 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.30
+  action_scale: 0.40
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
@@ -70,7 +78,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1, 1.0]
+  lin_vel_y: [-1.5, 1.5]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -91,9 +99,24 @@ reward:
     roll_angle: -200
     pitch_angle: -200
     base_height: -1000
-    action_rate: -2
-    similar_to_default: -0.1
-    energy: -0.075
+    action_rate: -4
+    similar_to_default: -0.5
+    energy: -0.15
     survival: 0.3
+    foot_clearance: 60.0
   targets:
-    base_height: .25
+    base_height: 0.28
+
+domain_randomization:
+  enabled: true
+
+  on_reset:
+    friction: [0.8, 1.2]       # ±20% — covers hardwood, tile, smooth concrete
+
+  obs_noise:
+    ang_vel: 0.05              # ~MPU6050 noise floor (rad/s)
+    dof_pos: 0.01              # encoder/flex noise (rad)
+    dof_vel: 0.5               # finite-diff velocity estimate noise (rad/s)
+
+  pushes:
+    enabled: false

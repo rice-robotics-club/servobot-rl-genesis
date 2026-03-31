@@ -2,6 +2,33 @@ from typing import Literal, Required, TypedDict
 
 
 CommandConfig = dict[str, "_CommandConfigAdditionalproperties"]
+
+
+class DomainRandOnResetConfig(TypedDict, total=False):
+    kp: list[float]
+    kd: list[float]
+    friction: list[float]
+    mass_shift: list[float]
+    com_shift: float
+
+
+class DomainRandObsNoiseConfig(TypedDict, total=False):
+    ang_vel: float
+    dof_pos: float
+    dof_vel: float
+
+
+class DomainRandPushesConfig(TypedDict, total=False):
+    enabled: Required[bool]
+    interval_s: float
+    max_vel_xy: float
+
+
+class DomainRandConfig(TypedDict, total=False):
+    enabled: bool
+    on_reset: DomainRandOnResetConfig
+    obs_noise: DomainRandObsNoiseConfig
+    pushes: DomainRandPushesConfig
 r"""
 Command_Config.
 
@@ -55,6 +82,9 @@ class Config(TypedDict, total=False):
 
     Required property
     """
+
+    domain_randomization: "DomainRandConfig"
+    r""" Optional domain randomization configuration """
 
 
 

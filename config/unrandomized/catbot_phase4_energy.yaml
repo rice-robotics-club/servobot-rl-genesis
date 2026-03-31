@@ -1,7 +1,6 @@
-# yaml-language-server: $schema=./schemas/config.json
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 24
+  num_steps_per_env: 96
   save_interval: 100
   seed: 1
   obs_groups: { "policy": ["main"], "critic": ["main"] }
@@ -30,7 +29,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.01
+    desired_kl: 0.02
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -57,7 +56,7 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.25
+  action_scale: 0.30
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
@@ -70,7 +69,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.0, 1.0]
+  lin_vel_y: [-1, 1.0]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -88,12 +87,15 @@ reward:
     tracking_lin_vel: 200
     tracking_ang_vel: 60
     lin_vel_z: -100
-    roll_angle: -15
-    pitch_angle: -15
+    roll_angle: -200
+    pitch_angle: -200
     base_height: -1000
-    action_rate: -1
-    similar_to_default: 0
-    energy: -0.05
-    survival: 0.2
+    action_rate: -2
+    similar_to_default: -0.1
+    energy: -0.075
+    survival: 0.3
   targets:
-    base_height: .3
+    base_height: .25
+
+domain_randomization:
+  enabled: false

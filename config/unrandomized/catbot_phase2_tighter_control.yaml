@@ -1,16 +1,6 @@
-# yaml-language-server: $schema=./schemas/config.json
-# Phase 5 - Natural Gait
-# Goal: slower, longer strides at low speed instead of a shuffle.
-# Key changes from phase 4:
-#   - foot_clearance reward added (biggest new signal)
-#   - action_scale increased 0.30 → 0.40 (physically allows longer strides)
-#   - action_rate penalty increased -2 → -4 (discourages rapid shuffling)
-#   - similar_to_default eased -0.1 → -0.5 (more pull back to neutral between steps,
-#     but not enough to lock the legs into small movements)
-#   - energy penalty increased -0.075 → -0.15 (many small shuffle steps are costly)
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 24
+  num_steps_per_env: 96
   save_interval: 100
   seed: 1
   obs_groups: { "policy": ["main"], "critic": ["main"] }
@@ -39,7 +29,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.01
+    desired_kl: 0.02
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -66,7 +56,7 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.40       # up from 0.30 — allows physically longer strides
+  action_scale: 0.25
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
@@ -79,7 +69,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.5, 1.5]
+  lin_vel_y: [-1, 1.0]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -94,16 +84,18 @@ obs:
 reward:
   tracking_sigma: 0.025
   rewards:
-    tracking_lin_vel: 200
-    tracking_ang_vel: 60
-    lin_vel_z: -100
-    roll_angle: -200
-    pitch_angle: -200
-    base_height: -1000
-    action_rate: -4          # up from -2 — penalises rapid shuffling more
-    similar_to_default: -0.5 # up from -0.1 — gentle pull back to neutral between steps
-    energy: -0.15            # up from -0.075 — many small steps are expensive
-    survival: 0.3
-    foot_clearance: 60.0     # new — reward feet lifting during swing phase
+    tracking_lin_vel: 100
+    tracking_ang_vel: 20
+    lin_vel_z: 0
+    roll_angle: 0
+    pitch_angle: 0
+    base_height: -5000
+    action_rate: -1
+    similar_to_default: 0
+    energy: 0
+    survival: 0.2
   targets:
-    base_height: 0.28        # slightly higher than phase4 to encourage clearance
+    base_height: .3
+
+domain_randomization:
+  enabled: false

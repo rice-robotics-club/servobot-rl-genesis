@@ -1,7 +1,17 @@
-# yaml-language-server: $schema=./schemas/config.json
+# Phase 7 - Moderate DR
+# Picks up from phase 6. Reward structure unchanged.
+# Goal: cover the majority of real hardware variance — servo gain spread,
+#       surface differences, and unexpected disturbances.
+# Key additions from phase 6:
+#   - kp: ±10% range (unit-to-unit servo gain variation)
+#   - kd: ±20% range (damping more variable than stiffness on cheap servos)
+#   - friction: widened to ±40% (adds carpet and grippy rubber surfaces)
+#   - mass_shift: ±30g per link (cable routing, print density variation)
+#   - obs noise: doubled — closer to what noisy real hardware produces
+#   - pushes: enabled at low magnitude (teaches disturbance recovery)
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 24
+  num_steps_per_env: 96
   save_interval: 100
   seed: 1
   obs_groups: { "policy": ["main"], "critic": ["main"] }
@@ -9,7 +19,7 @@ runner:
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
-  max_iterations: 1000
+  max_iterations: 1500
   run_name: ""
 
   policy:
@@ -30,7 +40,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.01
+    desired_kl: 0.02
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -57,7 +67,7 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.25
+  action_scale: 0.40
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
@@ -70,7 +80,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.0, 1.0]
+  lin_vel_y: [-1.5, 1.5]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -88,12 +98,32 @@ reward:
     tracking_lin_vel: 200
     tracking_ang_vel: 60
     lin_vel_z: -100
-    roll_angle: -15
-    pitch_angle: -15
+    roll_angle: -200
+    pitch_angle: -200
     base_height: -1000
-    action_rate: -1
-    similar_to_default: 0
-    energy: -0.05
-    survival: 0.2
+    action_rate: -4
+    similar_to_default: -0.5
+    energy: -0.15
+    survival: 0.3
+    foot_clearance: 60.0
   targets:
-    base_height: .3
+    base_height: 0.28
+
+domain_randomization:
+  enabled: true
+
+  on_reset:
+    kp: [18.0, 22.0]           # ±10% — unit-to-unit servo stiffness variation
+    kd: [0.4, 0.6]             # ±20% — damping more variable than stiffness
+    friction: [0.6, 1.4]       # ±40% — adds carpet/rubber surfaces
+    mass_shift: [-0.03, 0.03]  # ±30g per link — cable routing, print density
+
+  obs_noise:
+    ang_vel: 0.10              # 2× phase 6 — noisy real IMU under vibration
+    dof_pos: 0.02              # 2× phase 6 — joint flex under load
+    dof_vel: 1.0               # 2× phase 6 — finite-diff velocity noisier at speed
+
+  pushes:
+    enabled: true
+    interval_s: 10.0           # push every ~10s per env
+    max_vel_xy: 0.3            # gentle — 0.3 m/s max impulse

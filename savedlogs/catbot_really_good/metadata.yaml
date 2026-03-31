@@ -1,4 +1,0 @@
-max_iterations: 400
-num_envs: 1000
-resumed_from: logs/catbot_20260323-120710_resumed_20260323-122314/model_798.pt
-timestamp: '2026-03-23T12:41:42.676961'
