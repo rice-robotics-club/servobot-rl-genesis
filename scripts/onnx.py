@@ -1,8 +1,6 @@
 import argparse
 import pickle
 from pathlib import Path
-import os
-import torch
 
 from rsl_rl.runners import OnPolicyRunner
 
@@ -53,24 +51,7 @@ def main():
         str(model_path.parent),
     )
     runner.load(str(model_path))
-
-    # Export policy to ONNX
-    onnx_model = runner.alg.get_policy().as_onnx(verbose=False).double()
-    onnx_model.to("cpu")
-    onnx_model.eval()
-
-    save_path = os.path.join(exp_dir, "polic.onnx")
-
-    torch.onnx.export(
-        onnx_model,
-        onnx_model.get_dummy_inputs(),  # type: ignore
-        save_path,
-        export_params=True,
-        opset_version=18,
-        verbose=False,
-        input_names=onnx_model.input_names,  # type: ignore
-        output_names=onnx_model.output_names,  # type: ignore
-    )
+    runner.export_policy_to_onnx(str(model_path.parent), filename="policy.onnx")
 
 
 if __name__ == "__main__":
