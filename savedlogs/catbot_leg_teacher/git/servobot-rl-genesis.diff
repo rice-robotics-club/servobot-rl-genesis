@@ -1,0 +1,202 @@
+--- git commit ---
+69a7d4c515f95236e29490064f4da95ef2ad3112
+
+
+--- git status ---
+On branch rsl_rl_5.0
+Your branch is up to date with 'origin/rsl_rl_5.0'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   config/catbot_leg_5.yaml
+	modified:   config/schemas/obs.json
+	modified:   robots/catbot_leg_description (new commits)
+	modified:   scripts/train.py
+	modified:   src/config/config.py
+	modified:   src/env/catbot_leg.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	durrr.mp4
+	savedlogs/catbot_20260228-172737/events.out.tfevents.1774604252.lopatoj-linux.47832.0
+	savedlogs/catbot_20260228-172737/events.out.tfevents.1774604417.lopatoj-linux.48441.0
+	savedlogs/catbot_20260228-172737/events.out.tfevents.1774604456.lopatoj-linux.48590.0
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/config/catbot_leg_5.yaml b/config/catbot_leg_5.yaml
+index 4630478..0496d71 100644
+--- a/config/catbot_leg_5.yaml
++++ b/config/catbot_leg_5.yaml
+@@ -3,7 +3,7 @@ runner:
+   class_name: OnPolicyRunner
+   num_steps_per_env: 24
+   save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
++  obs_groups: { "actor": ["shared", "teacher"], "critic": ["shared", "teacher"] }
+   logger: tensorboard
+   neptune_project: legged_gym
+   wandb_project: legged_gym
+@@ -66,7 +66,10 @@ commands:
+   vel: [-1.0, 1.0]
+ 
+ obs:
+-  num_obs: 13
++  num_obs:
++    shared: 7
++    teacher: 6
++    student: 6
+   scales:
+     vel: 1.0
+     ang_vel: 1.0
+diff --git a/config/schemas/obs.json b/config/schemas/obs.json
+index f095ba1..c5062b3 100644
+--- a/config/schemas/obs.json
++++ b/config/schemas/obs.json
+@@ -6,7 +6,10 @@
+   "type": "object",
+   "properties": {
+     "num_obs": {
+-      "type": "integer"
++      "type": "object",
++      "additionalProperties": {
++        "type": "integer"
++      }
+     },
+     "scales": {
+       "type": "object",
+diff --git a/robots/catbot_leg_description b/robots/catbot_leg_description
+index 23dd492..c01440b 160000
+--- a/robots/catbot_leg_description
++++ b/robots/catbot_leg_description
+@@ -1 +1 @@
+-Subproject commit 23dd492544f152f49826eee4e9aa6cd4409d7285
++Subproject commit c01440bc2a4f81e966ab1e03c04081fc4f596967
+diff --git a/scripts/train.py b/scripts/train.py
+index 37c6176..9a8010c 100644
+--- a/scripts/train.py
++++ b/scripts/train.py
+@@ -22,7 +22,7 @@ def main():
+         -c, --config_path: Config file path to use (default: config/servobot.yaml)
+         -n, --num_envs: Number of environments to use (default: 4096)
+         -m, --max_iterations: Maximum number of iterations to run (default: 10000)
+-        -r, --resume: Path to checkpoint to resume from
++        -r, --resume: Path to checkpoint to load from (resume or distillation)
+         -s, --save_dir: Custom directory name for saving logs (default: auto-generated with timestamp)
+         --headless: trains without GUI
+         --once: Loads config and views initial configuration
+@@ -55,7 +55,7 @@ def main():
+         "--resume",
+         type=str,
+         default=None,
+-        help="Path to checkpoint to resume from",
++        help="Path to model checkpoint to load/resume from",
+     )
+     parser.add_argument(
+         "-s",
+@@ -100,7 +100,7 @@ def main():
+         seed=config["runner"]["seed"] if "seed" in config["runner"] else None,
+     )
+ 
+-    exp_name = config["runner"]["run_name"]
++    exp_name = config["runner"]["run_name"] if "run_name" in config["runner"] else ""
+ 
+     # Determine log directory
+     if args.save_dir:
+@@ -141,12 +141,6 @@ def main():
+     with open(f"{log_dir}/config.pkl", "wb") as f:
+         pickle.dump(config, f, protocol=pickle.HIGHEST_PROTOCOL)
+ 
+-    # # load model via rsl-rl OR initialize fresh one
+-    # if load_existing_log:
+-    #     model = model.load(load_existing_log)
+-    # else:
+-    #     model = model.initialize(configs)
+-
+     from src.env import GenesisEnv
+ 
+     env_class: type[GenesisEnv] | None = get_class(
+diff --git a/src/config/config.py b/src/config/config.py
+index 9c753df..51abad7 100644
+--- a/src/config/config.py
++++ b/src/config/config.py
+@@ -180,7 +180,7 @@ class ObsConfig(TypedDict, total=False):
+     List of observation names, with optional scale values
+     """
+ 
+-    num_obs: Required[int]
++    num_obs: Required[dict[str, int]]
+     r""" Required property """
+ 
+     scales: Required[dict[str, int | float]]
+diff --git a/src/env/catbot_leg.py b/src/env/catbot_leg.py
+index c785088..436b759 100644
+--- a/src/env/catbot_leg.py
++++ b/src/env/catbot_leg.py
+@@ -2,6 +2,7 @@ import math
+ from typing import TYPE_CHECKING
+ 
+ import genesis as gs
++from genesis.engine.sensors.imu import IMUData, IMUSensor
+ import numpy as np
+ import torch
+ from genesis.utils.geom import (
+@@ -112,7 +113,7 @@ class CatbotLegEnv:
+ 
+         self.imu_link: RigidLink = self.robot.get_link("imu_link")
+ 
+-        self.imu = self.scene.add_sensor(
++        self.imu: IMUSensor = self.scene.add_sensor(
+             gs.sensors.IMU(
+                 entity_idx=self.robot.idx,  # type: ignore
+                 link_idx_local=self.imu_link.idx_local,  # type: ignore
+@@ -189,9 +190,10 @@ class CatbotLegEnv:
+         )
+         self.obs_dict = TensorDict(
+             {
+-                "main": torch.empty(
+-                    (self.num_envs, self.num_obs), dtype=gs.tc_float, device=gs.device
++                group: torch.empty(
++                    (self.num_envs, num), dtype=gs.tc_float, device=gs.device
+                 )
++                for group, num in self.num_obs.items()
+             },
+             batch_size=(self.num_envs,),
+         )
+@@ -417,10 +419,9 @@ class CatbotLegEnv:
+         self._resample_commands(envs_idx)
+ 
+     def _update_observation(self):
+-        self.obs_dict["main"] = torch.concatenate(
++        data: IMUData = self.imu.read() # type: ignore
++        self.obs_dict["shared"] = torch.concatenate(
+             (
+-                self.imu_ang_vel * self.obs_scales["ang_vel"],  # 3
+-                self.projected_gravity,  # 3
+                 self.commands * self.commands_scale,  # 1
+                 (self.dof_pos - self.default_dof_pos) * self.obs_scales["dof_pos"],  # 2
+                 self.dof_vel * self.obs_scales["dof_vel"],  # 2
+@@ -428,6 +429,20 @@ class CatbotLegEnv:
+             ),
+             dim=-1,
+         )
++        self.obs_dict["teacher"] = torch.concatenate(
++            (
++                self.imu_ang_vel * self.obs_scales["ang_vel"],  # 3
++                self.projected_gravity,  # 3
++            ),
++            dim=-1,
++        )
++        self.obs_dict["student"] = torch.concatenate(
++            (
++                data.ang_vel, # 3
++                data.lin_acc, # 3
++            ),
++            dim=-1,
++        )
+ 
+     def reset(self):
+         self._reset_idx()
