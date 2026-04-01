@@ -1,15 +1,15 @@
 # yaml-language-server: $schema=./schemas/config.json
 runner:
-  class_name: OnPolicyRunner
+  class_name: DistillationRunner
   num_steps_per_env: 24
   save_interval: 100
-  obs_groups: { "actor": ["shared", "teacher"], "critic": ["shared", "teacher"] }
+  obs_groups: { "teacher": ["shared", "teacher"], "student": ["shared", "student"] }
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
   run_name: catbot_leg
 
-  actor:
+  teacher:
     class_name: MLPModel
     activation: elu
     obs_normalization: true
@@ -19,7 +19,7 @@ runner:
       init_std: 1.0
       std_type: scalar
 
-  critic:
+  student:
     class_name: MLPModel
     activation: elu
     obs_normalization: true
@@ -30,18 +30,9 @@ runner:
       std_type: scalar
 
   algorithm:
-    class_name: PPO
+    class_name: Distillation
     learning_rate: 0.001
     num_learning_epochs: 5
-    num_mini_batches: 4
-    schedule: adaptive
-    value_loss_coef: 1.0
-    clip_param: 0.2
-    use_clipped_value_loss: true
-    desired_kl: 0.01
-    entropy_coef: 0.01
-    gamma: 0.99
-    lam: 0.95
     max_grad_norm: 1.0
 
 env:
