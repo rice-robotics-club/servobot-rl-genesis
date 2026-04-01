@@ -180,7 +180,7 @@ class ObsConfig(TypedDict, total=False):
     List of observation names, with optional scale values
     """
 
-    num_obs: Required[int]
+    num_obs: Required[dict[str, int]]
     r""" Required property """
 
     scales: Required[dict[str, int | float]]
