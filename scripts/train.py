@@ -22,7 +22,7 @@ def main():
         -c, --config_path: Config file path to use (default: config/servobot.yaml)
         -n, --num_envs: Number of environments to use (default: 4096)
         -m, --max_iterations: Maximum number of iterations to run (default: 10000)
-        -r, --resume: Path to checkpoint to resume from
+        -r, --resume: Path to checkpoint to load from (resume or distillation)
         -s, --save_dir: Custom directory name for saving logs (default: auto-generated with timestamp)
         --headless: trains without GUI
         --once: Loads config and views initial configuration
@@ -58,7 +58,7 @@ def main():
         "--resume",
         type=str,
         default=None,
-        help="Path to checkpoint to resume from",
+        help="Path to model checkpoint to load/resume from",
     )
     parser.add_argument(
         "-s",
@@ -110,7 +110,7 @@ def main():
         seed=config["runner"]["seed"] if "seed" in config["runner"] else None,
     )
 
-    exp_name = config["runner"]["experiment_name"]
+    exp_name = config["runner"]["run_name"] if "run_name" in config["runner"] else ""
 
     # Determine log directory
     if args.save_dir:
@@ -150,12 +150,6 @@ def main():
 
     with open(f"{log_dir}/config.pkl", "wb") as f:
         pickle.dump(config, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-    # # load model via rsl-rl OR initialize fresh one
-    # if load_existing_log:
-    #     model = model.load(load_existing_log)
-    # else:
-    #     model = model.initialize(configs)
 
     from src.env import GenesisEnv
 

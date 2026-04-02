@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "runner.json",
   "title": "Runner_Config",
-  "$comment": "Produced with Claude Opus 4.5, use with caution.",
+  "$comment": "Updated to reflect the nested RSL-RL structure with discrete models (actor/critic/student/teacher).",
   "type": "object",
   "description": "Runner configuration. Use class_name to select between OnPolicyRunner and DistillationRunner.",
   "properties": {
@@ -13,76 +13,93 @@
     },
     "num_steps_per_env": {
       "type": "integer",
-      "description": "Number of steps per environment per iteration"
-    },
-    "max_iterations": {
-      "type": "integer",
-      "description": "Number of policy updates"
-    },
-    "seed": {
-      "type": "integer",
-      "description": "Random seed for reproducibility"
+      "description": "Number of environment steps collected per iteration."
     },
     "obs_groups": {
       "type": "object",
-      "description": "Maps observation groups to sets of observation types",
+      "description": "Mapping from observation sets to observation groups coming from the environment.",
       "properties": {
-        "policy": {
+        "actor": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Observation sets for the policy/actor"
+          "description": "Observations used as input to the actor model."
         },
         "critic": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Observation sets for the critic (PPO only)"
+          "description": "Observations used as input to the critic model."
+        },
+        "student": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Observations used as input to the student model."
         },
         "teacher": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Observation sets for the teacher (Distillation only)"
+          "description": "Observations used as input to the teacher model."
+        },
+        "rnd_state": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Observations used as input to the RND extension."
         }
-      }
+      },
+      "additionalProperties": false
     },
     "save_interval": {
       "type": "integer",
-      "description": "Check for potential saves every n iterations"
-    },
-    "experiment_name": {
-      "type": "string",
-      "description": "Name of the experiment"
-    },
-    "run_name": {
-      "type": "string",
-      "description": "Name of the specific run"
+      "description": "Number of iterations between checkpoints."
     },
     "logger": {
       "type": "string",
-      "enum": ["tensorboard", "neptune", "wandb"],
-      "description": "Logging backend to use"
-    },
-    "neptune_project": {
-      "type": "string",
-      "description": "Neptune project name (when logger=neptune)"
+      "enum": ["tensorboard", "wandb", "neptune"],
+      "default": "tensorboard",
+      "description": "Logging service to use."
     },
     "wandb_project": {
       "type": "string",
-      "description": "Weights & Biases project name (when logger=wandb)"
+      "description": "W&B project name used by the W&B writer."
     },
-    "policy": {
-      "$ref": "runner.json#/$defs/policy"
+    "neptune_project": {
+      "type": "string",
+      "description": "Neptune project name used by the Neptune writer."
+    },
+    "run_name": {
+      "type": "string",
+      "description": "Optional run label shown in the console output."
+    },
+    "check_for_nan": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to check for NaN values coming from the environment."
     },
     "algorithm": {
       "$ref": "runner.json#/$defs/algorithm"
+    },
+    "actor": {
+      "$ref": "runner.json#/$defs/model",
+      "description": "Actor model configuration."
+    },
+    "critic": {
+      "$ref": "runner.json#/$defs/model",
+      "description": "Critic model configuration."
+    },
+    "student": {
+      "$ref": "runner.json#/$defs/model",
+      "description": "Student model configuration."
+    },
+    "teacher": {
+      "$ref": "runner.json#/$defs/model",
+      "description": "Teacher model configuration."
     }
   },
   "required": [
     "class_name",
     "num_steps_per_env",
-    "max_iterations",
-    "policy",
-    "algorithm",
-    "experiment_name"
+    "obs_groups",
+    "save_interval",
+    "algorithm"
   ],
   "allOf": [
     {
@@ -90,13 +107,9 @@
         "properties": { "class_name": { "const": "OnPolicyRunner" } }
       },
       "then": {
+        "required": ["actor", "critic"],
         "properties": {
-          "policy": {
-            "$ref": "runner.json#/$defs/ppo_policy"
-          },
-          "algorithm": {
-            "$ref": "runner.json#/$defs/ppo_algorithm"
-          }
+          "algorithm": { "$ref": "runner.json#/$defs/ppo_algorithm" }
         }
       }
     },
@@ -105,360 +118,31 @@
         "properties": { "class_name": { "const": "DistillationRunner" } }
       },
       "then": {
+        "required": ["student", "teacher"],
         "properties": {
-          "policy": {
-            "$ref": "runner.json#/$defs/distillation_policy"
-          },
-          "algorithm": {
-            "$ref": "runner.json#/$defs/distillation_algorithm"
-          }
+          "algorithm": { "$ref": "runner.json#/$defs/distillation_algorithm" }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": { "logger": { "const": "wandb" } }
+      },
+      "then": {
+        "required": ["wandb_project"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "logger": { "const": "neptune" } }
+      },
+      "then": {
+        "required": ["neptune_project"]
       }
     }
   ],
   "additionalProperties": false,
   "$defs": {
-    "policy": {
-      "type": "object",
-      "description": "Policy configuration (generic)",
-      "properties": {
-        "class_name": {
-          "type": "string",
-          "enum": [
-            "ActorCritic",
-            "ActorCriticCNN",
-            "ActorCriticRecurrent",
-            "StudentTeacher",
-            "StudentTeacherRecurrent"
-          ]
-        }
-      },
-      "required": ["class_name"]
-    },
-
-    "ppo_policy": {
-      "type": "object",
-      "description": "Policy configuration for PPO (OnPolicyRunner)",
-      "oneOf": [
-        { "$ref": "runner.json#/$defs/actor_critic" },
-        { "$ref": "runner.json#/$defs/actor_critic_cnn" },
-        { "$ref": "runner.json#/$defs/actor_critic_recurrent" }
-      ]
-    },
-
-    "distillation_policy": {
-      "type": "object",
-      "description": "Policy configuration for Distillation (DistillationRunner)",
-      "oneOf": [
-        { "$ref": "runner.json#/$defs/student_teacher" },
-        { "$ref": "runner.json#/$defs/student_teacher_recurrent" }
-      ]
-    },
-
-    "actor_critic": {
-      "type": "object",
-      "description": "ActorCritic policy for standard MLP-based actor-critic",
-      "properties": {
-        "class_name": {
-          "const": "ActorCritic"
-        },
-        "activation": {
-          "type": "string",
-          "description": "Activation function (e.g., 'elu', 'relu', 'tanh')",
-          "default": "elu"
-        },
-        "actor_obs_normalization": {
-          "type": "boolean",
-          "description": "Whether to normalize actor observations",
-          "default": false
-        },
-        "critic_obs_normalization": {
-          "type": "boolean",
-          "description": "Whether to normalize critic observations",
-          "default": false
-        },
-        "actor_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "description": "Hidden layer dimensions for actor MLP",
-          "default": [256, 256, 256]
-        },
-        "critic_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "description": "Hidden layer dimensions for critic MLP",
-          "default": [256, 256, 256]
-        },
-        "init_noise_std": {
-          "type": "number",
-          "description": "Initial standard deviation of action noise",
-          "default": 1.0
-        },
-        "noise_std_type": {
-          "type": "string",
-          "enum": ["scalar", "log"],
-          "description": "Type of noise standard deviation parameterization",
-          "default": "scalar"
-        },
-        "state_dependent_std": {
-          "type": "boolean",
-          "description": "Whether action std is state-dependent",
-          "default": false
-        }
-      },
-      "required": ["class_name"],
-      "additionalProperties": false
-    },
-
-    "actor_critic_cnn": {
-      "type": "object",
-      "description": "ActorCriticCNN policy for CNN-based actor-critic with 2D observations",
-      "properties": {
-        "class_name": {
-          "const": "ActorCriticCNN"
-        },
-        "activation": {
-          "type": "string",
-          "description": "Activation function",
-          "default": "elu"
-        },
-        "actor_obs_normalization": {
-          "type": "boolean",
-          "description": "Whether to normalize 1D actor observations",
-          "default": false
-        },
-        "critic_obs_normalization": {
-          "type": "boolean",
-          "description": "Whether to normalize 1D critic observations",
-          "default": false
-        },
-        "actor_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "description": "Hidden layer dimensions for actor MLP",
-          "default": [256, 256, 256]
-        },
-        "critic_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "description": "Hidden layer dimensions for critic MLP",
-          "default": [256, 256, 256]
-        },
-        "actor_cnn_cfg": {
-          "oneOf": [
-            { "$ref": "runner.json#/$defs/cnn_config" },
-            {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "runner.json#/$defs/cnn_config"
-              },
-              "description": "Per-observation-group CNN configurations"
-            }
-          ],
-          "description": "CNN configuration for actor 2D observations"
-        },
-        "critic_cnn_cfg": {
-          "oneOf": [
-            { "$ref": "runner.json#/$defs/cnn_config" },
-            {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "runner.json#/$defs/cnn_config"
-              },
-              "description": "Per-observation-group CNN configurations"
-            }
-          ],
-          "description": "CNN configuration for critic 2D observations"
-        },
-        "init_noise_std": {
-          "type": "number",
-          "default": 1.0
-        },
-        "noise_std_type": {
-          "type": "string",
-          "enum": ["scalar", "log"],
-          "default": "scalar"
-        },
-        "state_dependent_std": {
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "required": ["class_name"],
-      "additionalProperties": false
-    },
-
-    "actor_critic_recurrent": {
-      "type": "object",
-      "description": "ActorCriticRecurrent policy with RNN memory",
-      "properties": {
-        "class_name": {
-          "const": "ActorCriticRecurrent"
-        },
-        "activation": {
-          "type": "string",
-          "default": "elu"
-        },
-        "actor_obs_normalization": {
-          "type": "boolean",
-          "default": false
-        },
-        "critic_obs_normalization": {
-          "type": "boolean",
-          "default": false
-        },
-        "actor_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "default": [256, 256, 256]
-        },
-        "critic_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "default": [256, 256, 256]
-        },
-        "init_noise_std": {
-          "type": "number",
-          "default": 1.0
-        },
-        "noise_std_type": {
-          "type": "string",
-          "enum": ["scalar", "log"],
-          "default": "scalar"
-        },
-        "state_dependent_std": {
-          "type": "boolean",
-          "default": false
-        },
-        "rnn_type": {
-          "type": "string",
-          "enum": ["lstm", "gru"],
-          "description": "Type of recurrent unit",
-          "default": "lstm"
-        },
-        "rnn_hidden_dim": {
-          "type": "integer",
-          "description": "Hidden dimension of RNN",
-          "default": 256
-        },
-        "rnn_num_layers": {
-          "type": "integer",
-          "description": "Number of RNN layers",
-          "default": 1
-        }
-      },
-      "required": ["class_name"],
-      "additionalProperties": false
-    },
-
-    "student_teacher": {
-      "type": "object",
-      "description": "StudentTeacher policy for distillation",
-      "properties": {
-        "class_name": {
-          "const": "StudentTeacher"
-        },
-        "activation": {
-          "type": "string",
-          "default": "elu"
-        },
-        "student_obs_normalization": {
-          "type": "boolean",
-          "description": "Whether to normalize student observations",
-          "default": false
-        },
-        "teacher_obs_normalization": {
-          "type": "boolean",
-          "description": "Whether to normalize teacher observations",
-          "default": false
-        },
-        "student_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "description": "Hidden layer dimensions for student MLP",
-          "default": [256, 256, 256]
-        },
-        "teacher_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "description": "Hidden layer dimensions for teacher MLP",
-          "default": [256, 256, 256]
-        },
-        "init_noise_std": {
-          "type": "number",
-          "default": 0.1
-        },
-        "noise_std_type": {
-          "type": "string",
-          "enum": ["scalar", "log"],
-          "default": "scalar"
-        }
-      },
-      "required": ["class_name"],
-      "additionalProperties": false
-    },
-
-    "student_teacher_recurrent": {
-      "type": "object",
-      "description": "StudentTeacherRecurrent policy for recurrent distillation",
-      "properties": {
-        "class_name": {
-          "const": "StudentTeacherRecurrent"
-        },
-        "activation": {
-          "type": "string",
-          "default": "elu"
-        },
-        "student_obs_normalization": {
-          "type": "boolean",
-          "default": false
-        },
-        "teacher_obs_normalization": {
-          "type": "boolean",
-          "default": false
-        },
-        "student_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "default": [256, 256, 256]
-        },
-        "teacher_hidden_dims": {
-          "type": "array",
-          "items": { "type": "integer" },
-          "default": [256, 256, 256]
-        },
-        "init_noise_std": {
-          "type": "number",
-          "default": 0.1
-        },
-        "noise_std_type": {
-          "type": "string",
-          "enum": ["scalar", "log"],
-          "default": "scalar"
-        },
-        "rnn_type": {
-          "type": "string",
-          "enum": ["lstm", "gru"],
-          "default": "lstm"
-        },
-        "rnn_hidden_dim": {
-          "type": "integer",
-          "default": 256
-        },
-        "rnn_num_layers": {
-          "type": "integer",
-          "default": 1
-        },
-        "teacher_recurrent": {
-          "type": "boolean",
-          "description": "Whether teacher is also recurrent",
-          "default": false
-        }
-      },
-      "required": ["class_name"],
-      "additionalProperties": false
-    },
-
     "algorithm": {
       "type": "object",
       "description": "Algorithm configuration (generic)",
@@ -478,70 +162,80 @@
         "class_name": {
           "const": "PPO"
         },
+        "optimizer": {
+          "type": "string",
+          "description": "Optimizer used for policy/value updates.",
+          "default": "adam"
+        },
         "learning_rate": {
           "type": "number",
-          "description": "Learning rate for the optimizer",
+          "description": "Optimizer learning rate.",
           "default": 0.001
         },
         "num_learning_epochs": {
           "type": "integer",
-          "description": "Number of learning epochs per update",
+          "description": "Number of optimization epochs per iteration.",
           "default": 5
         },
         "num_mini_batches": {
           "type": "integer",
-          "description": "Number of mini batches (batch_size = num_envs * num_steps / num_mini_batches)",
+          "description": "Number of mini-batches per iteration.",
           "default": 4
         },
         "schedule": {
           "type": "string",
           "enum": ["adaptive", "fixed"],
-          "description": "Learning rate schedule type",
+          "description": "Learning-rate schedule.",
           "default": "adaptive"
-        },
-        "clip_param": {
-          "type": "number",
-          "description": "PPO clipping parameter",
-          "default": 0.2
-        },
-        "gamma": {
-          "type": "number",
-          "description": "Discount factor",
-          "default": 0.99
-        },
-        "lam": {
-          "type": "number",
-          "description": "GAE lambda parameter",
-          "default": 0.95
         },
         "value_loss_coef": {
           "type": "number",
-          "description": "Value loss coefficient",
+          "description": "Coefficient for the value-function loss.",
           "default": 1.0
         },
-        "entropy_coef": {
+        "clip_param": {
           "type": "number",
-          "description": "Entropy coefficient for exploration",
-          "default": 0.01
-        },
-        "max_grad_norm": {
-          "type": "number",
-          "description": "Maximum gradient norm for clipping",
-          "default": 1.0
+          "description": "PPO clipping parameter for surrogate/value clipping.",
+          "default": 0.2
         },
         "use_clipped_value_loss": {
           "type": "boolean",
-          "description": "Whether to use clipped value loss",
+          "description": "Whether to clip the value loss.",
           "default": true
         },
         "desired_kl": {
           "type": "number",
-          "description": "Target KL divergence for adaptive schedule",
+          "description": "Target KL divergence used by the adaptive learning-rate schedule.",
           "default": 0.01
+        },
+        "entropy_coef": {
+          "type": "number",
+          "description": "Entropy regularization coefficient.",
+          "default": 0.01
+        },
+        "gamma": {
+          "type": "number",
+          "description": "Discount factor.",
+          "default": 0.99
+        },
+        "lam": {
+          "type": "number",
+          "description": "GAE lambda parameter.",
+          "default": 0.95
+        },
+        "max_grad_norm": {
+          "type": "number",
+          "description": "Maximum gradient norm for gradient clipping.",
+          "default": 1.0
         },
         "normalize_advantage_per_mini_batch": {
           "type": "boolean",
-          "description": "Whether to normalize advantages per mini batch",
+          "description": "Whether to normalize advantages for each mini-batch instead of across the entire rollout.",
+          "default": false
+        },
+        "share_cnn_encoders": {
+          "type": "boolean",
+          "description": "Whether to share the CNN networks between actor and critic in case CNNModel is used.",
           "default": false
         },
         "rnd_cfg": {
@@ -549,14 +243,16 @@
             { "type": "null" },
             { "$ref": "runner.json#/$defs/rnd_config" }
           ],
-          "description": "Random Network Distillation configuration (optional)"
+          "description": "Optional RND extension configuration.",
+          "default": null
         },
         "symmetry_cfg": {
           "oneOf": [
             { "type": "null" },
             { "$ref": "runner.json#/$defs/symmetry_config" }
           ],
-          "description": "Symmetry augmentation configuration (optional)"
+          "description": "Optional symmetry extension configuration.",
+          "default": null
         }
       },
       "required": ["class_name"],
@@ -570,36 +266,210 @@
         "class_name": {
           "const": "Distillation"
         },
+        "optimizer": {
+          "type": "string",
+          "description": "Optimizer used for student updates.",
+          "default": "adam"
+        },
         "learning_rate": {
           "type": "number",
-          "description": "Learning rate for the optimizer",
+          "description": "Optimizer learning rate.",
           "default": 0.001
         },
         "num_learning_epochs": {
           "type": "integer",
-          "description": "Number of learning epochs per update",
+          "description": "Number of optimization epochs per iteration.",
           "default": 1
         },
         "gradient_length": {
           "type": "integer",
-          "description": "Gradient length for backpropagation through time",
+          "description": "Gradient backpropagation length.",
           "default": 15
         },
         "max_grad_norm": {
           "type": ["number", "null"],
-          "description": "Maximum gradient norm for clipping (null for no clipping)",
+          "description": "Maximum gradient norm for gradient clipping.",
           "default": null
         },
         "loss_type": {
           "type": "string",
           "enum": ["mse", "huber"],
-          "description": "Loss function type for distillation",
+          "description": "Loss type.",
           "default": "mse"
+        }
+      },
+      "required": ["class_name"],
+      "additionalProperties": false
+    },
+
+    "model": {
+      "type": "object",
+      "description": "Model configuration (actor, critic, student, or teacher).",
+      "oneOf": [
+        { "$ref": "runner.json#/$defs/mlp_model" },
+        { "$ref": "runner.json#/$defs/rnn_model" },
+        { "$ref": "runner.json#/$defs/cnn_model" }
+      ]
+    },
+
+    "mlp_model": {
+      "type": "object",
+      "description": "MLP Model configuration.",
+      "properties": {
+        "class_name": {
+          "const": "MLPModel"
         },
-        "optimizer": {
+        "hidden_dims": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "description": "Hidden dimensions of the MLP.",
+          "default": [256, 256, 256]
+        },
+        "activation": {
           "type": "string",
-          "description": "Optimizer type (e.g., 'adam', 'sgd')",
-          "default": "adam"
+          "description": "Activation function of the MLP.",
+          "default": "elu"
+        },
+        "obs_normalization": {
+          "type": "boolean",
+          "description": "Whether to normalize the observations before passing them to the MLP.",
+          "default": false
+        },
+        "distribution_cfg": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "runner.json#/$defs/distribution_cfg" }
+          ],
+          "description": "Optional output distribution configuration.",
+          "default": null
+        }
+      },
+      "required": ["class_name"],
+      "additionalProperties": false
+    },
+
+    "rnn_model": {
+      "type": "object",
+      "description": "RNN Model configuration.",
+      "properties": {
+        "class_name": {
+          "const": "RNNModel"
+        },
+        "hidden_dims": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "description": "Hidden dimensions of the MLP.",
+          "default": [256, 256, 256]
+        },
+        "activation": {
+          "type": "string",
+          "description": "Activation function of the MLP.",
+          "default": "elu"
+        },
+        "obs_normalization": {
+          "type": "boolean",
+          "description": "Whether to normalize the observations before passing them to the MLP.",
+          "default": false
+        },
+        "distribution_cfg": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "runner.json#/$defs/distribution_cfg" }
+          ],
+          "description": "Optional output distribution configuration.",
+          "default": null
+        },
+        "rnn_type": {
+          "type": "string",
+          "enum": ["lstm", "gru"],
+          "description": "Type of RNN network.",
+          "default": "lstm"
+        },
+        "rnn_hidden_dim": {
+          "type": "integer",
+          "description": "Hidden dimension of the RNN.",
+          "default": 256
+        },
+        "rnn_num_layers": {
+          "type": "integer",
+          "description": "Number of RNN layers.",
+          "default": 1
+        }
+      },
+      "required": ["class_name"],
+      "additionalProperties": false
+    },
+
+    "cnn_model": {
+      "type": "object",
+      "description": "CNN Model configuration.",
+      "properties": {
+        "class_name": {
+          "const": "CNNModel"
+        },
+        "hidden_dims": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "description": "Hidden dimensions of the MLP.",
+          "default": [256, 256, 256]
+        },
+        "activation": {
+          "type": "string",
+          "description": "Activation function of the MLP.",
+          "default": "elu"
+        },
+        "obs_normalization": {
+          "type": "boolean",
+          "description": "Whether to normalize the observations before passing them to the MLP.",
+          "default": false
+        },
+        "distribution_cfg": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "runner.json#/$defs/distribution_cfg" }
+          ],
+          "description": "Optional output distribution configuration.",
+          "default": null
+        },
+        "cnn_cfg": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "runner.json#/$defs/cnn_config" },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "runner.json#/$defs/cnn_config"
+              },
+              "description": "Per-observation-group CNN configurations"
+            }
+          ],
+          "description": "Configuration of the CNN encoder(s).",
+          "default": null
+        }
+      },
+      "required": ["class_name"],
+      "additionalProperties": false
+    },
+
+    "distribution_cfg": {
+      "type": "object",
+      "description": "Distribution configuration for stochastic outputs.",
+      "properties": {
+        "class_name": {
+          "type": "string",
+          "enum": ["GaussianDistribution", "HeteroscedasticGaussianDistribution"],
+          "description": "Distribution class name."
+        },
+        "init_std": {
+          "type": "number",
+          "description": "Initial standard deviation.",
+          "default": 1.0
+        },
+        "std_type": {
+          "type": "string",
+          "enum": ["scalar", "log"],
+          "description": "Parameterization of the standard deviation.",
+          "default": "scalar"
         }
       },
       "required": ["class_name"],
@@ -608,11 +478,11 @@
 
     "rnd_config": {
       "type": "object",
-      "description": "Random Network Distillation (RND) configuration for intrinsic motivation",
+      "description": "Random Network Distillation (RND) configuration.",
       "properties": {
         "weight": {
           "type": "number",
-          "description": "Initial weight/scaling factor of the RND reward",
+          "description": "Initial weight of the RND reward.",
           "default": 0.0
         },
         "weight_schedule": {
@@ -620,52 +490,50 @@
             { "type": "null" },
             { "$ref": "runner.json#/$defs/rnd_weight_schedule" }
           ],
-          "description": "Weight schedule configuration"
-        },
-        "reward_normalization": {
-          "type": "boolean",
-          "description": "Whether to normalize intrinsic reward",
-          "default": false
-        },
-        "state_normalization": {
-          "type": "boolean",
-          "description": "Whether to normalize input state",
-          "default": false
+          "description": "Weight schedule for the RND reward."
         },
         "learning_rate": {
           "type": "number",
-          "description": "Learning rate for RND predictor",
+          "description": "Learning rate for the RND optimizer.",
           "default": 0.001
-        },
-        "num_outputs": {
-          "type": "integer",
-          "description": "Number of outputs (embedding size). -1 uses observation dimensions",
-          "default": 1
         },
         "predictor_hidden_dims": {
           "type": "array",
           "items": { "type": "integer" },
-          "description": "Hidden dimensions of predictor network.  -1 uses num_states",
-          "default": [-1]
+          "description": "Hidden dimensions of the RND predictor network."
         },
         "target_hidden_dims": {
           "type": "array",
           "items": { "type": "integer" },
-          "description": "Hidden dimensions of target network. -1 uses num_states",
-          "default": [-1]
+          "description": "Hidden dimensions of the RND target network."
+        },
+        "num_outputs": {
+          "type": "integer",
+          "description": "Number of outputs of the RND networks."
         },
         "activation": {
           "type": "string",
-          "description": "Activation function",
+          "description": "Activation function for the RND networks.",
           "default": "elu"
+        },
+        "state_normalization": {
+          "type": "boolean",
+          "description": "Whether to normalize the RND state.",
+          "default": false
+        },
+        "reward_normalization": {
+          "type": "boolean",
+          "description": "Whether to normalize the RND reward.",
+          "default": false
         }
       },
+      "required": ["predictor_hidden_dims", "target_hidden_dims", "num_outputs"],
       "additionalProperties": false
     },
 
     "rnd_weight_schedule": {
       "type": "object",
-      "description": "Weight schedule for RND reward scaling",
+      "description": "Weight schedule for RND reward scaling.",
       "properties": {
         "mode": {
           "type": "string",
@@ -688,20 +556,12 @@
       "required": ["mode"],
       "allOf": [
         {
-          "if": {
-            "properties": { "mode": { "const": "step" } }
-          },
-          "then": {
-            "required": ["final_step", "final_value"]
-          }
+          "if": { "properties": { "mode": { "const": "step" } } },
+          "then": { "required": ["final_step", "final_value"] }
         },
         {
-          "if": {
-            "properties": { "mode": { "const": "linear" } }
-          },
-          "then": {
-            "required": ["initial_step", "final_step", "final_value"]
-          }
+          "if": { "properties": { "mode": { "const": "linear" } } },
+          "then": { "required": ["initial_step", "final_step", "final_value"] }
         }
       ],
       "additionalProperties": false
@@ -709,53 +569,51 @@
 
     "symmetry_config": {
       "type": "object",
-      "description": "Symmetry augmentation configuration for exploiting environment symmetries",
+      "description": "Symmetry augmentation configuration.",
       "properties": {
         "use_data_augmentation": {
           "type": "boolean",
-          "description": "Add symmetric trajectories to the batch",
-          "default": false
-        },
-        "use_mirror_loss": {
-          "type": "boolean",
-          "description": "Add symmetry loss term to the loss function",
-          "default": false
+          "description": "Whether to add symmetric trajectories to the batch."
         },
         "data_augmentation_func": {
           "type": ["string", "null"],
-          "description": "Module and function path to import (e.g., 'module.path: function_name')"
+          "description": "Function to generate symmetric trajectories."
+        },
+        "use_mirror_loss": {
+          "type": "boolean",
+          "description": "Whether to add a symmetry loss term to the loss function."
         },
         "mirror_loss_coeff": {
           "type": "number",
-          "description": "Coefficient for symmetry loss term",
-          "default": 0.0
+          "description": "Coefficient for the symmetry loss."
         }
       },
-      "additionalProperties": true
+      "required": ["use_data_augmentation", "data_augmentation_func", "use_mirror_loss", "mirror_loss_coeff"],
+      "additionalProperties": false
     },
 
     "cnn_config": {
       "type": "object",
-      "description": "CNN network configuration",
+      "description": "CNN network configuration.",
       "properties": {
         "output_channels": {
           "type": "array",
           "items": { "type": "integer" },
-          "description": "Output channels for each convolutional layer"
+          "description": "Output channels for each convolutional layer."
         },
         "kernel_size": {
           "oneOf": [
             { "type": "integer" },
             { "type": "array", "items": { "type": "integer" } }
           ],
-          "description": "Kernel size(s) for convolutional layers"
+          "description": "Kernel size for each convolutional layer or a single kernel size for all layers."
         },
         "stride": {
           "oneOf": [
             { "type": "integer" },
             { "type": "array", "items": { "type": "integer" } }
           ],
-          "description": "Stride(s) for convolutional layers",
+          "description": "Stride for each convolutional layer or a single stride for all layers.",
           "default": 1
         },
         "dilation": {
@@ -763,13 +621,13 @@
             { "type": "integer" },
             { "type": "array", "items": { "type": "integer" } }
           ],
-          "description": "Dilation(s) for convolutional layers",
+          "description": "Dilation for each convolutional layer or a single dilation for all layers.",
           "default": 1
         },
         "padding": {
           "type": "string",
           "enum": ["none", "zeros", "reflect", "replicate", "circular"],
-          "description": "Padding type",
+          "description": "Padding type to use.",
           "default": "none"
         },
         "norm": {
@@ -780,12 +638,12 @@
               "items": { "type": "string", "enum": ["none", "batch", "layer"] }
             }
           ],
-          "description": "Normalization type(s) per layer",
+          "description": "Normalization type for each convolutional layer or a single normalization type for all layers.",
           "default": "none"
         },
         "activation": {
           "type": "string",
-          "description": "Activation function",
+          "description": "Activation function to use.",
           "default": "elu"
         },
         "max_pool": {
@@ -793,18 +651,18 @@
             { "type": "boolean" },
             { "type": "array", "items": { "type": "boolean" } }
           ],
-          "description": "Whether to apply max pooling after each layer",
+          "description": "Whether to apply max pooling after each convolutional layer or a single boolean for all layers.",
           "default": false
         },
         "global_pool": {
           "type": "string",
           "enum": ["none", "max", "avg"],
-          "description": "Global pooling type at the end",
+          "description": "Global pooling type to apply at the end.",
           "default": "none"
         },
         "flatten": {
           "type": "boolean",
-          "description": "Whether to flatten the output tensor",
+          "description": "Whether to flatten the output tensor.",
           "default": true
         }
       },

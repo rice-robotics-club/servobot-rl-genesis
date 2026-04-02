@@ -1,0 +1,4 @@
+max_iterations: 10000
+num_envs: 1024
+resumed_from: null
+timestamp: '2026-03-31T19:48:53.371340'

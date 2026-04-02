@@ -6,7 +6,10 @@
   "type": "object",
   "properties": {
     "num_obs": {
-      "type": "integer"
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
     },
     "scales": {
       "type": "object",

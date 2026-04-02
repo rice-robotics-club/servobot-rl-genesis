@@ -7,6 +7,7 @@ import genesis as gs
 import torch
 from rsl_rl.runners import OnPolicyRunner
 
+from src.config import Config
 from src.utils import get_class, get_latest
 
 
@@ -70,7 +71,7 @@ def main():
     if not model_path:
         raise ValueError("No model file found")
 
-    config = pickle.load(open(f"{exp_dir}/config.pkl", "rb"))
+    config: Config = pickle.load(open(f"{exp_dir}/config.pkl", "rb"))
 
     env_class: type[GenesisEnv] | None = get_class(
         "src.env", config["env"]["class_name"]
@@ -91,6 +92,21 @@ def main():
         env, config["runner"], str(model_path.parent), device=str(gs.device)
     )
     runner.load(str(model_path), map_location=str(gs.device))
+    onnx_model = runner.alg.policy.actor
+    onnx_model.to("cpu")
+    onnx_model.eval()
+
+    # Trace and save the model
+    torch.onnx.export(
+        onnx_model,
+        torch.zeros(config["obs"]["num_obs"]).to("cpu"),  # type: ignore
+        "./policy.onnx",
+        export_params=True,
+        opset_version=18,
+        verbose=False
+    )
+
+    return
     policy = runner.get_inference_policy(device=str(gs.device))
 
     input = None

@@ -2,6 +2,7 @@ import math
 from typing import TYPE_CHECKING
 
 import genesis as gs
+from genesis.engine.sensors.imu import IMUData, IMUSensor
 import numpy as np
 import torch
 from genesis.utils.geom import (
@@ -120,7 +121,7 @@ class CatbotLegEnv:
 
         self.imu_link: RigidLink = self.robot.get_link("imu_link")
 
-        self.imu = self.scene.add_sensor(
+        self.imu: IMUSensor = self.scene.add_sensor(
             gs.sensors.IMU(
                 entity_idx=self.robot.idx,  # type: ignore
                 link_idx_local=self.imu_link.idx_local,  # type: ignore
@@ -197,9 +198,10 @@ class CatbotLegEnv:
         )
         self.obs_dict = TensorDict(
             {
-                "main": torch.empty(
-                    (self.num_envs, self.num_obs), dtype=gs.tc_float, device=gs.device
+                group: torch.empty(
+                    (self.num_envs, num), dtype=gs.tc_float, device=gs.device
                 )
+                for group, num in self.num_obs.items()
             },
             batch_size=(self.num_envs,),
         )
@@ -469,6 +471,7 @@ class CatbotLegEnv:
         self._resample_commands(envs_idx)
 
     def _update_observation(self):
+        data: IMUData = self.imu.read() # type: ignore
         ang_vel = self.imu_ang_vel
         dof_pos = self.dof_pos - self.default_dof_pos
         dof_vel = self.dof_vel
@@ -482,7 +485,7 @@ class CatbotLegEnv:
             if "dof_vel" in noise_cfg:
                 dof_vel = dof_vel + torch.randn_like(dof_vel) * noise_cfg["dof_vel"]
 
-        self.obs_dict["main"] = torch.concatenate(
+        self.obs_dict["shared"] = torch.concatenate(
             (
                 ang_vel * self.obs_scales["ang_vel"],  # 3
                 self.projected_gravity,  # 3
@@ -490,6 +493,20 @@ class CatbotLegEnv:
                 dof_pos * self.obs_scales["dof_pos"],  # 2
                 dof_vel * self.obs_scales["dof_vel"],  # 2
                 self.actions,  # 2
+            ),
+            dim=-1,
+        )
+        self.obs_dict["teacher"] = torch.concatenate(
+            (
+                self.imu_ang_vel * self.obs_scales["ang_vel"],  # 3
+                self.projected_gravity,  # 3
+            ),
+            dim=-1,
+        )
+        self.obs_dict["student"] = torch.concatenate(
+            (
+                data.ang_vel, # 3
+                data.lin_acc, # 3
             ),
             dim=-1,
         )

@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=./schemas/config.json
+runner:
+  class_name: DistillationRunner
+  num_steps_per_env: 24
+  save_interval: 100
+  obs_groups: { "teacher": ["shared", "teacher"], "student": ["shared", "student"] }
+  logger: tensorboard
+  neptune_project: legged_gym
+  wandb_project: legged_gym
+  run_name: catbot_leg
+
+  teacher:
+    class_name: MLPModel
+    activation: elu
+    obs_normalization: true
+    hidden_dims: [512, 256, 128]
+    distribution_cfg:
+      class_name: GaussianDistribution
+      init_std: 1.0
+      std_type: scalar
+
+  student:
+    class_name: MLPModel
+    activation: elu
+    obs_normalization: true
+    hidden_dims: [512, 256, 128]
+    distribution_cfg:
+      class_name: GaussianDistribution
+      init_std: 1.0
+      std_type: scalar
+
+  algorithm:
+    class_name: Distillation
+    learning_rate: 0.001
+    num_learning_epochs: 5
+    max_grad_norm: 1.0
+
+env:
+  class_name: CatbotLegEnv
+  robot_description_path: robots/catbot_leg_description/urdf/robot.urdf
+  robot_description_type: URDF
+  joints:
+    a: 0.0
+    l: 0.0
+  base_init_pos: [0.0, 0.0, 0.0]
+  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+  episode_length: 20.0
+  resampling_time: 4.0
+  action_scale: 0.25
+  simulate_action_latency: True
+  clip_actions: 100.0
+  dt: 0.02
+  kp: 20.0
+  kd: 0.5
+
+commands:
+  vel: [-1.0, 1.0]
+
+obs:
+  num_obs:
+    shared: 7
+    teacher: 6
+    student: 6
+  scales:
+    vel: 1.0
+    ang_vel: 1.0
+    dof_pos: 1.0
+    dof_vel: 0.05
+
+reward:
+  tracking_sigma: 0.25
+  rewards:
+    tracking_vel: 1.0 # 1.0
+    lin_vel_z: 0.5 # -1.0
+    # roll_angle: 0.0
+    # pitch_angle: 0.0
+    base_height: -0.1
+    action_rate: -0.005 # -0.005
+    similar_to_default: -0.01
+    # energy: 0.0002
+    # survival: 0.1
+  targets:
+    base_height: .3

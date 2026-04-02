@@ -127,3 +127,8 @@ domain_randomization:
     enabled: true
     interval_s: 10.0           # push every ~10s per env
     max_vel_xy: 0.3            # gentle — 0.3 m/s max impulse
+
+  stumbles:
+    enabled: true
+    probability: 0.01          # 2% chance per step per env while moving (~1 stumble every 2.5s)
+    max_vel_impulse: 1.0       # rad/s — small stumbles
