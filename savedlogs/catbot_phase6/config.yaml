@@ -103,7 +103,7 @@ reward:
     similar_to_default: -0.5
     energy: -0.15
     survival: 0.3
-    foot_clearance: 
+    foot_clearance: 0.0
   targets:
     base_height: 0.28
 

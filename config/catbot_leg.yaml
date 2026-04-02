@@ -83,6 +83,11 @@ reward:
     soft_landing: -0.025
   targets:
     base_height: .3
+    foot_clearance_max_height: 0.12  # clamp foot height reward above this (m)
 
 domain_randomization:
   enabled: false
+  stumbles:
+    enabled: false
+    probability: 0.05       # per-step chance of a stumble when leg is swinging
+    max_vel_impulse: 2.0    # rad/s impulse added to joint velocities

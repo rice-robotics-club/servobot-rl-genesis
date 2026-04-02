@@ -24,11 +24,18 @@ class DomainRandPushesConfig(TypedDict, total=False):
     max_vel_xy: float
 
 
+class DomainRandStumblesConfig(TypedDict, total=False):
+    enabled: Required[bool]
+    probability: float
+    max_vel_impulse: float
+
+
 class DomainRandConfig(TypedDict, total=False):
     enabled: bool
     on_reset: DomainRandOnResetConfig
     obs_noise: DomainRandObsNoiseConfig
     pushes: DomainRandPushesConfig
+    stumbles: DomainRandStumblesConfig
 r"""
 Command_Config.
 

@@ -300,6 +300,9 @@ class CatbotLegEnv:
         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
         self.scene.step()
 
+        # apply stumbling perturbations
+        self._apply_stumbles()
+
         # update buffers
         self.episode_length_buf += 1
         self.imu_pos = self.imu_link.get_pos()
@@ -586,6 +589,29 @@ class CatbotLegEnv:
             com_rand = torch.randn(n, n_links, 3, device=gs.device) * std
             self.robot.set_COM_shift(com_rand, envs_idx=env_indices)
 
+    def _apply_stumbles(self):
+        """Apply random joint velocity impulses during swing to simulate foot catching on obstacles."""
+        stumbles_cfg = self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
+        if not stumbles_cfg.get("enabled", False):
+            return
+
+        probability = stumbles_cfg.get("probability", 0.05)
+        max_impulse = stumbles_cfg.get("max_vel_impulse", 2.0)
+
+        # Only stumble envs where the leg is actively swinging
+        swing_mask = torch.abs(self.yaw_vel[:, 0]) > 0.05
+        stumble_mask = swing_mask & (torch.rand(self.num_envs, device=gs.device) < probability)
+        stumble_indices = torch.where(stumble_mask)[0]
+        if len(stumble_indices) == 0:
+            return
+
+        n = len(stumble_indices)
+        impulse = (torch.rand(n, self.num_actions, device=gs.device) * 2 - 1) * max_impulse
+        current_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+        new_vel = current_vel.clone()
+        new_vel[stumble_indices] += impulse
+        self.robot.set_dofs_velocity(new_vel, self.motors_dof_idx, envs_idx=stumble_indices)
+
     # ------------ reward functions----------------
     def _reward_foot_clearance(self):
         # Reward foot height when the leg is actively swinging (yaw velocity as proxy).
@@ -594,9 +620,11 @@ class CatbotLegEnv:
             return torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
 
         foot_height = self.foot_pos[:, 0, 2]  # (n_envs,) — single foot
+        max_height = self.cfg.get("targets", {}).get("foot_clearance_max_height", 0.12)
+        foot_height_clamped = foot_height.clamp(max=max_height)
         swing_mask = (torch.abs(self.yaw_vel[:, 0]) > 0.05).float()
         cmd_magnitude = torch.abs(self.commands[:, 0])
-        return foot_height * swing_mask * cmd_magnitude
+        return foot_height_clamped * swing_mask * cmd_magnitude
 
     def _reward_energy(self):
         exec_actions = (

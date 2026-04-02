@@ -80,7 +80,7 @@ env:
   termination_if_body_contact_height: 0.05
 
 commands:
-  lin_vel_x: [-1.0, 1.0]
+  lin_vel_x: [-0.8, 0.8]
   lin_vel_y: [-1.5, 1.5]
   ang_vel_z: [-0.1, 0.1]
 
@@ -103,10 +103,10 @@ reward:
     pitch_angle: -300
     base_height: -1000
     action_rate: -4
-    similar_to_default: -0.5
+    similar_to_default: -3
     energy: -0.15
     survival: 0.3
-    foot_clearance: 15.0
+    foot_clearance: 0.0
   targets:
     base_height: 0.28
 
@@ -129,3 +129,8 @@ domain_randomization:
     enabled: true
     interval_s: 8.0            # more frequent than phase 7
     max_vel_xy: 0.5            # 0.5 m/s — a solid shove
+
+  stumbles:
+    enabled: true
+    probability: 0.05          # 5% chance per step per env while moving (~1 stumble/s)
+    max_vel_impulse: 2.0       # rad/s — enough to disrupt a swing without launching the leg

@@ -85,6 +85,25 @@
       },
       "required": ["enabled"],
       "additionalProperties": false
+    },
+    "stumbles": {
+      "type": "object",
+      "description": "Random joint velocity impulses applied to foot DOFs during swing to simulate tripping",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "probability": {
+          "type": "number",
+          "description": "Per-step probability (0–1) of a stumble occurring when leg is in swing"
+        },
+        "max_vel_impulse": {
+          "type": "number",
+          "description": "Maximum impulse magnitude added to joint velocities (rad/s)"
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

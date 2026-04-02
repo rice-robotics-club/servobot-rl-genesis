@@ -1,0 +1,184 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   config/catbot_leg.yaml
+	modified:   config/randomized/catbot_phase6_dr_intro.yaml
+	modified:   config/randomized/catbot_phase7_dr_moderate.yaml
+	modified:   config/randomized/catbot_phase8_dr_full.yaml
+	modified:   config/schemas/domain_randomization.json
+	modified:   src/config/config.py
+	modified:   src/env/catbot_leg.py
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/config/catbot_leg.yaml b/config/catbot_leg.yaml
+index f94f9a2..8761f7b 100644
+--- a/config/catbot_leg.yaml
++++ b/config/catbot_leg.yaml
+@@ -83,6 +83,11 @@ reward:
+     soft_landing: -0.025
+   targets:
+     base_height: .3
++    foot_clearance_max_height: 0.12  # clamp foot height reward above this (m)
+ 
+ domain_randomization:
+   enabled: false
++  stumbles:
++    enabled: false
++    probability: 0.05       # per-step chance of a stumble when leg is swinging
++    max_vel_impulse: 2.0    # rad/s impulse added to joint velocities
+diff --git a/config/randomized/catbot_phase6_dr_intro.yaml b/config/randomized/catbot_phase6_dr_intro.yaml
+index 924ee0a..65dbda1 100644
+--- a/config/randomized/catbot_phase6_dr_intro.yaml
++++ b/config/randomized/catbot_phase6_dr_intro.yaml
+@@ -103,7 +103,7 @@ reward:
+     similar_to_default: -0.5
+     energy: -0.15
+     survival: 0.3
+-    foot_clearance: 60.0
++    foot_clearance: 0.0
+   targets:
+     base_height: 0.28
+ 
+diff --git a/config/randomized/catbot_phase7_dr_moderate.yaml b/config/randomized/catbot_phase7_dr_moderate.yaml
+index 1f36ab2..5d9fab9 100644
+--- a/config/randomized/catbot_phase7_dr_moderate.yaml
++++ b/config/randomized/catbot_phase7_dr_moderate.yaml
+@@ -105,7 +105,7 @@ reward:
+     similar_to_default: -0.5
+     energy: -0.15
+     survival: 0.3
+-    foot_clearance: 60.0
++    foot_clearance: 0.0
+   targets:
+     base_height: 0.28
+ 
+diff --git a/config/randomized/catbot_phase8_dr_full.yaml b/config/randomized/catbot_phase8_dr_full.yaml
+index 7cb2fd4..7630e31 100644
+--- a/config/randomized/catbot_phase8_dr_full.yaml
++++ b/config/randomized/catbot_phase8_dr_full.yaml
+@@ -106,7 +106,7 @@ reward:
+     similar_to_default: -0.5
+     energy: -0.15
+     survival: 0.3
+-    foot_clearance: 15.0
++    foot_clearance: 0.0
+   targets:
+     base_height: 0.28
+ 
+diff --git a/config/schemas/domain_randomization.json b/config/schemas/domain_randomization.json
+index 98fbb1b..b3f845f 100644
+--- a/config/schemas/domain_randomization.json
++++ b/config/schemas/domain_randomization.json
+@@ -85,6 +85,25 @@
+       },
+       "required": ["enabled"],
+       "additionalProperties": false
++    },
++    "stumbles": {
++      "type": "object",
++      "description": "Random joint velocity impulses applied to foot DOFs during swing to simulate tripping",
++      "properties": {
++        "enabled": {
++          "type": "boolean"
++        },
++        "probability": {
++          "type": "number",
++          "description": "Per-step probability (0–1) of a stumble occurring when leg is in swing"
++        },
++        "max_vel_impulse": {
++          "type": "number",
++          "description": "Maximum impulse magnitude added to joint velocities (rad/s)"
++        }
++      },
++      "required": ["enabled"],
++      "additionalProperties": false
+     }
+   },
+   "additionalProperties": false
+diff --git a/src/config/config.py b/src/config/config.py
+index 6c3dc5b..70eb0e5 100644
+--- a/src/config/config.py
++++ b/src/config/config.py
+@@ -24,11 +24,18 @@ class DomainRandPushesConfig(TypedDict, total=False):
+     max_vel_xy: float
+ 
+ 
++class DomainRandStumblesConfig(TypedDict, total=False):
++    enabled: Required[bool]
++    probability: float
++    max_vel_impulse: float
++
++
+ class DomainRandConfig(TypedDict, total=False):
+     enabled: bool
+     on_reset: DomainRandOnResetConfig
+     obs_noise: DomainRandObsNoiseConfig
+     pushes: DomainRandPushesConfig
++    stumbles: DomainRandStumblesConfig
+ r"""
+ Command_Config.
+ 
+diff --git a/src/env/catbot_leg.py b/src/env/catbot_leg.py
+index cbaf759..17e9c90 100644
+--- a/src/env/catbot_leg.py
++++ b/src/env/catbot_leg.py
+@@ -300,6 +300,9 @@ class CatbotLegEnv:
+         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
+         self.scene.step()
+ 
++        # apply stumbling perturbations
++        self._apply_stumbles()
++
+         # update buffers
+         self.episode_length_buf += 1
+         self.imu_pos = self.imu_link.get_pos()
+@@ -586,6 +589,29 @@ class CatbotLegEnv:
+             com_rand = torch.randn(n, n_links, 3, device=gs.device) * std
+             self.robot.set_COM_shift(com_rand, envs_idx=env_indices)
+ 
++    def _apply_stumbles(self):
++        """Apply random joint velocity impulses during swing to simulate foot catching on obstacles."""
++        stumbles_cfg = self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
++        if not stumbles_cfg.get("enabled", False):
++            return
++
++        probability = stumbles_cfg.get("probability", 0.05)
++        max_impulse = stumbles_cfg.get("max_vel_impulse", 2.0)
++
++        # Only stumble envs where the leg is actively swinging
++        swing_mask = torch.abs(self.yaw_vel[:, 0]) > 0.05
++        stumble_mask = swing_mask & (torch.rand(self.num_envs, device=gs.device) < probability)
++        stumble_indices = torch.where(stumble_mask)[0]
++        if len(stumble_indices) == 0:
++            return
++
++        n = len(stumble_indices)
++        impulse = (torch.rand(n, self.num_actions, device=gs.device) * 2 - 1) * max_impulse
++        current_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
++        new_vel = current_vel.clone()
++        new_vel[stumble_indices] += impulse
++        self.robot.set_dofs_velocity(new_vel, self.motors_dof_idx, envs_idx=stumble_indices)
++
+     # ------------ reward functions----------------
+     def _reward_foot_clearance(self):
+         # Reward foot height when the leg is actively swinging (yaw velocity as proxy).
+@@ -594,9 +620,11 @@ class CatbotLegEnv:
+             return torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
+ 
+         foot_height = self.foot_pos[:, 0, 2]  # (n_envs,) — single foot
++        max_height = self.cfg.get("targets", {}).get("foot_clearance_max_height", 0.12)
++        foot_height_clamped = foot_height.clamp(max=max_height)
+         swing_mask = (torch.abs(self.yaw_vel[:, 0]) > 0.05).float()
+         cmd_magnitude = torch.abs(self.commands[:, 0])
+-        return foot_height * swing_mask * cmd_magnitude
++        return foot_height_clamped * swing_mask * cmd_magnitude
+ 
+     def _reward_energy(self):
+         exec_actions = (

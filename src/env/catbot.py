@@ -297,8 +297,9 @@ class CatbotEnv:
         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
         self.scene.step()
 
-        # apply random pushes to base
+        # apply random pushes to base and stumbles to feet
         self._apply_pushes()
+        self._apply_stumbles()
 
         # update foot positions
         if self.foot_link_idx is not None:
@@ -589,16 +590,39 @@ class CatbotEnv:
 
         angles = torch.rand(n, device=gs.device) * 2 * math.pi
         mags = torch.rand(n, device=gs.device) * max_vel
-        delta_vel = torch.zeros(n, 3, device=gs.device)
+        delta_vel = torch.zeros(n, 2, device=gs.device)
         delta_vel[:, 0] = mags * torch.cos(angles)
         delta_vel[:, 1] = mags * torch.sin(angles)
 
-        current_vel = self.robot.get_vel()  # (n_envs, 3) world frame
-        new_vel = current_vel.clone()
-        new_vel[push_indices] += delta_vel
-        self.robot.set_vel(new_vel, envs_idx=push_indices)
+        # For a free-floating MJCF robot the first two DOFs are base x,y velocity (world frame)
+        base_xy_dof_idx = torch.tensor([0, 1], dtype=gs.tc_int, device=gs.device)
+        current_vel = self.robot.get_dofs_velocity(base_xy_dof_idx)  # (n_envs, 2)
+        push_vel = current_vel[push_indices] + delta_vel  # (n_push, 2)
+        self.robot.set_dofs_velocity(push_vel, base_xy_dof_idx, envs_idx=push_indices)
 
         self.push_buf.masked_fill_(push_mask, 0)
+
+    def _apply_stumbles(self):
+        """Apply random joint velocity impulses when the robot is moving to simulate feet catching on obstacles."""
+        stumbles_cfg = self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
+        if not stumbles_cfg.get("enabled", False):
+            return
+
+        probability = stumbles_cfg.get("probability", 0.05)
+        max_impulse = stumbles_cfg.get("max_vel_impulse", 2.0)
+
+        # Only stumble envs where the robot is actively moving
+        moving_mask = self.base_lin_vel[:, :2].norm(dim=-1) > 0.1
+        stumble_mask = moving_mask & (torch.rand(self.num_envs, device=gs.device) < probability)
+        stumble_indices = torch.where(stumble_mask)[0]
+        if len(stumble_indices) == 0:
+            return
+
+        n = len(stumble_indices)
+        impulse = (torch.rand(n, self.num_actions, device=gs.device) * 2 - 1) * max_impulse
+        current_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+        push_vel = current_vel[stumble_indices] + impulse
+        self.robot.set_dofs_velocity(push_vel, self.motors_dof_idx, envs_idx=stumble_indices)
 
     # ------------ reward functions----------------
     def _reward_tracking_lin_vel(self):

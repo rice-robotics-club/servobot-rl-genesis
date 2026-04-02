@@ -1,0 +1,4 @@
+max_iterations: 10000
+num_envs: 1000
+resumed_from: logs/catbot_phase5_resumed_20260329-175449_resumed_20260329-194024_resumed_20260329-225345_resumed_20260330-100601/model_13100.pt
+timestamp: '2026-03-30T22:35:26.344711'
