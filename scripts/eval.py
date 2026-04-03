@@ -48,6 +48,11 @@ def main():
         dest="num_rendered_envs",
         help="Number of environments to render in the viewer (default: 1)",
     )
+    parser.add_argument(
+        "--follow",
+        action="store_true",
+        help="Camera tracks the robot from slightly above",
+    )
     args = parser.parse_args()
 
     gs.init(
@@ -92,21 +97,42 @@ def main():
         env, config["runner"], str(model_path.parent), device=str(gs.device)
     )
     runner.load(str(model_path), map_location=str(gs.device))
-    onnx_model = runner.alg.policy.actor
-    onnx_model.to("cpu")
+    actor = runner.alg.actor
+    actor.to("cpu")
+    actor.eval()
+
+    num_obs = config["obs"]["num_obs"]
+    if isinstance(num_obs, dict):
+        num_obs = num_obs.get("main", next(iter(num_obs.values())))
+
+    # Wrap actor so ONNX sees a plain flat tensor instead of TensorDict
+    obs_group = list(runner.cfg["obs_groups"]["actor"])[0]
+
+    import tensordict as td_lib
+
+    class ActorWrapper(torch.nn.Module):
+        def __init__(self, model, group):
+            super().__init__()
+            self.model = model
+            self.group = group
+
+        def forward(self, obs_flat: torch.Tensor) -> torch.Tensor:
+            obs_td = td_lib.TensorDict({self.group: obs_flat.unsqueeze(0)}, batch_size=[1])
+            return self.model(obs_td).squeeze(0)
+
+    onnx_model = ActorWrapper(actor, obs_group)
     onnx_model.eval()
 
     # Trace and save the model
     torch.onnx.export(
         onnx_model,
-        torch.zeros(config["obs"]["num_obs"]).to("cpu"),  # type: ignore
+        torch.zeros(num_obs).to("cpu"),
         "./policy.onnx",
         export_params=True,
         opset_version=18,
         verbose=False
     )
 
-    return
     policy = runner.get_inference_policy(device=str(gs.device))
 
     input = None
@@ -133,6 +159,10 @@ def main():
         input = NinjaMoves()
 
     obs = env.reset()
+
+    if args.follow and env.scene.viewer:
+        env.scene.viewer.follow_entity(env.robot)
+
     with torch.no_grad():
         while True:
             actions = policy(obs)
