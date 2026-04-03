@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 import genesis as gs
+import numpy as np
 import torch
 from rsl_rl.runners import OnPolicyRunner
 
@@ -49,9 +50,11 @@ def main():
         help="Number of environments to render in the viewer (default: 1)",
     )
     parser.add_argument(
-        "--follow",
-        action="store_true",
-        help="Camera tracks the robot from slightly above",
+        "--camera",
+        type=str,
+        default=None,
+        choices=["follow", "cycle", "orbit"],
+        help="Camera mode: 'follow' tracks from behind, 'cycle' rotates through angles every 4s, 'orbit' smoothly circles the robot",
     )
     args = parser.parse_args()
 
@@ -158,13 +161,50 @@ def main():
         print("Ninja moves input initialized.")
         input = NinjaMoves()
 
+    # Camera offsets for cycle mode: (x, y, z) relative to robot
+    CYCLE_OFFSETS = [
+        (2.5,  0.0,  1.0),   # rear
+        (0.0,  2.5,  1.0),   # right side
+        (-2.5, 0.0,  1.0),   # front
+        (0.0, -2.5,  1.0),   # left side
+        (1.5,  1.5,  3.0),   # high angle
+    ]
+    cycle_index = 0
+    cycle_last_switch = time.monotonic()
+
     obs = env.reset()
 
-    if args.follow and env.scene.viewer:
+    ORBIT_RADIUS = 2.5
+    ORBIT_HEIGHT = 1.2
+    ORBIT_PERIOD = 30.0  # seconds per full revolution
+    orbit_start = time.monotonic()
+
+    if args.camera in ("follow", "cycle") and env.scene.viewer:
         env.scene.viewer.follow_entity(env.robot)
 
     with torch.no_grad():
         while True:
+            if args.camera == "orbit" and env.scene.viewer:
+                angle = (time.monotonic() - orbit_start) / ORBIT_PERIOD * 2.0 * np.pi
+                robot_pos = env.robot.get_pos().cpu().numpy()[0]
+                cam_pos = robot_pos + np.array([
+                    ORBIT_RADIUS * np.cos(angle),
+                    ORBIT_RADIUS * np.sin(angle),
+                    ORBIT_HEIGHT,
+                ])
+                env.scene.viewer._camera_up = np.array([0.0, 0.0, 1.0], dtype=np.float32)
+                env.scene.viewer.set_camera_pose(pos=cam_pos, lookat=robot_pos)
+
+            if args.camera == "cycle" and env.scene.viewer:
+                now = time.monotonic()
+                if now - cycle_last_switch >= 4.0:
+                    cycle_index = (cycle_index + 1) % len(CYCLE_OFFSETS)
+                    cycle_last_switch = now
+                    # Rebuild follow with new offset by temporarily patching init pos
+                    env.scene.viewer._camera_init_pos = np.array(CYCLE_OFFSETS[cycle_index], dtype=np.float32)
+                    env.scene.viewer._camera_up = np.array([0.0, 0.0, 1.0], dtype=np.float32)
+                    env.scene.viewer.follow_entity(env.robot)
+
             actions = policy(obs)
             obs, _, _, _ = env.step(
                 actions, input.command if input is not None else None
