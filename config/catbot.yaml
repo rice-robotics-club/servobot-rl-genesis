@@ -2,23 +2,27 @@ runner:
   class_name: OnPolicyRunner
   num_steps_per_env: 96
   save_interval: 100
-  seed: 1
-  obs_groups: { "policy": ["main"], "critic": ["main"] }
-  experiment_name: catbot
+  obs_groups: { "actor": ["main"], "critic": ["main"] }
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
-  max_iterations: 1000
   run_name: ""
 
-  policy:
-    class_name: ActorCritic
+  actor:
+    class_name: MLPModel
     activation: elu
-    actor_obs_normalization: true
-    critic_obs_normalization: true
-    actor_hidden_dims: [512, 256, 128]
-    critic_hidden_dims: [512, 256, 128]
-    init_noise_std: 1.0
+    obs_normalization: true
+    hidden_dims: [512, 256, 128]
+    distribution_cfg:
+      class_name: GaussianDistribution
+      init_std: 1.0
+      std_type: scalar
+
+  critic:
+    class_name: MLPModel
+    activation: elu
+    obs_normalization: true
+    hidden_dims: [512, 256, 128]
 
   algorithm:
     class_name: PPO
@@ -71,7 +75,8 @@ commands:
   ang_vel_z: [-0.1, 0.1]
 
 obs:
-  num_obs: 45
+  num_obs:
+    main: 45
   scales:
     lin_vel_x: 2.0
     lin_vel_y: 2.0
