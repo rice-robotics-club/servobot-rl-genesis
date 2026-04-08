@@ -1,0 +1,127 @@
+runner:
+  class_name: DistillationRunner
+  num_steps_per_env: 96
+  save_interval: 100
+  obs_groups: { "teacher": ["teacher"], "student": ["student"] }
+  logger: tensorboard
+  run_name: catbot_distill
+
+  # Architecture must match the phase7 PPO actor so checkpoint weights load correctly.
+  teacher:
+    class_name: MLPModel
+    activation: elu
+    obs_normalization: true
+    hidden_dims: [512, 256, 128]
+    distribution_cfg:
+      class_name: GaussianDistribution
+      init_std: 1.0
+      std_type: scalar
+
+  student:
+    class_name: MLPModel
+    activation: elu
+    obs_normalization: true
+    hidden_dims: [512, 256, 128]
+    distribution_cfg:
+      class_name: GaussianDistribution
+      init_std: 1.0
+      std_type: scalar
+
+  algorithm:
+    class_name: Distillation
+    learning_rate: 0.001
+    num_learning_epochs: 5
+    max_grad_norm: 1.0
+
+env:
+  class_name: CatbotDistillEnv
+  robot_description_path: robots/catbot_description/robot.xml
+  robot_description_type: MJCF
+  joints:
+    BL_a: 0.0
+    BL_hip: 0.0
+    BL_l: 0.0
+    BR_a: 0.0
+    BR_hip: 0.0
+    BR_l: 0.0
+    FL_a: 0.0
+    FL_hip: 0.0
+    FL_l: 0.0
+    FR_a: 0.0
+    FR_hip: 0.0
+    FR_l: 0.0
+  base_init_pos: [0.0, 0.0, 0.4]
+  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+  episode_length: 20.0
+  resampling_time: 4.0
+  action_scale: 0.40
+  simulate_action_latency: True
+  clip_actions: 100.0
+  dt: 0.02
+  termination_if_pitch_greater_than: 0.7
+  termination_if_roll_greater_than: 0.7
+  kp: 20.0
+  kd: 0.5
+  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+  termination_if_body_contact_height: 0.05
+
+commands:
+  lin_vel_x: [-0.8, 0.8]
+  lin_vel_y: [-1.5, 1.5]
+  ang_vel_z: [-0.1, 0.1]
+
+obs:
+  num_obs:
+    teacher: 45  # must match phase7 actor input exactly
+    student: 45  # hardware-observable: imu_ang_vel + imu_lin_acc replaces privileged state
+  scales:
+    lin_vel_x: 2.0
+    lin_vel_y: 2.0
+    ang_vel_z: 0.25
+    dof_pos: 1.0
+    dof_vel: 0.05
+
+reward:
+  tracking_sigma: 0.025
+  rewards:
+    tracking_lin_vel: 200
+    tracking_ang_vel: 60
+    lin_vel_z: -100
+    roll_angle: -200
+    pitch_angle: -300
+    base_height: -1000
+    action_rate: -4
+    similar_to_default: -3
+    energy: -0.15
+    survival: 0.3
+    foot_clearance: 0.0
+  targets:
+    base_height: 0.28
+
+domain_randomization:
+  enabled: true
+
+  imu:
+    acc_noise:        [0.05, 0.05, 0.05]   # m/s² per-axis std
+    gyro_noise:       [0.02, 0.02, 0.02]   # rad/s per-axis std
+    acc_random_walk:  [0.001, 0.001, 0.001]
+    gyro_random_walk: [0.001, 0.001, 0.001]
+    delay: 0.02    # seconds — matches real sensor latency
+    jitter: 0.005  # seconds — timing jitter std
+
+  on_reset:
+    kp: [17.0, 23.0]
+    kd: [0.35, 0.65]
+    friction: [0.5, 1.5]
+    mass_shift: [-0.05, 0.05]
+    com_shift: 0.02
+
+  obs_noise:
+    ang_vel: 0.15
+    dof_pos: 0.03
+    dof_vel: 2.0
+
+  pushes:
+    enabled: true
+    interval_s: 8.0
+    max_vel_xy: 0.5

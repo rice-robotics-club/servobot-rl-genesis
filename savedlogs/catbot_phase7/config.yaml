@@ -1,14 +1,15 @@
-# Phase 7 - Moderate DR
-# Picks up from phase 6. Reward structure unchanged.
-# Goal: cover the majority of real hardware variance — servo gain spread,
-#       surface differences, and unexpected disturbances.
-# Key additions from phase 6:
-#   - kp: ±10% range (unit-to-unit servo gain variation)
-#   - kd: ±20% range (damping more variable than stiffness on cheap servos)
-#   - friction: widened to ±40% (adds carpet and grippy rubber surfaces)
-#   - mass_shift: ±30g per link (cable routing, print density variation)
-#   - obs noise: doubled — closer to what noisy real hardware produces
-#   - pushes: enabled at low magnitude (teaches disturbance recovery)
+# Phase 8 - Full DR
+# Picks up from phase 7. Reward structure unchanged.
+# Goal: maximum sim-to-real robustness. Ranges should comfortably bracket
+#       the worst-case variance you'd see on the real catbot across
+#       different units, surfaces, and operating conditions.
+# Key changes from phase 7:
+#   - kp/kd: widened to ±15% / ±30% (covers worn servos and temperature drift)
+#   - friction: widened to ±50% (adds very slippery tile and grippy rubber)
+#   - mass_shift: widened to ±50g (covers small payload on back)
+#   - com_shift: added at 2cm std (assembly asymmetry, uneven cable routing)
+#   - obs noise: full levels (what you'd measure on stationary hardware)
+#   - pushes: stronger and more frequent
 runner:
   class_name: OnPolicyRunner
   num_steps_per_env: 96
@@ -19,7 +20,7 @@ runner:
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
-  max_iterations: 1500
+  max_iterations: 2000
   run_name: ""
 
   policy:
@@ -79,7 +80,7 @@ env:
   termination_if_body_contact_height: 0.05
 
 commands:
-  lin_vel_x: [-1.0, 1.0]
+  lin_vel_x: [-0.8, 0.8]
   lin_vel_y: [-1.5, 1.5]
   ang_vel_z: [-0.1, 0.1]
 
@@ -99,10 +100,10 @@ reward:
     tracking_ang_vel: 60
     lin_vel_z: -100
     roll_angle: -200
-    pitch_angle: -200
+    pitch_angle: -300
     base_height: -1000
     action_rate: -4
-    similar_to_default: -0.5
+    similar_to_default: -3
     energy: -0.15
     survival: 0.3
     foot_clearance: 0.0
@@ -113,17 +114,18 @@ domain_randomization:
   enabled: true
 
   on_reset:
-    kp: [18.0, 22.0]           # ±10% — unit-to-unit servo stiffness variation
-    kd: [0.4, 0.6]             # ±20% — damping more variable than stiffness
-    friction: [0.6, 1.4]       # ±40% — adds carpet/rubber surfaces
-    mass_shift: [-0.03, 0.03]  # ±30g per link — cable routing, print density
+    kp: [17.0, 23.0]           # ±15% — covers worn servos and temperature drift
+    kd: [0.35, 0.65]           # ±30% — high end of expected damping variance
+    friction: [0.5, 1.5]       # ±50% — slippery tile through grippy rubber mat
+    mass_shift: [-0.05, 0.05]  # ±50g per link — small payload, dense print fill
+    com_shift: 0.02            # 2cm std per link — asymmetric cable routing
 
   obs_noise:
-    ang_vel: 0.10              # 2× phase 6 — noisy real IMU under vibration
-    dof_pos: 0.02              # 2× phase 6 — joint flex under load
-    dof_vel: 1.0               # 2× phase 6 — finite-diff velocity noisier at speed
+    ang_vel: 0.15              # measured noise floor on stationary catbot IMU
+    dof_pos: 0.03              # joint flex under full load
+    dof_vel: 2.0               # worst-case finite-diff velocity at high speed
 
   pushes:
     enabled: true
-    interval_s: 10.0           # push every ~10s per env
-    max_vel_xy: 0.3            # gentle — 0.3 m/s max impulse
+    interval_s: 8.0            # more frequent than phase 7
+    max_vel_xy: 0.5            # 0.5 m/s — a solid shove

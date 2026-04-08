@@ -130,6 +130,9 @@ class CatbotEnv:
             ),
         )  # type: ignore
 
+        # allow subclasses to attach sensors before the scene is compiled
+        self._add_sensors_before_build()
+
         # build
         self.scene.build(n_envs=num_envs)
 
@@ -278,6 +281,10 @@ class CatbotEnv:
             self.episode_sums[name] = torch.zeros(
                 (self.num_envs,), dtype=gs.tc_float, device=gs.device
             )
+
+    def _add_sensors_before_build(self) -> None:
+        """Hook for subclasses to attach Genesis sensors before scene.build()."""
+        pass
 
     def _resample_commands(self, envs_idx):
         commands = gs_rand(*self.commands_limits, (self.num_envs,))

@@ -86,6 +86,49 @@
       "required": ["enabled"],
       "additionalProperties": false
     },
+    "imu": {
+      "type": "object",
+      "description": "Genesis IMU sensor noise parameters (set at scene build time)",
+      "properties": {
+        "acc_noise": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Per-axis accelerometer noise std dev (m/s²)"
+        },
+        "gyro_noise": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Per-axis gyroscope noise std dev (rad/s)"
+        },
+        "acc_random_walk": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Per-axis accelerometer random walk std dev"
+        },
+        "gyro_random_walk": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Per-axis gyroscope random walk std dev"
+        },
+        "delay": {
+          "type": "number",
+          "description": "Sensor delay in seconds"
+        },
+        "jitter": {
+          "type": "number",
+          "description": "Timing jitter std dev in seconds"
+        }
+      },
+      "additionalProperties": false
+    },
     "stumbles": {
       "type": "object",
       "description": "Random joint velocity impulses applied to foot DOFs during swing to simulate tripping",

@@ -60,7 +60,7 @@ obs:
   num_obs:
     shared: 7
     teacher: 6
-    student: 6
+    student: 8
   scales:
     vel: 1.0
     ang_vel: 1.0

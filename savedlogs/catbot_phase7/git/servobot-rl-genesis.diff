@@ -17,6 +17,7 @@ Changes not staged for commit:
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
 	savedlogs/catbot_phase6/
+	savedlogs/catbot_phase7/
 
 no changes added to commit (use "git add" and/or "git commit -a") 
 
@@ -65,11 +66,24 @@ index 1f36ab2..5d9fab9 100644
      base_height: 0.28
  
 diff --git a/config/randomized/catbot_phase8_dr_full.yaml b/config/randomized/catbot_phase8_dr_full.yaml
-index 7cb2fd4..7630e31 100644
+index 7cb2fd4..894d005 100644
 --- a/config/randomized/catbot_phase8_dr_full.yaml
 +++ b/config/randomized/catbot_phase8_dr_full.yaml
-@@ -106,7 +106,7 @@ reward:
-     similar_to_default: -0.5
+@@ -80,7 +80,7 @@ env:
+   termination_if_body_contact_height: 0.05
+ 
+ commands:
+-  lin_vel_x: [-1.0, 1.0]
++  lin_vel_x: [-0.8, 0.8]
+   lin_vel_y: [-1.5, 1.5]
+   ang_vel_z: [-0.1, 0.1]
+ 
+@@ -103,10 +103,10 @@ reward:
+     pitch_angle: -300
+     base_height: -1000
+     action_rate: -4
+-    similar_to_default: -0.5
++    similar_to_default: -3
      energy: -0.15
      survival: 0.3
 -    foot_clearance: 15.0

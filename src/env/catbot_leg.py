@@ -233,6 +233,10 @@ class CatbotLegEnv:
         self.last_actions = torch.zeros_like(self.actions)
         self.dof_pos = torch.empty_like(self.actions)
         self.dof_vel = torch.empty_like(self.actions)
+        self.gait_phase = torch.zeros(
+            (self.num_envs,), dtype=gs.tc_float, device=gs.device
+        )
+        self.gait_period = get_or_default(env_cfg, "gait_period", 0.5)  # seconds
         self.yaw_vel = torch.zeros(
             (self.num_envs,), dtype=gs.tc_float, device=gs.device
         )
@@ -307,6 +311,7 @@ class CatbotLegEnv:
 
         # update buffers
         self.episode_length_buf += 1
+        self.gait_phase = (self.gait_phase + 2 * math.pi * self.dt / self.gait_period) % (2 * math.pi)
         self.imu_pos = self.imu_link.get_pos()
         self.imu_quat = self.imu_link.get_quat()
         self.imu_euler: torch.Tensor = quat_to_xyz(
@@ -376,7 +381,6 @@ class CatbotLegEnv:
         self.reset_buf = self.episode_length_buf > self.max_episode_length
         if self.body_contact_height_threshold is not None and len(self.non_foot_link_idx) > 0:
             non_foot_pos = self.robot.get_links_pos(self.non_foot_link_idx)
-            print(f"[DEBUG] non_foot z range: min={non_foot_pos[0, :, 2].min().item():.4f}  max={non_foot_pos[0, :, 2].max().item():.4f}  threshold={self.body_contact_height_threshold}")
             self.reset_buf |= (non_foot_pos[..., 2] < self.body_contact_height_threshold).any(dim=-1)
 
         # Compute timeout
@@ -417,6 +421,7 @@ class CatbotLegEnv:
             self.actions.zero_()
             self.last_actions.zero_()
             self.last_dof_vel.zero_()
+            self.gait_phase.zero_()
             self.episode_length_buf.zero_()
             self.reset_buf.fill_(True)
             self.foot_pos.zero_()
@@ -450,6 +455,7 @@ class CatbotLegEnv:
             self.actions.masked_fill_(envs_idx[:, None], 0.0)
             self.last_actions.masked_fill_(envs_idx[:, None], 0.0)
             self.last_dof_vel.masked_fill_(envs_idx[:, None], 0.0)
+            self.gait_phase.masked_fill_(envs_idx, 0.0)
             self.episode_length_buf.masked_fill_(envs_idx, 0)
             self.reset_buf.masked_fill_(envs_idx, True)
 
@@ -505,8 +511,10 @@ class CatbotLegEnv:
         )
         self.obs_dict["student"] = torch.concatenate(
             (
-                data.ang_vel, # 3
-                data.lin_acc, # 3
+                data.ang_vel,                          # 3
+                data.lin_acc,                          # 3
+                torch.sin(self.gait_phase).unsqueeze(-1),  # 1
+                torch.cos(self.gait_phase).unsqueeze(-1),  # 1
             ),
             dim=-1,
         )
@@ -637,7 +645,7 @@ class CatbotLegEnv:
             return torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
 
         foot_height = self.foot_pos[:, 0, 2]  # (n_envs,) — single foot
-        max_height = self.cfg.get("targets", {}).get("foot_clearance_max_height", 0.12)
+        max_height = self.targets.get("foot_clearance_max_height", 0.12)
         foot_height_clamped = foot_height.clamp(max=max_height)
         swing_mask = (torch.abs(self.yaw_vel[:, 0]) > 0.05).float()
         cmd_magnitude = torch.abs(self.commands[:, 0])
