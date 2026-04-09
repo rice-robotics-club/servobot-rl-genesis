@@ -472,23 +472,23 @@ class CatbotLegEnv:
 
     def _update_observation(self):
         data: IMUData = self.imu.read() # type: ignore
-        ang_vel = self.imu_ang_vel
+        # ang_vel = self.imu_ang_vel
         dof_pos = self.dof_pos - self.default_dof_pos
         dof_vel = self.dof_vel
 
-        noise_cfg = self.dr_cfg.get("obs_noise", {}) if self.dr_cfg.get("enabled", False) else {}
-        if noise_cfg:
-            if "ang_vel" in noise_cfg:
-                ang_vel = ang_vel + torch.randn_like(ang_vel) * noise_cfg["ang_vel"]
-            if "dof_pos" in noise_cfg:
-                dof_pos = dof_pos + torch.randn_like(dof_pos) * noise_cfg["dof_pos"]
-            if "dof_vel" in noise_cfg:
-                dof_vel = dof_vel + torch.randn_like(dof_vel) * noise_cfg["dof_vel"]
+        # noise_cfg = self.dr_cfg.get("obs_noise", {}) if self.dr_cfg.get("enabled", False) else {}
+        # if noise_cfg:
+        #     if "ang_vel" in noise_cfg:
+        #         ang_vel = ang_vel + torch.randn_like(ang_vel) * noise_cfg["ang_vel"]
+        #     if "dof_pos" in noise_cfg:
+        #         dof_pos = dof_pos + torch.randn_like(dof_pos) * noise_cfg["dof_pos"]
+        #     if "dof_vel" in noise_cfg:
+        #         dof_vel = dof_vel + torch.randn_like(dof_vel) * noise_cfg["dof_vel"]
 
         self.obs_dict["shared"] = torch.concatenate(
             (
-                ang_vel * self.obs_scales["ang_vel"],  # 3
-                self.projected_gravity,  # 3
+                # ang_vel * self.obs_scales["ang_vel"],  # 3
+                # self.projected_gravity,  # 3
                 self.commands * self.commands_scale,  # 1
                 dof_pos * self.obs_scales["dof_pos"],  # 2
                 dof_vel * self.obs_scales["dof_vel"],  # 2
@@ -676,7 +676,7 @@ class CatbotLegEnv:
     def _reward_base_height(self):
         # Penalize base height away from target
         return torch.square(self.imu_pos[:, 2] - self.targets["base_height"])
-    
+
     def _reward_soft_landing(self):
         # Reward for soft landing after a jump or fall, based on rapid positive z acceleration with a negative z velocity
         # This encourages the robot to learn to land softly instead of crashing to the ground
@@ -689,5 +689,3 @@ class CatbotLegEnv:
             torch.clamp(z_acc, min=0.0),  # reward positive acceleration (impact)
             torch.zeros_like(z_acc),  # no reward when not moving downwards
         )
-
-
