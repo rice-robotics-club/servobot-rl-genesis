@@ -100,41 +100,41 @@ def main():
         env, config["runner"], str(model_path.parent), device=str(gs.device)
     )
     runner.load(str(model_path), map_location=str(gs.device))
-    actor = runner.alg.actor
-    actor.to("cpu")
-    actor.eval()
+    # actor = runner.alg.actor
+    # actor.to("cpu")
+    # actor.eval()
 
-    num_obs = config["obs"]["num_obs"]
-    if isinstance(num_obs, dict):
-        num_obs = num_obs.get("main", next(iter(num_obs.values())))
+    # num_obs = config["obs"]["num_obs"]
+    # if isinstance(num_obs, dict):
+    #     num_obs = num_obs.get("main", next(iter(num_obs.values())))
 
-    # Wrap actor so ONNX sees a plain flat tensor instead of TensorDict
-    obs_group = list(runner.cfg["obs_groups"]["actor"])[0]
+    # # Wrap actor so ONNX sees a plain flat tensor instead of TensorDict
+    # obs_group = list(runner.cfg["obs_groups"]["actor"])[0]
 
-    import tensordict as td_lib
+    # import tensordict as td_lib
 
-    class ActorWrapper(torch.nn.Module):
-        def __init__(self, model, group):
-            super().__init__()
-            self.model = model
-            self.group = group
+    # class ActorWrapper(torch.nn.Module):
+    #     def __init__(self, model, group):
+    #         super().__init__()
+    #         self.model = model
+    #         self.group = group
 
-        def forward(self, obs_flat: torch.Tensor) -> torch.Tensor:
-            obs_td = td_lib.TensorDict({self.group: obs_flat.unsqueeze(0)}, batch_size=[1])
-            return self.model(obs_td).squeeze(0)
+    #     def forward(self, obs_flat: torch.Tensor) -> torch.Tensor:
+    #         obs_td = td_lib.TensorDict({self.group: obs_flat.unsqueeze(0)}, batch_size=[1])
+    #         return self.model(obs_td).squeeze(0)
 
-    onnx_model = ActorWrapper(actor, obs_group)
-    onnx_model.eval()
+    # onnx_model = ActorWrapper(actor, obs_group)
+    # onnx_model.eval()
 
-    # Trace and save the model
-    torch.onnx.export(
-        onnx_model,
-        torch.zeros(num_obs).to("cpu"),
-        "./policy.onnx",
-        export_params=True,
-        opset_version=18,
-        verbose=False
-    )
+    # # Trace and save the model
+    # torch.onnx.export(
+    #     onnx_model,
+    #     torch.zeros(num_obs).to("cpu"),
+    #     "./policy.onnx",
+    #     export_params=True,
+    #     opset_version=18,
+    #     verbose=False
+    # )
 
     policy = runner.get_inference_policy(device=str(gs.device))
 
@@ -206,6 +206,7 @@ def main():
                     env.scene.viewer.follow_entity(env.robot)
 
             actions = policy(obs)
+            print(actions)
             obs, _, _, _ = env.step(
                 actions, input.command if input is not None else None
             )
