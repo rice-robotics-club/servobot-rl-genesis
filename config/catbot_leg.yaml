@@ -58,7 +58,7 @@ env:
   kd: 0.5
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
-  foot_link_names: ["160mm"]
+  foot_link_names: ["160mm", "base_link"]
   termination_if_body_contact_height: 0.05
 
 commands:
@@ -83,16 +83,14 @@ reward:
     base_height: -0.1
     action_rate: -0.005 # -0.005
     similar_to_default: -0.01
-    # energy: 0.0002
-    # survival: 0.1
     soft_landing: -0.025
   targets:
     base_height: .3
-    foot_clearance_max_height: 0.12  # clamp foot height reward above this (m)
+    foot_clearance_max_height: 0.12 # clamp foot height reward above this (m)
 
 domain_randomization:
   enabled: false
   stumbles:
     enabled: false
-    probability: 0.05       # per-step chance of a stumble when leg is swinging
-    max_vel_impulse: 2.0    # rad/s impulse added to joint velocities
+    probability: 0.05 # per-step chance of a stumble when leg is swinging
+    max_vel_impulse: 2.0 # rad/s impulse added to joint velocities

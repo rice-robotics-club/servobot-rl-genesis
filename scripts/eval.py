@@ -29,7 +29,12 @@ def main():
         help="Model iteration file to load (default: (model_[max].pt))",
     )
     parser.add_argument(
-        "-i", "--input", type=str, default=None, choices=["keyboard", "gamepad", "fullspeedahead", "ninjamoves"], help="Input method to use (default: none)"
+        "-i",
+        "--input",
+        type=str,
+        default=None,
+        choices=["keyboard", "gamepad", "fullspeedahead", "ninjamoves"],
+        help="Input method to use (default: none)",
     )
     parser.add_argument(
         "--minecraft",
@@ -100,16 +105,67 @@ def main():
         env, config["runner"], str(model_path.parent), device=str(gs.device)
     )
     runner.load(str(model_path), map_location=str(gs.device))
-    actor = runner.alg.actor
+
+    # Handle both PPO and Distillation runners
+    if hasattr(runner.alg, "actor"):
+        # PPO runner
+        actor = runner.alg.actor
+        obs_group_key = "actor"
+    elif hasattr(runner.alg, "student"):
+        # Distillation runner
+        actor = runner.alg.student
+        obs_group_key = "student"
+    else:
+        raise ValueError("Could not determine actor model from runner")
+
     actor.to("cpu")
     actor.eval()
+
+    # Validate observation dimensions match between saved model and environment
+    # This is important because if the environment code has been updated to produce
+    # different observation dimensions, the saved model will fail to run
+    policy = runner.get_inference_policy(device=str(gs.device))
+    obs_groups = policy.obs_groups if hasattr(policy, "obs_groups") else None
+
+    if obs_groups:
+        obs = env.reset()
+        obs_list = [obs[group] for group in obs_groups]
+        expected_obs_size = sum(o.shape[-1] for o in obs_list)
+        actual_model_input_size = policy.mlp[0].in_features
+
+        if expected_obs_size != actual_model_input_size:
+            print(f"\n{'=' * 70}")
+            print(f"ERROR: Observation dimension mismatch detected!")
+            print(f"{'=' * 70}")
+            print(f"Model expects: {actual_model_input_size} observation dimensions")
+            print(f"Environment produces: {expected_obs_size} dimensions")
+            print(f"Observation groups: {obs_groups}")
+            print()
+            print("This error occurs when the environment implementation has changed")
+            print(
+                "(e.g., different sensor readings or observation composition) but the"
+            )
+            print("saved model checkpoint was trained with the old observation format.")
+            print()
+            print("SOLUTION: Retrain the model with the current environment:")
+            print("  train -c config/catbot_leg_5.yaml")
+            print()
+            print("Or, if you have made temporary changes to the environment, consider")
+            print("reverting them to match the training configuration stored in:")
+            print(f"  {exp_dir}/config.yaml")
+            print(f"{'=' * 70}")
+            raise RuntimeError(
+                f"Observation size mismatch: policy expects {actual_model_input_size} "
+                f"dims but environment provides {expected_obs_size} dims. "
+                "Please retrain the model with the current environment."
+            )
 
     num_obs = config["obs"]["num_obs"]
     if isinstance(num_obs, dict):
         num_obs = num_obs.get("main", next(iter(num_obs.values())))
 
     # Wrap actor so ONNX sees a plain flat tensor instead of TensorDict
-    obs_group = list(runner.cfg["obs_groups"]["actor"])[0]
+    obs_group = list(runner.cfg["obs_groups"][obs_group_key])[0]
 
     import tensordict as td_lib
 
@@ -120,21 +176,25 @@ def main():
             self.group = group
 
         def forward(self, obs_flat: torch.Tensor) -> torch.Tensor:
-            obs_td = td_lib.TensorDict({self.group: obs_flat.unsqueeze(0)}, batch_size=[1])
+            obs_td = td_lib.TensorDict(
+                {self.group: obs_flat.unsqueeze(0)}, batch_size=[1]
+            )
             return self.model(obs_td).squeeze(0)
 
-    onnx_model = ActorWrapper(actor, obs_group)
-    onnx_model.eval()
+    # ONNX export only supported for PPO models
+    if obs_group_key == "actor":
+        onnx_model = ActorWrapper(actor, obs_group)
+        onnx_model.eval()
 
-    # Trace and save the model
-    torch.onnx.export(
-        onnx_model,
-        torch.zeros(num_obs).to("cpu"),
-        "./policy.onnx",
-        export_params=True,
-        opset_version=18,
-        verbose=False
-    )
+        # Trace and save the model
+        torch.onnx.export(
+            onnx_model,
+            torch.zeros(num_obs).to("cpu"),
+            "./policy.onnx",
+            export_params=True,
+            opset_version=18,
+            verbose=False,
+        )
 
     policy = runner.get_inference_policy(device=str(gs.device))
 
@@ -163,11 +223,11 @@ def main():
 
     # Camera offsets for cycle mode: (x, y, z) relative to robot
     CYCLE_OFFSETS = [
-        (2.5,  0.0,  1.0),   # rear
-        (0.0,  2.5,  1.0),   # right side
-        (-2.5, 0.0,  1.0),   # front
-        (0.0, -2.5,  1.0),   # left side
-        (1.5,  1.5,  3.0),   # high angle
+        (2.5, 0.0, 1.0),  # rear
+        (0.0, 2.5, 1.0),  # right side
+        (-2.5, 0.0, 1.0),  # front
+        (0.0, -2.5, 1.0),  # left side
+        (1.5, 1.5, 3.0),  # high angle
     ]
     cycle_index = 0
     cycle_last_switch = time.monotonic()
@@ -187,12 +247,16 @@ def main():
             if args.camera == "orbit" and env.scene.viewer:
                 angle = (time.monotonic() - orbit_start) / ORBIT_PERIOD * 2.0 * np.pi
                 robot_pos = env.robot.get_pos().cpu().numpy()[0]
-                cam_pos = robot_pos + np.array([
-                    ORBIT_RADIUS * np.cos(angle),
-                    ORBIT_RADIUS * np.sin(angle),
-                    ORBIT_HEIGHT,
-                ])
-                env.scene.viewer._camera_up = np.array([0.0, 0.0, 1.0], dtype=np.float32)
+                cam_pos = robot_pos + np.array(
+                    [
+                        ORBIT_RADIUS * np.cos(angle),
+                        ORBIT_RADIUS * np.sin(angle),
+                        ORBIT_HEIGHT,
+                    ]
+                )
+                env.scene.viewer._camera_up = np.array(
+                    [0.0, 0.0, 1.0], dtype=np.float32
+                )
                 env.scene.viewer.set_camera_pose(pos=cam_pos, lookat=robot_pos)
 
             if args.camera == "cycle" and env.scene.viewer:
@@ -201,8 +265,12 @@ def main():
                     cycle_index = (cycle_index + 1) % len(CYCLE_OFFSETS)
                     cycle_last_switch = now
                     # Rebuild follow with new offset by temporarily patching init pos
-                    env.scene.viewer._camera_init_pos = np.array(CYCLE_OFFSETS[cycle_index], dtype=np.float32)
-                    env.scene.viewer._camera_up = np.array([0.0, 0.0, 1.0], dtype=np.float32)
+                    env.scene.viewer._camera_init_pos = np.array(
+                        CYCLE_OFFSETS[cycle_index], dtype=np.float32
+                    )
+                    env.scene.viewer._camera_up = np.array(
+                        [0.0, 0.0, 1.0], dtype=np.float32
+                    )
                     env.scene.viewer.follow_entity(env.robot)
 
             actions = policy(obs)

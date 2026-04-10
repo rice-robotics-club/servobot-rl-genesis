@@ -3,7 +3,8 @@ runner:
   class_name: DistillationRunner
   num_steps_per_env: 24
   save_interval: 100
-  obs_groups: { "teacher": ["shared", "teacher"], "student": ["shared", "student"] }
+  obs_groups:
+    { "teacher": ["shared", "teacher"], "student": ["shared", "student"] }
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
@@ -52,13 +53,15 @@ env:
   dt: 0.02
   kp: 20.0
   kd: 0.5
+  foot_link_names: ["160mm", "base_link"]
+  termination_if_body_contact_height: 0.05
 
 commands:
   vel: [-1.0, 1.0]
 
 obs:
   num_obs:
-    shared: 7
+    shared: 13
     teacher: 6
     student: 8
   scales:
@@ -70,14 +73,11 @@ obs:
 reward:
   tracking_sigma: 0.25
   rewards:
-    tracking_vel: 1.0 # 1.0
-    lin_vel_z: 0.5 # -1.0
-    # roll_angle: 0.0
-    # pitch_angle: 0.0
+    tracking_vel: 1.0
+    lin_vel_z: 0.5
     base_height: -0.1
-    action_rate: -0.005 # -0.005
+    action_rate: -0.005
     similar_to_default: -0.01
-    # energy: 0.0002
-    # survival: 0.1
+    soft_landing: -0.025
   targets:
     base_height: .3
