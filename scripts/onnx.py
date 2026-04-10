@@ -2,11 +2,46 @@ import argparse
 import pickle
 from pathlib import Path
 
+import torch
+from rsl_rl.env import VecEnv
 from rsl_rl.runners import OnPolicyRunner
+from tensordict import TensorDict
 
-from src.config import Config
-from src.env import NullEnv
+from src.config import Config, EnvConfig, ObsConfig
 from src.utils import get_latest
+
+
+class NullEnv(VecEnv):
+    """
+    An environment for using RSL_RL without training.
+    """
+
+    def __init__(self, num_envs, env_cfg: EnvConfig, obs_cfg: ObsConfig):
+        self.device = "cpu"
+        self.cfg = env_cfg
+        self.obs = obs_cfg
+        self.num_envs = num_envs
+        self.num_actions = len(env_cfg["joints"])
+        self.max_episode_length = 1
+        self.observations = TensorDict(
+            {
+                group: torch.empty((self.num_envs, num), dtype=torch.float64)
+                for group, num in obs_cfg["num_obs"].items()
+            },
+            batch_size=(self.num_envs,),
+        )
+        self.rewards = torch.empty(
+            (self.num_envs,), dtype=torch.float64, device=self.device
+        )
+        self.reset = torch.zeros((num_envs,), dtype=torch.bool, device=self.device)
+
+    def get_observations(self) -> TensorDict:
+        return self.observations
+
+    def step(
+        self, actions: torch.Tensor
+    ) -> tuple[TensorDict, torch.Tensor, torch.Tensor, dict]:
+        return self.observations, self.rewards, self.reset, {}
 
 
 def main():

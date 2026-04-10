@@ -274,6 +274,7 @@ def main():
                     env.scene.viewer.follow_entity(env.robot)
 
             actions = policy(obs)
+            print(actions)
             obs, _, _, _ = env.step(
                 actions, input.command if input is not None else None
             )

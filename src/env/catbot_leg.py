@@ -560,8 +560,8 @@ class CatbotLegEnv:
 
         self.obs_dict["shared"] = torch.concatenate(
             (
-                ang_vel * self.obs_scales["ang_vel"],  # 3
-                self.projected_gravity,  # 3
+                # ang_vel * self.obs_scales["ang_vel"],  # 3
+                # self.projected_gravity,  # 3
                 self.commands * self.commands_scale,  # 1
                 dof_pos * self.obs_scales["dof_pos"],  # 2
                 dof_vel * self.obs_scales["dof_vel"],  # 2
