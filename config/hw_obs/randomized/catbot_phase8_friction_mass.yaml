@@ -1,14 +1,10 @@
-# Phase 7 - Moderate DR
-# Picks up from phase 6. Reward structure unchanged.
-# Goal: cover the majority of real hardware variance — servo gain spread,
-#       surface differences, and unexpected disturbances.
-# Key additions from phase 6:
-#   - kp: ±10% range (unit-to-unit servo gain variation)
-#   - kd: ±20% range (damping more variable than stiffness on cheap servos)
+# yaml-language-server: $schema=../../schemas/config.json
+# Phase 8 - Friction + Mass Variation
+# Picks up from phase 7. Reward structure unchanged.
+# Goal: teach the policy to handle surface and body mass variation.
+# Single addition from phase 7:
 #   - friction: widened to ±40% (adds carpet and grippy rubber surfaces)
 #   - mass_shift: ±30g per link (cable routing, print density variation)
-#   - IMU/obs noise: doubled — closer to what noisy real hardware produces
-#   - pushes: enabled at low magnitude (teaches disturbance recovery)
 runner:
   class_name: OnPolicyRunner
   num_steps_per_env: 96
@@ -110,7 +106,6 @@ reward:
     similar_to_default: -0.5
     energy: -0.15
     survival: 0.3
-    foot_clearance: 0.0
   targets:
     base_height: 0.28
 
@@ -118,30 +113,23 @@ domain_randomization:
   enabled: true
 
   imu:
-    acc_noise:        [0.05, 0.05, 0.05]   # m/s² per-axis std — noisy real IMU under vibration
-    gyro_noise:       [0.02, 0.02, 0.02]   # rad/s per-axis std — 2× phase 6
+    acc_noise:        [0.025, 0.025, 0.025]
+    gyro_noise:       [0.01, 0.01, 0.01]
     acc_random_walk:  [0.001, 0.001, 0.001]
     gyro_random_walk: [0.001, 0.001, 0.001]
-    delay: 0.02    # seconds — matches real sensor latency
-    jitter: 0.005  # seconds — timing jitter std
+    delay: 0.02
+    jitter: 0.005
 
   on_reset:
-    kp: [18.0, 22.0]           # ±10% — unit-to-unit servo stiffness variation
-    kd: [0.4, 0.6]             # ±20% — damping more variable than stiffness
-    friction: [0.6, 1.4]       # ±40% — adds carpet/rubber surfaces
-    mass_shift: [-0.03, 0.03]  # ±30g per link — cable routing, print density
-    calibration_offset: [-0.15, 0.15]  # ±0.15 rad — moderate miscalibration
+    kp: [18.0, 22.0]
+    kd: [0.4, 0.6]
+    friction: [0.6, 1.4]         # NEW: widened to ±40% — adds carpet/rubber surfaces
+    mass_shift: [-0.03, 0.03]    # NEW: ±30g per link
+    calibration_offset: [-0.1, 0.1]
 
   obs_noise:
-    dof_pos: 0.02              # 2× phase 6 — joint flex under load
-    dof_vel: 1.0               # 2× phase 6 — finite-diff velocity noisier at speed
+    dof_pos: 0.01
+    dof_vel: 0.5
 
   pushes:
-    enabled: true
-    interval_s: 10.0           # push every ~10s per env
-    max_vel_xy: 0.3            # gentle — 0.3 m/s max impulse
-
-  stumbles:
-    enabled: true
-    probability: 0.01          # 2% chance per step per env while moving (~1 stumble every 2.5s)
-    max_vel_impulse: 1.0       # rad/s — small stumbles
+    enabled: false

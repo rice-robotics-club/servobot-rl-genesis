@@ -1,15 +1,16 @@
-# Phase 8 - Full DR
-# Picks up from phase 7. Reward structure unchanged.
-# Goal: maximum sim-to-real robustness. Ranges should comfortably bracket
-#       the worst-case variance you'd see on the real catbot across
-#       different units, surfaces, and operating conditions.
-# Key changes from phase 7:
-#   - kp/kd: widened to ±15% / ±30% (covers worn servos and temperature drift)
-#   - friction: widened to ±50% (adds very slippery tile and grippy rubber)
-#   - mass_shift: widened to ±50g (covers small payload on back)
-#   - com_shift: added at 2cm std (assembly asymmetry, uneven cable routing)
-#   - IMU/obs noise: full levels (what you'd measure on stationary hardware)
-#   - pushes: stronger and more frequent
+# yaml-language-server: $schema=../../schemas/config.json
+# Phase 12 - Full DR
+# Picks up from phase 11. Reward structure tightened slightly.
+# Goal: maximum sim-to-real robustness — all ranges pushed to worst-case hardware variance.
+# Changes from phase 11:
+#   - kp/kd: widened to ±15% / ±30% (worn servos, temperature drift)
+#   - friction: widened to ±50% (slippery tile through grippy rubber mat)
+#   - mass_shift: widened to ±50g (small payload, dense print fill)
+#   - com_shift: added at 2cm std (asymmetric cable routing, assembly variance)
+#   - calibration_offset: widened to ±0.2 rad
+#   - obs noise: obs dof_vel pushed to worst-case 2.0 rad/s
+#   - pushes: stronger (0.5 m/s) and more frequent (every 8s)
+#   - stumbles: probability raised to 5%
 runner:
   class_name: OnPolicyRunner
   num_steps_per_env: 96
@@ -84,7 +85,7 @@ env:
   termination_if_body_contact_height: 0.05
 
 commands:
-  lin_vel_x: [-0.8, 0.8]
+  lin_vel_x: [-1.0, 1.0]
   lin_vel_y: [-1.5, 1.5]
   ang_vel_z: [-0.1, 0.1]
 
@@ -105,13 +106,12 @@ reward:
     tracking_ang_vel: 60
     lin_vel_z: -100
     roll_angle: -200
-    pitch_angle: -300
+    pitch_angle: -200
     base_height: -1000
     action_rate: -4
-    similar_to_default: -3
+    similar_to_default: -0.5
     energy: -0.15
     survival: 0.3
-    foot_clearance: 0.0
   targets:
     base_height: 0.28
 
@@ -119,31 +119,31 @@ domain_randomization:
   enabled: true
 
   imu:
-    acc_noise:        [0.05, 0.05, 0.05]   # m/s² per-axis std — measured noise floor on stationary catbot
-    gyro_noise:       [0.02, 0.02, 0.02]   # rad/s per-axis std — worst-case gyro noise
+    acc_noise:        [0.05, 0.05, 0.05]
+    gyro_noise:       [0.02, 0.02, 0.02]
     acc_random_walk:  [0.001, 0.001, 0.001]
     gyro_random_walk: [0.001, 0.001, 0.001]
-    delay: 0.02    # seconds — matches real sensor latency
-    jitter: 0.005  # seconds — timing jitter std
+    delay: 0.02
+    jitter: 0.005
 
   on_reset:
-    kp: [17.0, 23.0]           # ±15% — covers worn servos and temperature drift
-    kd: [0.35, 0.65]           # ±30% — high end of expected damping variance
-    friction: [0.5, 1.5]       # ±50% — slippery tile through grippy rubber mat
-    mass_shift: [-0.05, 0.05]  # ±50g per link — small payload, dense print fill
-    com_shift: 0.02            # 2cm std per link — asymmetric cable routing
-    calibration_offset: [-0.2, 0.2]  # ±0.2 rad — full realistic miscalibration
+    kp: [17.0, 23.0]             # widened to ±15%
+    kd: [0.35, 0.65]             # widened to ±30%
+    friction: [0.5, 1.5]         # widened to ±50%
+    mass_shift: [-0.05, 0.05]    # widened to ±50g
+    com_shift: 0.02              # NEW: 2cm std per link — asymmetric cable routing
+    calibration_offset: [-0.2, 0.2]  # widened to ±0.2 rad
 
   obs_noise:
-    dof_pos: 0.03              # joint flex under full load
-    dof_vel: 2.0               # worst-case finite-diff velocity at high speed
+    dof_pos: 0.03                # joint flex under full load
+    dof_vel: 2.0                 # worst-case finite-diff velocity at high speed
 
   pushes:
     enabled: true
-    interval_s: 8.0            # more frequent than phase 7
-    max_vel_xy: 0.5            # 0.5 m/s — a solid shove
+    interval_s: 8.0              # more frequent
+    max_vel_xy: 0.5              # stronger — a solid shove
 
   stumbles:
     enabled: true
-    probability: 0.05          # 5% chance per step per env while moving (~1 stumble/s)
-    max_vel_impulse: 2.0       # rad/s — enough to disrupt a swing without launching the leg
+    probability: 0.05            # raised to 5% — ~1 stumble/s per env
+    max_vel_impulse: 2.0         # rad/s — enough to disrupt a swing without launching the leg
