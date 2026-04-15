@@ -75,8 +75,8 @@ env:
   dt: 0.02
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
-  kp: 20.0
-  kd: 0.5
+  kp: 78.4141526336
+  kd: 3.92070763168
   foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
   termination_if_body_contact_height: 0.05
 

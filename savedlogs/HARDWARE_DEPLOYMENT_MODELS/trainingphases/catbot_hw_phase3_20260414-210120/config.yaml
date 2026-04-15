@@ -6,7 +6,7 @@ runner:
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
-  run_name: "catbot_hw_phase4"
+  run_name: ""
 
   actor:
     class_name: MLPModel
@@ -60,20 +60,20 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.40
+  action_scale: 0.25
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
-  kp: 78.4141526336
-  kd: 3.92070763168
+  kp: 20.0
+  kd: 0.5
   foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
   termination_if_body_contact_height: 0.05
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1, 1.0]
+  lin_vel_y: [-1.0, 1.0]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -92,16 +92,15 @@ reward:
     tracking_lin_vel: 200
     tracking_ang_vel: 60
     lin_vel_z: -100
-    roll_angle: -200
-    pitch_angle: -200
+    roll_angle: -15
+    pitch_angle: -15
     base_height: -1000
-    action_rate: -2
-    similar_to_default_legs: -0.1
-    similar_to_default_hips: -0.5
-    energy: -0.075
-    survival: 0.3
+    action_rate: -1
+    similar_to_default: 0
+    energy: -0.05
+    survival: 0.2
   targets:
-    base_height: .25
+    base_height: .3
 
 domain_randomization:
   enabled: false

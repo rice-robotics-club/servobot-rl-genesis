@@ -60,14 +60,14 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.40
+  action_scale: 0.30
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
-  kp: 78.4141526336
-  kd: 3.92070763168
+  kp: 20.0
+  kd: 0.5
   foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
   termination_if_body_contact_height: 0.05
 

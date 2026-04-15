@@ -76,8 +76,8 @@ env:
   dt: 0.02
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
-  kp: 20.0
-  kd: 0.5
+  kp: 78.4141526336
+  kd: 3.92070763168
   foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
   termination_if_body_contact_height: 0.05
 
@@ -101,17 +101,19 @@ reward:
   rewards:
     tracking_lin_vel: 200
     tracking_ang_vel: 60
-    lin_vel_z: -100
+    lin_vel_z: -10
     roll_angle: -200
     pitch_angle: -200
-    base_height: -1000
+    base_height: -100
     action_rate: -4
-    similar_to_default: -0.5
+    similar_to_default_legs: -0.5
+    similar_to_default_hips: -2
     energy: -0.15
-    survival: 0.3
+    survival: 0.8
+    stretching_pain: -3
     # foot_clearance: 0.0
   targets:
-    base_height: 0.28
+    base_height: 0.25
 
 domain_randomization:
   enabled: true

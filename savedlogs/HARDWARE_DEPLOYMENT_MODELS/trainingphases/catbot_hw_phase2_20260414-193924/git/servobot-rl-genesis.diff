@@ -1,0 +1,4281 @@
+--- git commit ---
+3f30158a52b9a8dbc93ab8632c8852805fbd5f3b
+
+
+--- git status ---
+On branch main
+Your branch is ahead of 'origin/main' by 4 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    JOINT_LIMITS.md
+	deleted:    config/randomized/catbot_phase6_dr_intro.yaml
+	deleted:    config/randomized/catbot_phase7_dr_moderate.yaml
+	deleted:    config/randomized/catbot_phase8_dr_full.yaml
+	deleted:    config/unrandomized/catbot_phase1_reckless_exploration.yaml
+	deleted:    config/unrandomized/catbot_phase2_tighter_control.yaml
+	deleted:    config/unrandomized/catbot_phase3_stability_survival.yaml
+	deleted:    config/unrandomized/catbot_phase4_energy.yaml
+	deleted:    config/unrandomized/catbot_phase5_natural_gait.yaml
+	deleted:    config/unrandomized/leg_phase1_reckless_exploration.yaml
+	modified:   robots/catbot_leg_description (new commits)
+	deleted:    savedlogs/catbot_20260228-172737/config.pkl
+	deleted:    savedlogs/catbot_20260228-172737/config.yaml
+	deleted:    savedlogs/catbot_20260228-172737/events.out.tfevents.1772321271.lopatoj-linux.47225.0
+	deleted:    savedlogs/catbot_20260228-172737/git/servobot-rl-genesis.diff
+	deleted:    savedlogs/catbot_20260228-172737/metadata.yaml
+	deleted:    savedlogs/catbot_20260228-172737/model_0.pt
+	deleted:    savedlogs/catbot_20260228-172737/model_100.pt
+	deleted:    savedlogs/catbot_20260228-172737/model_200.pt
+	deleted:    savedlogs/catbot_20260228-172737/model_300.pt
+	deleted:    savedlogs/catbot_20260228-172737/model_400.pt
+	deleted:    savedlogs/catbot_phase5/config.pkl
+	deleted:    savedlogs/catbot_phase5/config.yaml
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774580072.solar.87294.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774581100.solar.91664.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774581146.solar.92038.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774581277.solar.93242.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774581351.solar.93728.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774581389.solar.94114.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774581430.solar.94430.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774728281.solar.53271.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774728364.solar.53660.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774728431.solar.54012.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774728508.solar.54435.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774728662.solar.55484.0
+	deleted:    savedlogs/catbot_phase5/events.out.tfevents.1774815325.solar.32404.0
+	deleted:    savedlogs/catbot_phase5/git/servobot-rl-genesis.diff
+	deleted:    savedlogs/catbot_phase5/metadata.yaml
+	deleted:    savedlogs/catbot_phase5/model_2100.pt
+	deleted:    savedlogs/catbot_phase5/model_2200.pt
+	deleted:    savedlogs/catbot_phase5/model_2300.pt
+	deleted:    savedlogs/catbot_phase5/model_2400.pt
+	deleted:    savedlogs/catbot_phase5/model_2500.pt
+	deleted:    savedlogs/catbot_phase5/model_2594.pt
+	deleted:    savedlogs/catbot_phase6/config.pkl
+	deleted:    savedlogs/catbot_phase6/config.yaml
+	deleted:    savedlogs/catbot_phase6/events.out.tfevents.1774928137.solar.95691.0
+	deleted:    savedlogs/catbot_phase6/events.out.tfevents.1774977700.solar.69537.0
+	deleted:    savedlogs/catbot_phase6/git/servobot-rl-genesis.diff
+	deleted:    savedlogs/catbot_phase6/metadata.yaml
+	deleted:    savedlogs/catbot_phase6/model_13100.pt
+	deleted:    savedlogs/catbot_phase6/model_13200.pt
+	deleted:    savedlogs/catbot_phase6/model_13300.pt
+	deleted:    savedlogs/catbot_phase6/model_13400.pt
+	deleted:    savedlogs/catbot_phase6/model_13500.pt
+	deleted:    savedlogs/catbot_phase6/model_13600.pt
+	deleted:    savedlogs/catbot_phase6/model_13700.pt
+	deleted:    savedlogs/catbot_phase6/model_13800.pt
+	deleted:    savedlogs/catbot_phase6/model_13900.pt
+	deleted:    savedlogs/catbot_phase6/model_14000.pt
+	deleted:    savedlogs/catbot_phase6/model_14100.pt
+	deleted:    savedlogs/catbot_phase6/model_14200.pt
+	deleted:    savedlogs/catbot_phase6/model_14300.pt
+	deleted:    savedlogs/catbot_phase6/model_14400.pt
+	deleted:    savedlogs/catbot_phase6/model_14500.pt
+	deleted:    savedlogs/catbot_phase6/model_14600.pt
+	deleted:    savedlogs/catbot_phase6/model_14700.pt
+	deleted:    savedlogs/catbot_phase6/model_14800.pt
+	deleted:    savedlogs/catbot_phase6/model_14900.pt
+	deleted:    savedlogs/catbot_phase6/model_15000.pt
+	deleted:    savedlogs/catbot_phase6/model_15100.pt
+	deleted:    savedlogs/catbot_phase6/model_15200.pt
+	deleted:    savedlogs/catbot_phase6/model_15300.pt
+	deleted:    savedlogs/catbot_phase6/model_15400.pt
+	deleted:    savedlogs/catbot_phase6/model_15500.pt
+	deleted:    savedlogs/catbot_phase6/model_15600.pt
+	deleted:    savedlogs/catbot_phase6/model_15700.pt
+	deleted:    savedlogs/catbot_phase6/model_15800.pt
+	deleted:    savedlogs/catbot_phase6/model_15900.pt
+	deleted:    savedlogs/catbot_phase6/model_16000.pt
+	deleted:    savedlogs/catbot_phase6/model_16100.pt
+	deleted:    savedlogs/catbot_phase6/model_16200.pt
+	deleted:    savedlogs/catbot_phase6/model_16300.pt
+	deleted:    savedlogs/catbot_phase6/model_16400.pt
+	deleted:    savedlogs/catbot_phase6/model_16500.pt
+	deleted:    savedlogs/catbot_phase6/model_16600.pt
+	deleted:    savedlogs/catbot_phase6/model_16700.pt
+	deleted:    savedlogs/catbot_phase6/model_16800.pt
+	deleted:    savedlogs/catbot_phase6/model_16900.pt
+	deleted:    savedlogs/catbot_phase6/model_17000.pt
+	deleted:    savedlogs/catbot_phase6/model_17100.pt
+	deleted:    savedlogs/catbot_phase6/model_17200.pt
+	deleted:    savedlogs/catbot_phase6/model_17300.pt
+	deleted:    savedlogs/catbot_phase7/config.pkl
+	deleted:    savedlogs/catbot_phase7/config.yaml
+	deleted:    savedlogs/catbot_phase7/events.out.tfevents.1775106655.solar.12948.0
+	deleted:    savedlogs/catbot_phase7/events.out.tfevents.1775106902.solar.14003.0
+	deleted:    savedlogs/catbot_phase7/events.out.tfevents.1775137976.solar.94279.0
+	deleted:    savedlogs/catbot_phase7/git/servobot-rl-genesis.diff
+	deleted:    savedlogs/catbot_phase7/metadata.yaml
+	deleted:    savedlogs/catbot_phase7/model_19000.pt
+	deleted:    savedlogs/catbot_phase7/model_19100.pt
+	deleted:    savedlogs/catbot_phase7/model_19200.pt
+	deleted:    savedlogs/catbot_phase7/model_19300.pt
+	deleted:    savedlogs/catbot_phase7/model_19400.pt
+	deleted:    savedlogs/catbot_phase7/model_19500.pt
+	deleted:    savedlogs/catbot_phase7/model_19600.pt
+	deleted:    savedlogs/catbot_phase7/model_19700.pt
+	deleted:    savedlogs/catbot_phase7/model_19800.pt
+	deleted:    savedlogs/catbot_phase7/model_19900.pt
+	deleted:    savedlogs/catbot_phase7/model_20000.pt
+	deleted:    savedlogs/catbot_phase7/model_20100.pt
+	deleted:    savedlogs/catbot_phase7/model_20200.pt
+	deleted:    savedlogs/catbot_phase7/model_20300.pt
+	deleted:    savedlogs/catbot_phase7/model_20400.pt
+	deleted:    savedlogs/catbot_phase7/model_20500.pt
+	deleted:    savedlogs/catbot_phase7/model_20600.pt
+	deleted:    savedlogs/catbot_phase7/model_20700.pt
+	deleted:    savedlogs/catbot_phase7/model_20800.pt
+	deleted:    savedlogs/catbot_phase7/model_20900.pt
+	deleted:    savedlogs/catbot_phase7/model_21000.pt
+	deleted:    savedlogs/catbot_phase7/model_21100.pt
+	deleted:    savedlogs/catbot_phase7/model_21200.pt
+	deleted:    savedlogs/catbot_phase7/model_21300.pt
+	deleted:    savedlogs/catbot_phase7/model_21400.pt
+	deleted:    savedlogs/catbot_phase7/model_21500.pt
+	deleted:    savedlogs/catbot_phase7/model_21600.pt
+	deleted:    savedlogs/catbot_phase7/model_21700.pt
+	deleted:    savedlogs/catbot_phase7/model_21800.pt
+	deleted:    savedlogs/catbot_phase7/model_21900.pt
+	deleted:    savedlogs/catbot_phase7/model_22000.pt
+	deleted:    savedlogs/catbot_phase7/model_22100.pt
+	deleted:    savedlogs/catbot_phase7/model_22200.pt
+	deleted:    savedlogs/catbot_phase7/model_22300.pt
+	deleted:    savedlogs/catbot_phase7/model_22400.pt
+	deleted:    savedlogs/catbot_phase7/model_22500.pt
+	deleted:    savedlogs/catbot_phase7/model_22600.pt
+	deleted:    savedlogs/catbot_phase7/teacher_22600.pt
+	deleted:    scripts/debug_yaw.py
+	deleted:    scripts/debug_yaw_simple.py
+	deleted:    scripts/diagnose_leg_motion.py
+	modified:   src/env/__init__.py
+	modified:   src/env/catbot.py
+	modified:   src/env/catbot_leg.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	config/archive_sim_obs/
+	config/hw_obs/
+	savedlogs/old_observables_archive/
+	src/env/catbot_hw.py
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/JOINT_LIMITS.md b/JOINT_LIMITS.md
+deleted file mode 100644
+index 2d0f218..0000000
+--- a/JOINT_LIMITS.md
++++ /dev/null
+@@ -1,226 +0,0 @@
+-# Joint Limit Safety Reward Function
+-
+-## Overview
+-
+-The joint limit safety reward function protects the simulated leg from moving into positions that would damage a real robot. It applies a sharp quadratic penalty as joint positions approach their mechanical limits.
+-
+-## Why This Matters
+-
+-The Catbot leg has physical joint limits beyond which damage would occur:
+-- **Joint 'a'**: -2.705 to 0.262 radians (-155° to 15°)
+-- **Joint 'l'**: -1.047 to 2.182 radians (-60° to 125°)
+-
+-Without this penalty, an untrained RL agent might discover that pushing joints to their limits produces interesting dynamics, leading to unsafe movement patterns that wouldn't work on real hardware.
+-
+-## How It Works
+-
+-### The Penalty Function
+-
+-For each joint, the algorithm:
+-
+-1. **Normalize position**: Maps the joint position to [0, 1] range where 0 = lower limit and 1 = upper limit
+-2. **Calculate distance to nearest limit**: How far from the edge (0 at limit, 1 at center)
+-3. **Apply quadratic penalty within margin**: 
+-   - Beyond margin: penalty = 0 (no punishment)
+-   - At margin edge: penalty = 0 (safe zone boundary)
+-   - At actual limit: penalty = 1 (maximum punishment)
+-
+-The quadratic penalty is: `penalty = ((margin - distance) / margin)²`
+-
+-This creates a sharp increase in penalty as the joint approaches its limit:
+-- At 50% of margin distance from edge: 25% penalty
+-- At 25% of margin distance from edge: 56% penalty
+-- At actual limit: 100% penalty
+-
+-### Aggregation
+-
+-Penalties from all joints are averaged to create the overall reward signal, so no single joint dominates.
+-
+-## Configuration
+-
+-### Environment Config
+-
+-```yaml
+-env:
+-  joint_limit_margin: 0.1  # Normalized margin [0-1], default 0.1 means 10% of joint range
+-```
+-
+-This margin is applied to **normalized** joint positions (0-1 range), not absolute radians. A margin of 0.1 means the penalty starts when the joint enters the outer 10% of its range on either side.
+-
+-**Margin sizes by joint** (with default 0.1 margin):
+-- Joint 'a' (2.967 rad range): ~0.297 rad margin = ~17°
+-- Joint 'l' (3.229 rad range): ~0.323 rad margin = ~18.5°
+-
+-### Reward Config
+-
+-```yaml
+-reward:
+-  rewards:
+-    joint_limit_safety: -0.5  # Negative because it's a penalty
+-```
+-
+-The weight `-0.5` means this penalty contributes -0.5 to the total reward when a joint is at its limit (before scaling by dt). Typical values:
+-- `-0.5` to `-2.0`: Strong enforcement (recommended for safety-critical training)
+-- `-0.1` to `-0.5`: Moderate enforcement
+-- `0.0`: Disabled
+-
+-## Implementation Details
+-
+-### Reward Function Location
+-
+-File: `src/env/catbot_leg.py`, method `_reward_joint_limit_safety()`
+-
+-```python
+-def _reward_joint_limit_safety(self):
+-    # Sharp penalty at joint limits
+-    # Returns tensor of shape (num_envs,) with penalties in [0, 1]
+-```
+-
+-### Joint Limits Source
+-
+-Limits are extracted from the URDF file at initialization:
+-
+-```python
+-self.dofs_limit = torch.tensor(
+-    [self.robot.get_joint(name).dofs_limit[0] for name in self.joint_names],
+-    dtype=gs.tc_float,
+-    device=gs.device,
+-)
+-```
+-
+-This ensures the reward function always uses the actual physical limits from the robot definition.
+-
+-## Behavior Examples
+-
+-### Example 1: Safe Motion
+-
+-```
+-Position:    0.0 rad (middle of range)
+-Normalized:  0.5
+-Distance:    0.5 to limit
+-Penalty:     0.0 (safe zone)
+-```
+-
+-The agent can move freely in the middle of the range.
+-
+-### Example 2: Approaching Limit
+-
+-```
+-Position:    0.12 rad (near upper limit of 0.26)
+-Normalized:  0.93
+-Distance:    0.07 to limit (beyond 0.1 margin)
+-Penalty:     0.0
+-```
+-
+-Still safe, but approaching the warning zone.
+-
+-### Example 3: In Danger Zone
+-
+-```
+-Position:    0.20 rad (very close to upper limit)
+-Normalized:  0.97
+-Distance:    0.03 to limit (within 0.1 margin)
+-Penalty:     0.49 (sharp increase!)
+-```
+-
+-Agent receives strong negative reward, learns to back away.
+-
+-### Example 4: At Limit (Damage)
+-
+-```
+-Position:    0.262 rad (at upper limit)
+-Normalized:  1.0
+-Distance:    0.0 to limit
+-Penalty:     1.0 (maximum punishment)
+-```
+-
+-Agent will aggressively learn to avoid this position.
+-
+-## Testing
+-
+-A test script is provided to verify the penalty function:
+-
+-```bash
+-python scripts/test_joint_limits.py
+-```
+-
+-This script:
+-- Shows joint limits and margin configuration
+-- Displays penalty values across the full joint range
+-- Verifies the quadratic penalty curve
+-- Confirms the reward function integration
+-
+-## Training with Joint Limits
+-
+-When training, the agent learns that:
+-1. Moving within safe limits (beyond the margin) = 0 penalty
+-2. Approaching the margin = increasing penalty
+-3. Touching the limit = severe punishment
+-
+-This naturally creates a learned safety buffer larger than the minimum margin, providing robust protection against small errors or simulation-to-reality transfer.
+-
+-## Tuning the Margin
+-
+-**Too small margin (0.05 or less)**:
+-- Allows positions closer to actual limits
+-- Less conservative, but risky for real deployment
+-- Agent might learn boundary behaviors
+-
+-**Recommended margin (0.1)**:
+-- ~10% safe zone on each side
+-- Balances performance with safety
+-- Good for most training scenarios
+-
+-**Large margin (0.2 or more)**:
+-- Very conservative, large safe zone
+-- Limits agent mobility
+-- Good for final deployment safety checks
+-
+-## Integration with Other Rewards
+-
+-The joint limit safety penalty is independent and always active when configured. It works alongside other rewards:
+-
+-```yaml
+-rewards:
+-  tracking_vel: 1.0          # Primary objective
+-  base_height: -0.1          # Secondary constraint
+-  joint_limit_safety: -0.5   # Safety constraint
+-  soft_landing: -0.025       # Style constraint
+-```
+-
+-The relative weights control the priority. With `-0.5` weight, joint safety is a significant factor preventing unsafe motion.
+-
+-## Real Robot Considerations
+-
+-When deploying to real hardware:
+-1. Joint limits are **hard constraints** (servos won't move beyond)
+-2. Approaching limits causes **increased power draw** and heating
+-3. Repeated limit impacts **damage servo gears** over time
+-
+-The RL penalty function encourages the policy to maintain a safety margin learned during training, protecting the real leg from:
+-- Accidental limit collisions
+-- High-current stalls
+-- Cumulative wear from boundary impacts
+-
+-## Troubleshooting
+-
+-### Penalty not activating?
+-- Check that `joint_limit_safety` is in the reward config
+-- Verify `joint_limit_margin` is set in env config
+-- Ensure the reward weight is negative (penalty) or positive (rare inverse penalty)
+-
+-### Agent still hits limits?
+-- Increase the margin: `joint_limit_margin: 0.15`
+-- Increase the weight: `joint_limit_safety: -1.0`
+-- Check that the agent can physically satisfy all constraints
+-
+-### Agent too conservative?
+-- Decrease the margin: `joint_limit_margin: 0.05`
+-- Decrease the weight: `joint_limit_safety: -0.2`
+-
+-## References
+-
+-- Joint limits defined in: `robots/catbot_leg_description/urdf/robot.urdf`
+-- Reward function: `src/env/catbot_leg.py::_reward_joint_limit_safety()`
+-- Config schema: `config/schemas/config.json`
+-- Test script: `scripts/test_joint_limits.py`
+diff --git a/config/randomized/catbot_phase6_dr_intro.yaml b/config/randomized/catbot_phase6_dr_intro.yaml
+deleted file mode 100644
+index 009beda..0000000
+--- a/config/randomized/catbot_phase6_dr_intro.yaml
++++ /dev/null
+@@ -1,127 +0,0 @@
+-# Phase 6 - DR Introduction
+-# Picks up from phase 5. Reward structure is identical — no new objectives.
+-# Goal: teach the policy to cope with sensor noise and surface variation
+-#       without disrupting the natural gait it already learned.
+-# Key additions:
+-#   - obs noise: light IMU and joint noise (closest to real hardware baseline)
+-#   - friction: ±20% range on foot links (covers most floor surfaces)
+-#   - kp/kd and pushes deliberately held back — too much change at once
+-#     risks collapsing the phase 5 gait before DR has any benefit
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -1000
+-    action_rate: -4
+-    similar_to_default: -0.5
+-    energy: -0.15
+-    survival: 0.3
+-    foot_clearance: 
+-  targets:
+-    base_height: 0.28
+-
+-domain_randomization:
+-  enabled: true
+-
+-  on_reset:
+-    friction: [0.8, 1.2]       # ±20% — covers hardwood, tile, smooth concrete
+-
+-  obs_noise:
+-    ang_vel: 0.05              # ~MPU6050 noise floor (rad/s)
+-    dof_pos: 0.01              # encoder/flex noise (rad)
+-    dof_vel: 0.5               # finite-diff velocity estimate noise (rad/s)
+-
+-  pushes:
+-    enabled: false
+diff --git a/config/randomized/catbot_phase7_dr_moderate.yaml b/config/randomized/catbot_phase7_dr_moderate.yaml
+deleted file mode 100644
+index 413680f..0000000
+--- a/config/randomized/catbot_phase7_dr_moderate.yaml
++++ /dev/null
+@@ -1,139 +0,0 @@
+-# Phase 7 - Moderate DR
+-# Picks up from phase 6. Reward structure unchanged.
+-# Goal: cover the majority of real hardware variance — servo gain spread,
+-#       surface differences, and unexpected disturbances.
+-# Key additions from phase 6:
+-#   - kp: ±10% range (unit-to-unit servo gain variation)
+-#   - kd: ±20% range (damping more variable than stiffness on cheap servos)
+-#   - friction: widened to ±40% (adds carpet and grippy rubber surfaces)
+-#   - mass_shift: ±30g per link (cable routing, print density variation)
+-#   - obs noise: doubled — closer to what noisy real hardware produces
+-#   - pushes: enabled at low magnitude (teaches disturbance recovery)
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -1000
+-    action_rate: -4
+-    similar_to_default: -0.5
+-    energy: -0.15
+-    survival: 0.3
+-    foot_clearance: 0.0
+-  targets:
+-    base_height: 0.28
+-
+-domain_randomization:
+-  enabled: true
+-
+-  on_reset:
+-    kp: [18.0, 22.0]           # ±10% — unit-to-unit servo stiffness variation
+-    kd: [0.4, 0.6]             # ±20% — damping more variable than stiffness
+-    friction: [0.6, 1.4]       # ±40% — adds carpet/rubber surfaces
+-    mass_shift: [-0.03, 0.03]  # ±30g per link — cable routing, print density
+-
+-  obs_noise:
+-    ang_vel: 0.10              # 2× phase 6 — noisy real IMU under vibration
+-    dof_pos: 0.02              # 2× phase 6 — joint flex under load
+-    dof_vel: 1.0               # 2× phase 6 — finite-diff velocity noisier at speed
+-
+-  pushes:
+-    enabled: true
+-    interval_s: 10.0           # push every ~10s per env
+-    max_vel_xy: 0.3            # gentle — 0.3 m/s max impulse
+-
+-  stumbles:
+-    enabled: true
+-    probability: 0.01          # 2% chance per step per env while moving (~1 stumble every 2.5s)
+-    max_vel_impulse: 1.0       # rad/s — small stumbles
+\ No newline at end of file
+diff --git a/config/randomized/catbot_phase8_dr_full.yaml b/config/randomized/catbot_phase8_dr_full.yaml
+deleted file mode 100644
+index 142a68d..0000000
+--- a/config/randomized/catbot_phase8_dr_full.yaml
++++ /dev/null
+@@ -1,141 +0,0 @@
+-# Phase 8 - Full DR
+-# Picks up from phase 7. Reward structure unchanged.
+-# Goal: maximum sim-to-real robustness. Ranges should comfortably bracket
+-#       the worst-case variance you'd see on the real catbot across
+-#       different units, surfaces, and operating conditions.
+-# Key changes from phase 7:
+-#   - kp/kd: widened to ±15% / ±30% (covers worn servos and temperature drift)
+-#   - friction: widened to ±50% (adds very slippery tile and grippy rubber)
+-#   - mass_shift: widened to ±50g (covers small payload on back)
+-#   - com_shift: added at 2cm std (assembly asymmetry, uneven cable routing)
+-#   - obs noise: full levels (what you'd measure on stationary hardware)
+-#   - pushes: stronger and more frequent
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-0.8, 0.8]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -200
+-    pitch_angle: -300
+-    base_height: -1000
+-    action_rate: -4
+-    similar_to_default: -3
+-    energy: -0.15
+-    survival: 0.3
+-    foot_clearance: 0.0
+-  targets:
+-    base_height: 0.28
+-
+-domain_randomization:
+-  enabled: true
+-
+-  on_reset:
+-    kp: [17.0, 23.0]           # ±15% — covers worn servos and temperature drift
+-    kd: [0.35, 0.65]           # ±30% — high end of expected damping variance
+-    friction: [0.5, 1.5]       # ±50% — slippery tile through grippy rubber mat
+-    mass_shift: [-0.05, 0.05]  # ±50g per link — small payload, dense print fill
+-    com_shift: 0.02            # 2cm std per link — asymmetric cable routing
+-
+-  obs_noise:
+-    ang_vel: 0.15              # measured noise floor on stationary catbot IMU
+-    dof_pos: 0.03              # joint flex under full load
+-    dof_vel: 2.0               # worst-case finite-diff velocity at high speed
+-
+-  pushes:
+-    enabled: true
+-    interval_s: 8.0            # more frequent than phase 7
+-    max_vel_xy: 0.5            # 0.5 m/s — a solid shove
+-
+-  stumbles:
+-    enabled: true
+-    probability: 0.05          # 5% chance per step per env while moving (~1 stumble/s)
+-    max_vel_impulse: 2.0       # rad/s — enough to disrupt a swing without launching the leg
+diff --git a/config/unrandomized/catbot_phase1_reckless_exploration.yaml b/config/unrandomized/catbot_phase1_reckless_exploration.yaml
+deleted file mode 100644
+index 6231138..0000000
+--- a/config/unrandomized/catbot_phase1_reckless_exploration.yaml
++++ /dev/null
+@@ -1,106 +0,0 @@
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.25
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1, 1.0]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.10
+-  rewards:
+-    tracking_lin_vel: 100
+-    tracking_ang_vel: 20
+-    lin_vel_z: 0
+-    roll_angle: 0
+-    pitch_angle: 0
+-    base_height: -5000
+-    action_rate: -1
+-    similar_to_default: 0
+-    energy: 0
+-    survival: 0.2
+-  targets:
+-    base_height: .3
+-
+-domain_randomization:
+-  enabled: false
+diff --git a/config/unrandomized/catbot_phase2_tighter_control.yaml b/config/unrandomized/catbot_phase2_tighter_control.yaml
+deleted file mode 100644
+index 1429d4e..0000000
+--- a/config/unrandomized/catbot_phase2_tighter_control.yaml
++++ /dev/null
+@@ -1,106 +0,0 @@
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.25
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1, 1.0]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 100
+-    tracking_ang_vel: 20
+-    lin_vel_z: 0
+-    roll_angle: 0
+-    pitch_angle: 0
+-    base_height: -5000
+-    action_rate: -1
+-    similar_to_default: 0
+-    energy: 0
+-    survival: 0.2
+-  targets:
+-    base_height: .3
+-
+-domain_randomization:
+-  enabled: false
+diff --git a/config/unrandomized/catbot_phase3_stability_survival.yaml b/config/unrandomized/catbot_phase3_stability_survival.yaml
+deleted file mode 100644
+index 9046d0b..0000000
+--- a/config/unrandomized/catbot_phase3_stability_survival.yaml
++++ /dev/null
+@@ -1,106 +0,0 @@
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.25
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.0, 1.0]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -15
+-    pitch_angle: -15
+-    base_height: -1000
+-    action_rate: -1
+-    similar_to_default: 0
+-    energy: -0.05
+-    survival: 0.2
+-  targets:
+-    base_height: .3
+-
+-domain_randomization:
+-  enabled: false
+diff --git a/config/unrandomized/catbot_phase4_energy.yaml b/config/unrandomized/catbot_phase4_energy.yaml
+deleted file mode 100644
+index 53c7ccb..0000000
+--- a/config/unrandomized/catbot_phase4_energy.yaml
++++ /dev/null
+@@ -1,106 +0,0 @@
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.30
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1, 1.0]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -1000
+-    action_rate: -2
+-    similar_to_default: -0.1
+-    energy: -0.075
+-    survival: 0.3
+-  targets:
+-    base_height: .25
+-
+-domain_randomization:
+-  enabled: false
+diff --git a/config/unrandomized/catbot_phase5_natural_gait.yaml b/config/unrandomized/catbot_phase5_natural_gait.yaml
+deleted file mode 100644
+index 5472906..0000000
+--- a/config/unrandomized/catbot_phase5_natural_gait.yaml
++++ /dev/null
+@@ -1,116 +0,0 @@
+-# Phase 5 - Natural Gait
+-# Goal: slower, longer strides at low speed instead of a shuffle.
+-# Key changes from phase 4:
+-#   - foot_clearance reward added (biggest new signal)
+-#   - action_scale increased 0.30 → 0.40 (physically allows longer strides)
+-#   - action_rate penalty increased -2 → -4 (discourages rapid shuffling)
+-#   - similar_to_default eased -0.1 → -0.5 (more pull back to neutral between steps,
+-#     but not enough to lock the legs into small movements)
+-#   - energy penalty increased -0.075 → -0.15 (many small shuffle steps are costly)
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40       # up from 0.30 — allows physically longer strides
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -1000
+-    action_rate: -4          # up from -2 — penalises rapid shuffling more
+-    similar_to_default: -0.5 # up from -0.1 — gentle pull back to neutral between steps
+-    energy: -0.15            # up from -0.075 — many small steps are expensive
+-    survival: 0.3
+-    foot_clearance: 60.0     # new — reward feet lifting during swing phase
+-  targets:
+-    base_height: 0.28        # slightly higher than phase4 to encourage clearance
+-
+-domain_randomization:
+-  enabled: false
+diff --git a/config/unrandomized/leg_phase1_reckless_exploration.yaml b/config/unrandomized/leg_phase1_reckless_exploration.yaml
+deleted file mode 100644
+index b22456c..0000000
+--- a/config/unrandomized/leg_phase1_reckless_exploration.yaml
++++ /dev/null
+@@ -1,91 +0,0 @@
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotLegEnv
+-  robot_description_path: robots/catbot_leg_description/urdf/robot.urdf
+-  robot_description_type: URDF
+-  joints:
+-    a: 0.0
+-    l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.0]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.25
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  kp: 20.0
+-  kd: 0.5
+-  termination_if_pitch_greater_than: 0.7 
+-  termination_if_roll_greater_than: 0.7
+-
+-commands:
+-  vel: [-1.0, 1.0]
+-
+-obs:
+-  num_obs:
+-    main: 13
+-  scales:
+-    vel: 1.0
+-    ang_vel: 1.0
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.15
+-  rewards:
+-    tracking_vel: 1.0 # 1.0
+-    lin_vel_z: 0.5 # -1.0
+-    # roll_angle: 0.0
+-    # pitch_angle: 0.0
+-    base_height: -0.1
+-    action_rate: -0.005 # -0.005
+-    similar_to_default: -0.01
+-    energy: 0.0002
+-    # survival: 0.1
+-    soft_landing: -0.025
+-  targets:
+-    base_height: .3
+-
+-domain_randomization:
+-  enabled: false
+diff --git a/robots/catbot_leg_description b/robots/catbot_leg_description
+index c01440b..f25ad73 160000
+--- a/robots/catbot_leg_description
++++ b/robots/catbot_leg_description
+@@ -1 +1 @@
+-Subproject commit c01440bc2a4f81e966ab1e03c04081fc4f596967
++Subproject commit f25ad737b6b2e939045c2913632e6f5d571dfacf
+diff --git a/savedlogs/catbot_20260228-172737/config.pkl b/savedlogs/catbot_20260228-172737/config.pkl
+deleted file mode 100644
+index 786c684..0000000
+Binary files a/savedlogs/catbot_20260228-172737/config.pkl and /dev/null differ
+diff --git a/savedlogs/catbot_20260228-172737/config.yaml b/savedlogs/catbot_20260228-172737/config.yaml
+deleted file mode 100644
+index c102842..0000000
+--- a/savedlogs/catbot_20260228-172737/config.yaml
++++ /dev/null
+@@ -1,97 +0,0 @@
+-# yaml-language-server: $schema=./schemas/config.json
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 24
+-  save_interval: 100
+-  seed: 1
+-  obs_groups: { "policy": ["main"], "critic": ["main"] }
+-  experiment_name: catbot
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  max_iterations: 1000
+-  run_name: ""
+-
+-  policy:
+-    class_name: ActorCritic
+-    activation: elu
+-    actor_obs_normalization: true
+-    critic_obs_normalization: true
+-    actor_hidden_dims: [512, 256, 128]
+-    critic_hidden_dims: [512, 256, 128]
+-    init_noise_std: 1.0
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.01
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.25
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-0.5, 0.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.25
+-  rewards:
+-    tracking_lin_vel: 1.0
+-    tracking_ang_vel: 0.2
+-    lin_vel_z: -1.0
+-    # roll_angle: 0.0
+-    # pitch_angle: 0.0
+-    base_height: -50.0
+-    action_rate: -0.005
+-    similar_to_default: -0.1
+-    # energy: 0.0
+-    # survival: 0.0
+-  targets:
+-    base_height: .3
+diff --git a/savedlogs/catbot_20260228-172737/events.out.tfevents.1772321271.lopatoj-linux.47225.0 b/savedlogs/catbot_20260228-172737/events.out.tfevents.1772321271.lopatoj-linux.47225.0
+deleted file mode 100644
+index 6e4fd26..0000000
+Binary files a/savedlogs/catbot_20260228-172737/events.out.tfevents.1772321271.lopatoj-linux.47225.0 and /dev/null differ
+diff --git a/savedlogs/catbot_20260228-172737/git/servobot-rl-genesis.diff b/savedlogs/catbot_20260228-172737/git/servobot-rl-genesis.diff
+deleted file mode 100644
+index c64ba07..0000000
+--- a/savedlogs/catbot_20260228-172737/git/servobot-rl-genesis.diff
++++ /dev/null
+@@ -1,672 +0,0 @@
+---- git status ---
+-On branch main
+-Your branch is up to date with 'origin/main'.
+-
+-Changes not staged for commit:
+-  (use "git add <file>..." to update what will be committed)
+-  (use "git restore <file>..." to discard changes in working directory)
+-  (commit or discard the untracked or modified content in submodules)
+-	modified:   config/catbot.yaml
+-	modified:   config/schemas/env.json
+-	modified:   config/schemas/reward.json
+-	modified:   config/servobot.yaml
+-	modified:   pyproject.toml
+-	modified:   robots/servobot_description (modified content)
+-	modified:   src/config/config.py
+-	modified:   src/env/catbot.py
+-	modified:   src/env/genesis.py
+-
+-Untracked files:
+-  (use "git add <file>..." to include in what will be committed)
+-	.zed/
+-
+-no changes added to commit (use "git add" and/or "git commit -a") 
+-
+-
+---- git diff ---
+-diff --git a/config/catbot.yaml b/config/catbot.yaml
+-index 081e681..c102842 100644
+---- a/config/catbot.yaml
+-+++ b/config/catbot.yaml
+-@@ -61,21 +61,15 @@ env:
+-   simulate_action_latency: True
+-   clip_actions: 100.0
+-   dt: 0.02
+--  termination_if_pitch_greater_than: 40 # degrees (matches go2_env.py convention)
+--  termination_if_roll_greater_than: 40 # degrees (matches go2_env.py convention)
+-+  termination_if_pitch_greater_than: 0.7
+-+  termination_if_roll_greater_than: 0.7
+-   kp: 20.0
+-   kd: 0.5
+- 
+- commands:
+--<<<<<<< HEAD
+--  lin_vel_x: [0.0, 0.0]
+--  lin_vel_y: [1.0, 1.0]
+--  ang_vel_z: [0.0, 0.0]
+--=======
+-   lin_vel_x: [-1.0, 1.0]
+-   lin_vel_y: [-0.5, 0.5]
+-   ang_vel_z: [-0.1, 0.1]
+-->>>>>>> 003266c20e751f12cf7d72b1ec2f911095447552
+- 
+- obs:
+-   num_obs: 45
+-@@ -92,12 +86,12 @@ reward:
+-     tracking_lin_vel: 1.0
+-     tracking_ang_vel: 0.2
+-     lin_vel_z: -1.0
+--    roll_angle: 0.0
+--    pitch_angle: 0.0
+--    base_height: -5.0
+-+    # roll_angle: 0.0
+-+    # pitch_angle: 0.0
+-+    base_height: -50.0
+-     action_rate: -0.005
+--    similar_to_default: -0.05
+--    energy: 0.0
+--    survival: 0.0
+-+    similar_to_default: -0.1
+-+    # energy: 0.0
+-+    # survival: 0.0
+-   targets:
+-     base_height: .3
+-diff --git a/config/schemas/env.json b/config/schemas/env.json
+-index 062e5b1..b179cba 100644
+---- a/config/schemas/env.json
+-+++ b/config/schemas/env.json
+-@@ -88,7 +88,18 @@
+-     "class_name",
+-     "robot_description_path",
+-     "robot_description_type",
+--    "joints"
+-+    "joints",
+-+    "episode_length",
+-+    "resampling_time",
+-+    "dt",
+-+    "clip_actions",
+-+    "termination_if_roll_greater_than",
+-+    "termination_if_pitch_greater_than",
+-+    "kp",
+-+    "kd",
+-+    "action_scale",
+-+    "base_init_pos",
+-+    "base_init_quat"
+-   ],
+-   "additionalProperties": false
+- }
+-diff --git a/config/schemas/reward.json b/config/schemas/reward.json
+-index 44934b8..b02be37 100644
+---- a/config/schemas/reward.json
+-+++ b/config/schemas/reward.json
+-@@ -23,6 +23,6 @@
+-       }
+-     }
+-   },
+--  "required": ["rewards", "targets"],
+-+  "required": ["rewards", "targets", "tracking_sigma"],
+-   "additionalProperties": false
+- }
+-diff --git a/config/servobot.yaml b/config/servobot.yaml
+-index 30051ee..6046efe 100644
+---- a/config/servobot.yaml
+-+++ b/config/servobot.yaml
+-@@ -1,7 +1,7 @@
+- # yaml-language-server: $schema=./schemas/config.json
+- runner:
+-   class_name: OnPolicyRunner
+--  num_steps_per_env: 512
+-+  num_steps_per_env: 24
+-   save_interval: 100
+-   seed: 1
+-   obs_groups: { "policy": ["policy"], "critic": ["policy"] }
+-diff --git a/pyproject.toml b/pyproject.toml
+-index e7bec62..c9078ed 100644
+---- a/pyproject.toml
+-+++ b/pyproject.toml
+-@@ -26,7 +26,6 @@ dependencies = [
+- train = "scripts.train:main"
+- evaluate = "scripts.eval:main"
+- update_schema = "scripts.update_schema:main"
+--evaluate = "scripts.eval:main"
+- 
+- [tool.setuptools.packages.find]
+- where = ["."]
+-diff --git a/robots/servobot_description b/robots/servobot_description
+---- a/robots/servobot_description
+-+++ b/robots/servobot_description
+-@@ -1 +1 @@
+--Subproject commit 2af5956d58cc312188125871607a8db4f0b1fa33
+-+Subproject commit 2af5956d58cc312188125871607a8db4f0b1fa33-dirty
+-diff --git a/src/config/config.py b/src/config/config.py
+-index 0b5cd6c..54f8931 100644
+---- a/src/config/config.py
+-+++ b/src/config/config.py
+-@@ -93,51 +93,91 @@ class EnvConfig(TypedDict, total=False):
+-     Required property
+-     """
+- 
+--    kp: int | float
+--    r""" Position proportional gain for joint PD controller """
+-+    kp: Required[int | float]
+-+    r"""
+-+    Position proportional gain for joint PD controller
+-+
+-+    Required property
+-+    """
+-+
+-+    kd: Required[int | float]
+-+    r"""
+-+    Velocity derivative gain for joint PD controller
+-+
+-+    Required property
+-+    """
+-+
+-+    termination_if_roll_greater_than: Required[int | float]
+-+    r"""
+-+    Terminate episode if base roll angle exceeds this value (radians)
+- 
+--    kd: int | float
+--    r""" Velocity derivative gain for joint PD controller """
+-+    Required property
+-+    """
+- 
+--    termination_if_roll_greater_than: int | float
+--    r""" Terminate episode if base roll angle exceeds this value (radians) """
+-+    termination_if_pitch_greater_than: Required[int | float]
+-+    r"""
+-+    Terminate episode if base pitch angle exceeds this value (radians)
+- 
+--    termination_if_pitch_greater_than: int | float
+--    r""" Terminate episode if base pitch angle exceeds this value (radians) """
+-+    Required property
+-+    """
+- 
+--    base_init_pos: list[int | float]
+-+    base_init_pos: Required[list[int | float]]
+-     r"""
+-     Initial base position [x, y, z] in meters
+- 
+-     minItems: 3
+-     maxItems: 3
+-+
+-+    Required property
+-     """
+- 
+--    base_init_quat: list[int | float]
+-+    base_init_quat: Required[list[int | float]]
+-     r"""
+-     Initial base orientation quaternion [w, x, y, z]
+- 
+-     minItems: 4
+-     maxItems: 4
+-+
+-+    Required property
+-+    """
+-+
+-+    episode_length: Required[int | float]
+-+    r"""
+-+    Maximum episode length in seconds
+-+
+-+    Required property
+-     """
+- 
+--    episode_length: int | float
+--    r""" Maximum episode length in seconds """
+-+    resampling_time: Required[int | float]
+-+    r"""
+-+    Time interval for resampling goals/actions in seconds
+- 
+--    resampling_time: int | float
+--    r""" Time interval for resampling goals/actions in seconds """
+-+    Required property
+-+    """
+- 
+--    action_scale: int | float
+--    r""" Scaling multiplier applied to actions """
+-+    action_scale: Required[int | float]
+-+    r"""
+-+    Scaling multiplier applied to actions
+-+
+-+    Required property
+-+    """
+- 
+-     simulate_action_latency: bool
+-     r""" Whether to simulate action latency """
+- 
+--    clip_actions: int | float
+--    r""" Action clipping magnitude """
+-+    clip_actions: Required[int | float]
+-+    r"""
+-+    Action clipping magnitude
+-+
+-+    Required property
+-+    """
+- 
+--    dt: int | float
+--    r""" Time duration for each simulation step in seconds, defaults to 1e-2 """
+-+    dt: Required[int | float]
+-+    r"""
+-+    Time duration for each simulation step in seconds, defaults to 1e-2
+-+
+-+    Required property
+-+    """
+- 
+- 
+- 
+-@@ -159,8 +199,12 @@ class ObsConfig(TypedDict, total=False):
+- class RewardConfig(TypedDict, total=False):
+-     r""" Reward_Config. """
+- 
+--    tracking_sigma: int | float
+--    r""" Standard deviation of the tracking reward """
+-+    tracking_sigma: Required[int | float]
+-+    r"""
+-+    Standard deviation of the tracking reward
+-+
+-+    Required property
+-+    """
+- 
+-     rewards: Required[dict[str, int | float]]
+-     r"""
+-diff --git a/src/env/catbot.py b/src/env/catbot.py
+-index 5e2b191..508306d 100644
+---- a/src/env/catbot.py
+-+++ b/src/env/catbot.py
+-@@ -11,6 +11,8 @@ from genesis.utils.geom import (
+- )
+- from tensordict import TensorDict
+- 
+-+from src.config import CommandConfig, EnvConfig, ObsConfig, RewardConfig
+-+
+- if TYPE_CHECKING:
+-     from genesis.engine.entities import RigidEntity
+- 
+-@@ -23,47 +25,27 @@ def gs_rand(lower, upper, batch_shape):
+- 
+- 
+- class CatbotEnv:
+--    """
+--    Locomotion environment for Catbot, mirroring the structure of go2_env.py.
+--
+--    Config key differences vs. go2_env.py:
+--      - env_cfg["joints"]        : dict of joint_name -> default_angle (replaces joint_names + default_joint_angles)
+--      - env_cfg["episode_length"]: episode duration in seconds       (replaces episode_length_s)
+--      - env_cfg["resampling_time"]: command resample period in seconds (replaces resampling_time_s)
+--      - obs_cfg["scales"]        : obs scale dict                    (replaces obs_scales)
+--          keys: lin_vel_x, lin_vel_y, ang_vel_z, dof_pos, dof_vel
+--      - reward_cfg["rewards"]    : reward scale dict                 (replaces reward_scales)
+--      - reward_cfg["targets"]    : target value dict (e.g. base_height)
+--      - command_cfg              : dict with keys lin_vel_x, lin_vel_y, ang_vel_z,
+--                                   each a [min, max] list              (replaces *_range keys + num_commands)
+--
+--    termination_if_pitch/roll_greater_than values in env_cfg are interpreted in DEGREES,
+--    consistent with go2_env.py
+--    """
+--
+-     def __init__(
+-         self,
+-         num_envs,
+--        env_cfg,
+--        obs_cfg,
+--        reward_cfg,
+--        command_cfg,
+-+        env_cfg: EnvConfig,
+-+        obs_cfg: ObsConfig,
+-+        reward_cfg: RewardConfig,
+-+        command_cfg: CommandConfig,
+-         headless=False,
+-         debug=False,
+-     ):
+-         self.num_envs = num_envs
+-         self.num_obs = obs_cfg["num_obs"]
+-         self.num_privileged_obs = None
+--        self.joint_names = sorted(env_cfg["joints"].keys())
+--        self.num_actions = len(self.joint_names)
+--        self.num_commands = len(command_cfg)  # lin_vel_x, lin_vel_y, ang_vel_z
+-+        self.num_commands = len(command_cfg)
+-         self.device = gs.device
+- 
+--        self.simulate_action_latency = env_cfg.get("simulate_action_latency", True)
+--        self.dt = env_cfg.get("dt", 0.02)
+--        self.max_episode_length = math.ceil(
+--            env_cfg.get("episode_length", 20.0) / self.dt
+--        )
+-+        self.simulate_action_latency = True  # there is a 1 step latency on real robot
+-+        self.dt = 0.02  # control frequency on real robot is 50hz
+-+        self.max_episode_length = math.ceil(env_cfg["episode_length"] / self.dt)
+-+        self.joint_names = sorted(env_cfg["joints"].keys())
+-+        self.num_actions = len(self.joint_names)
+- 
+-         self.cfg = env_cfg
+-         self.obs_cfg = obs_cfg
+-@@ -72,6 +54,7 @@ class CatbotEnv:
+- 
+-         self.obs_scales = obs_cfg["scales"]
+-         self.reward_scales = reward_cfg["rewards"]
+-+        self.targets = reward_cfg["targets"]
+- 
+-         # create scene
+-         self.scene = gs.Scene(
+-@@ -94,7 +77,7 @@ class CatbotEnv:
+-             show_viewer=not headless,
+-         )
+- 
+--        # add plane
+-+        # add plain
+-         self.scene.add_entity(
+-             gs.morphs.URDF(
+-                 file="urdf/plane/plane.urdf",
+-@@ -104,35 +87,30 @@ class CatbotEnv:
+- 
+-         # add robot
+-         self.robot: RigidEntity = self.scene.add_entity(
+--            getattr(gs.morphs, env_cfg["robot_description_type"])(
+--                file=env_cfg["robot_description_path"],
+--                pos=env_cfg["base_init_pos"],
+--                quat=env_cfg["base_init_quat"],
+-+            gs.morphs.MJCF(
+-+                file=self.cfg["robot_description_path"],
+-+                pos=self.cfg["base_init_pos"],
+-+                quat=self.cfg["base_init_quat"],
+-             ),
+--        )  # pyright: ignore
+-+        )  # type: ignore
+- 
+-         # build
+-         self.scene.build(n_envs=num_envs)
+- 
+--        # names to indices (local DOF indices relative to the robot entity)
+-+        # names to indices
+-         self.motors_dof_idx = torch.tensor(
+-             [self.robot.get_joint(name).dofs_idx_local[0] for name in self.joint_names],
+-             dtype=gs.tc_int,
+-             device=gs.device,
+-         )
+- 
+--        # zero out PD gains for non-motor (linkage) DOFs
+-         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
+-         linkage_dof_idx = all_dof_idx[~torch.isin(all_dof_idx, self.motors_dof_idx)]
+-         self.robot.set_dofs_kp([0.0] * len(linkage_dof_idx), linkage_dof_idx)
+-         self.robot.set_dofs_kv([0.0] * len(linkage_dof_idx), linkage_dof_idx)
+- 
+--        self.robot.set_dofs_kp(
+--            [env_cfg.get("kp", 20.0)] * self.num_actions, self.motors_dof_idx
+--        )
+--        self.robot.set_dofs_kv(
+--            [env_cfg.get("kd", 0.5)] * self.num_actions, self.motors_dof_idx
+--        )
+-+        self.robot.set_dofs_kp([self.cfg["kp"]] * self.num_actions, self.motors_dof_idx)
+-+        self.robot.set_dofs_kv([self.cfg["kd"]] * self.num_actions, self.motors_dof_idx)
+- 
+-         self.default_dof_pos = torch.tensor(
+-             [env_cfg["joints"][name] for name in self.joint_names],
+-@@ -141,6 +119,8 @@ class CatbotEnv:
+-         )
+-         self.robot.set_dofs_position(self.default_dof_pos, self.motors_dof_idx)
+- 
+-+        # PD control parameters
+-+
+-         # Define global gravity direction vector
+-         self.global_gravity = torch.tensor(
+-             [0.0, 0.0, -1.0], dtype=gs.tc_float, device=gs.device
+-@@ -148,16 +128,16 @@ class CatbotEnv:
+- 
+-         # Initial state
+-         self.init_base_pos = torch.tensor(
+--            env_cfg["base_init_pos"], dtype=gs.tc_float, device=gs.device
+-+            self.cfg["base_init_pos"], dtype=gs.tc_float, device=gs.device
+-         )
+-         self.init_base_quat = torch.tensor(
+--            env_cfg["base_init_quat"], dtype=gs.tc_float, device=gs.device
+-+            self.cfg["base_init_quat"], dtype=gs.tc_float, device=gs.device
+-         )
+-         self.inv_base_init_quat = inv_quat(self.init_base_quat)
+-         self.init_qpos = self.robot.get_qpos()[0]
+--        self.init_projected_gravity = transform_by_quat(
+-+        self.init_projected_gravity: torch.Tensor = transform_by_quat(
+-             self.global_gravity, self.inv_base_init_quat
+--        )
+-+        )  # type: ignore
+- 
+-         # initialize buffers
+-         self.base_lin_vel = torch.empty(
+-@@ -198,15 +178,14 @@ class CatbotEnv:
+-             device=gs.device,
+-             dtype=gs.tc_float,
+-         )
+--        # commands_limits: list of [lower_tensor, upper_tensor], each shape (num_commands,)
+--        self.commands_limits = [
+-+        self.commands_limits: tuple[torch.Tensor, torch.Tensor] = tuple(
+-             torch.tensor(values, dtype=gs.tc_float, device=gs.device)
+-             for values in zip(
+--                command_cfg["lin_vel_x"],
+--                command_cfg["lin_vel_y"],
+--                command_cfg["ang_vel_z"],
+-+                self.command_cfg["lin_vel_x"],
+-+                self.command_cfg["lin_vel_y"],
+-+                self.command_cfg["ang_vel_z"],
+-             )
+--        ]
+-+        )  # type: ignore
+-         self.actions = torch.zeros(
+-             (self.num_envs, self.num_actions), dtype=gs.tc_float, device=gs.device
+-         )
+-@@ -240,16 +219,12 @@ class CatbotEnv:
+- 
+-     def step(self, actions):
+-         self.actions = torch.clip(
+--            actions,
+--            -self.cfg.get("clip_actions", 100.0),
+--            self.cfg.get("clip_actions", 100.0),
+-+            actions, -self.cfg["clip_actions"], self.cfg["clip_actions"]
+-         )
+-         exec_actions = (
+-             self.last_actions if self.simulate_action_latency else self.actions
+-         )
+--        target_dof_pos = (
+--            exec_actions * self.cfg.get("action_scale", 0.25) + self.default_dof_pos
+--        )
+-+        target_dof_pos = exec_actions * self.cfg["action_scale"] + self.default_dof_pos
+-         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
+-         self.scene.step()
+- 
+-@@ -257,15 +232,21 @@ class CatbotEnv:
+-         self.episode_length_buf += 1
+-         self.base_pos = self.robot.get_pos()
+-         self.base_quat = self.robot.get_quat()
+--        self.base_euler = quat_to_xyz(
+-+        self.base_euler: torch.Tensor = quat_to_xyz(
+-             transform_quat_by_quat(self.inv_base_init_quat, self.base_quat),
+-             rpy=True,
+--            degrees=True,
+--        )
+-+            degrees=False,
+-+        )  # type: ignore
+-         inv_base_quat = inv_quat(self.base_quat)
+--        self.base_lin_vel = transform_by_quat(self.robot.get_vel(), inv_base_quat)
+--        self.base_ang_vel = transform_by_quat(self.robot.get_ang(), inv_base_quat)
+--        self.projected_gravity = transform_by_quat(self.global_gravity, inv_base_quat)
+-+        self.base_lin_vel: torch.Tensor = transform_by_quat(
+-+            self.robot.get_vel(), inv_base_quat
+-+        )  # type: ignore
+-+        self.base_ang_vel: torch.Tensor = transform_by_quat(
+-+            self.robot.get_ang(), inv_base_quat
+-+        )  # type: ignore
+-+        self.projected_gravity: torch.Tensor = transform_by_quat(
+-+            self.global_gravity, inv_base_quat
+-+        )  # type: ignore
+-         self.dof_pos = self.robot.get_dofs_position(self.motors_dof_idx)
+-         self.dof_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+- 
+-@@ -278,26 +259,26 @@ class CatbotEnv:
+- 
+-         # resample commands
+-         self._resample_commands(
+--            self.episode_length_buf
+--            % int(self.cfg.get("resampling_time", 4.0) / self.dt)
+--            == 0
+-+            self.episode_length_buf % int(self.cfg["resampling_time"] / self.dt) == 0
+-         )
+- 
+-         # check termination and reset
+-         self.reset_buf = self.episode_length_buf > self.max_episode_length
+--        self.reset_buf |= torch.abs(self.base_euler[:, 1]) > self.cfg.get(
+--            "termination_if_pitch_greater_than", 10
+-+        self.reset_buf |= (
+-+            torch.abs(self.base_euler[:, 1])
+-+            > self.cfg["termination_if_pitch_greater_than"]
+-         )
+--        self.reset_buf |= torch.abs(self.base_euler[:, 0]) > self.cfg.get(
+--            "termination_if_roll_greater_than", 10
+-+        self.reset_buf |= (
+-+            torch.abs(self.base_euler[:, 0])
+-+            > self.cfg["termination_if_roll_greater_than"]
+-         )
+- 
+--        # compute timeout
+-+        # Compute timeout
+-         self.extras["time_outs"] = (
+-             self.episode_length_buf > self.max_episode_length
+-         ).to(dtype=gs.tc_float)
+- 
+--        # reset environments that need it
+-+        # Reset environment if necessary
+-         self._reset_idx(self.reset_buf)
+- 
+-         # update observations
+-@@ -311,9 +292,6 @@ class CatbotEnv:
+-     def get_observations(self):
+-         return self.obs_dict
+- 
+--    def get_privileged_observations(self):
+--        return None
+--
+-     def _reset_idx(self, envs_idx=None):
+-         # reset state
+-         self.robot.set_qpos(
+-@@ -368,18 +346,16 @@ class CatbotEnv:
+- 
+-         # fill extras
+-         n_envs = envs_idx.sum() if envs_idx is not None else self.num_envs
+--        episode_length_s = self.cfg.get("episode_length", 20.0)
+-         self.extras["episode"] = {}
+-         for key, value in self.episode_sums.items():
+-             if envs_idx is None:
+-                 mean = value.mean()
+--                value.zero_()
+-             else:
+-                 mean = torch.where(n_envs > 0, value[envs_idx].sum() / n_envs, 0.0)
+--                value.masked_fill_(envs_idx, 0.0)
+--            self.extras["episode"]["rew_" + key] = mean / episode_length_s
+-+            self.extras["episode"]["rew_" + key] = mean / self.cfg["episode_length"]
+-+            value.masked_fill_(envs_idx, 0.0)
+- 
+--        # resample commands on reset
+-+        # random sample command upon reset
+-         self._resample_commands(envs_idx)
+- 
+-     def _update_observation(self):
+-@@ -389,10 +365,10 @@ class CatbotEnv:
+-                 self.projected_gravity,  # 3
+-                 self.commands * self.commands_scale,  # 3
+-                 (self.dof_pos - self.default_dof_pos)
+--                * self.obs_scales["dof_pos"],  # num_actions
+--                self.dof_vel * self.obs_scales["dof_vel"],  # num_actions
+--                self.actions,  # num_actions
+--            ),  # type: ignore
+-+                * self.obs_scales["dof_pos"],  # 12
+-+                self.dof_vel * self.obs_scales["dof_vel"],  # 12
+-+                self.actions,  # 12
+-+            ),
+-             dim=-1,
+-         )
+- 
+-@@ -401,18 +377,18 @@ class CatbotEnv:
+-         self._update_observation()
+-         return self.obs_dict
+- 
+--    # ------------ reward functions ----------------
+-+    # ------------ reward functions----------------
+-     def _reward_tracking_lin_vel(self):
+-         # Tracking of linear velocity commands (xy axes)
+-         lin_vel_error = torch.sum(
+-             torch.square(self.commands[:, :2] - self.base_lin_vel[:, :2]), dim=1
+-         )
+--        return torch.exp(-lin_vel_error / self.reward_cfg.get("tracking_sigma", 0.25))
+-+        return torch.exp(-lin_vel_error / self.reward_cfg["tracking_sigma"])
+- 
+-     def _reward_tracking_ang_vel(self):
+-         # Tracking of angular velocity commands (yaw)
+-         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
+--        return torch.exp(-ang_vel_error / self.reward_cfg.get("tracking_sigma", 0.25))
+-+        return torch.exp(-ang_vel_error / self.reward_cfg["tracking_sigma"])
+- 
+-     def _reward_lin_vel_z(self):
+-         # Penalize z axis base linear velocity
+-@@ -428,36 +404,4 @@ class CatbotEnv:
+- 
+-     def _reward_base_height(self):
+-         # Penalize base height away from target
+--        return torch.square(
+--            self.base_pos[:, 2] - self.reward_cfg["targets"]["base_height"]
+--        )
+--
+--    def _reward_roll_angle(self):
+--        # Penalize roll angle (radians, converted from degrees via base_euler)
+--        return torch.square(self.base_euler[:, 0] * (math.pi / 180.0))
+--
+--    def _reward_pitch_angle(self):
+--        # Penalize pitch angle (radians, converted from degrees via base_euler)
+--        return torch.square(self.base_euler[:, 1] * (math.pi / 180.0))
+--
+--    def _reward_energy(self):
+--        # Penalize energy consumption: |torque * velocity|
+--        # torque estimated from PD law: kp*(target - pos) + kd*(0 - vel)
+--        exec_actions = (
+--            self.last_actions if self.simulate_action_latency else self.actions
+--        )
+--        target_dof_pos = (
+--            exec_actions * self.cfg.get("action_scale", 0.25) + self.default_dof_pos
+--        )
+--        torques = self.cfg.get("kp", 20.0) * (
+--            target_dof_pos - self.dof_pos
+--        ) + self.cfg.get("kd", 0.5) * (-self.dof_vel)
+--        return torch.sum(torch.abs(torques * self.dof_vel), dim=1)
+--
+--    def _reward_survival(self):
+--        # Small constant reward scaled by commanded speed magnitude
+--        speed_magnitude = torch.norm(self.commands[:, :2], dim=1)
+--        return (
+--            torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_float)
+--            * speed_magnitude
+--        )
+-+        return torch.square(self.base_pos[:, 2] - self.targets["base_height"])
+-diff --git a/src/env/genesis.py b/src/env/genesis.py
+-index e041669..73d8b55 100644
+---- a/src/env/genesis.py
+-+++ b/src/env/genesis.py
+-@@ -83,7 +83,11 @@ class GenesisEnv(env.VecEnv):
+-             ),
+-             vis_options=gs.options.VisOptions(
+-                 rendered_envs_idx=[0],
+--                **({"background_color": (0.471, 0.655, 1.0)} if kwargs.get("minecraft") else {}),
+-+                **(
+-+                    {"background_color": (0.471, 0.655, 1.0)}
+-+                    if kwargs.get("minecraft")
+-+                    else {}
+-+                ),
+-             ),
+-             show_viewer=not headless,
+-         )
+-@@ -227,6 +231,10 @@ class GenesisEnv(env.VecEnv):
+-         self.extras = dict()  # extra information for logging
+-         self.reward_functions: dict = {}
+-         self.episode_sums: dict[str, torch.Tensor] = {}
+-+        self.obs_dict = tensordict.TensorDict(
+-+            {},
+-+            batch_size=(self.num_envs,),
+-+        )
+- 
+-     @abstractmethod
+-     def step(
+\ No newline at end of file
+diff --git a/savedlogs/catbot_20260228-172737/metadata.yaml b/savedlogs/catbot_20260228-172737/metadata.yaml
+deleted file mode 100644
+index a0bbb8c..0000000
+--- a/savedlogs/catbot_20260228-172737/metadata.yaml
++++ /dev/null
+@@ -1,4 +0,0 @@
+-max_iterations: 1000
+-num_envs: 1024
+-resumed_from: null
+-timestamp: '2026-02-28T17:27:37.071918'
+diff --git a/savedlogs/catbot_20260228-172737/model_0.pt b/savedlogs/catbot_20260228-172737/model_0.pt
+deleted file mode 100644
+index ca334c4..0000000
+Binary files a/savedlogs/catbot_20260228-172737/model_0.pt and /dev/null differ
+diff --git a/savedlogs/catbot_20260228-172737/model_100.pt b/savedlogs/catbot_20260228-172737/model_100.pt
+deleted file mode 100644
+index d34c2d0..0000000
+Binary files a/savedlogs/catbot_20260228-172737/model_100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_20260228-172737/model_200.pt b/savedlogs/catbot_20260228-172737/model_200.pt
+deleted file mode 100644
+index a328263..0000000
+Binary files a/savedlogs/catbot_20260228-172737/model_200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_20260228-172737/model_300.pt b/savedlogs/catbot_20260228-172737/model_300.pt
+deleted file mode 100644
+index 304dd43..0000000
+Binary files a/savedlogs/catbot_20260228-172737/model_300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_20260228-172737/model_400.pt b/savedlogs/catbot_20260228-172737/model_400.pt
+deleted file mode 100644
+index e5b1ece..0000000
+Binary files a/savedlogs/catbot_20260228-172737/model_400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/config.pkl b/savedlogs/catbot_phase5/config.pkl
+deleted file mode 100644
+index df3daef..0000000
+Binary files a/savedlogs/catbot_phase5/config.pkl and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/config.yaml b/savedlogs/catbot_phase5/config.yaml
+deleted file mode 100644
+index 7d53fe8..0000000
+--- a/savedlogs/catbot_phase5/config.yaml
++++ /dev/null
+@@ -1,109 +0,0 @@
+-# yaml-language-server: $schema=./schemas/config.json
+-# Phase 5 - Natural Gait
+-# Goal: slower, longer strides at low speed instead of a shuffle.
+-# Key changes from phase 4:
+-#   - foot_clearance reward added (biggest new signal)
+-#   - action_scale increased 0.30 → 0.40 (physically allows longer strides)
+-#   - action_rate penalty increased -2 → -4 (discourages rapid shuffling)
+-#   - similar_to_default eased -0.1 → -0.5 (more pull back to neutral between steps,
+-#     but not enough to lock the legs into small movements)
+-#   - energy penalty increased -0.075 → -0.15 (many small shuffle steps are costly)
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 24
+-  save_interval: 100
+-  seed: 1
+-  obs_groups: { "policy": ["main"], "critic": ["main"] }
+-  experiment_name: catbot
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  max_iterations: 1000
+-  run_name: ""
+-
+-  policy:
+-    class_name: ActorCritic
+-    activation: elu
+-    actor_obs_normalization: true
+-    critic_obs_normalization: true
+-    actor_hidden_dims: [512, 256, 128]
+-    critic_hidden_dims: [512, 256, 128]
+-    init_noise_std: 1.0
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.01
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40       # up from 0.30 — allows physically longer strides
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -1000
+-    action_rate: -4          # up from -2 — penalises rapid shuffling more
+-    similar_to_default: -0.5 # up from -0.1 — gentle pull back to neutral between steps
+-    energy: -0.15            # up from -0.075 — many small steps are expensive
+-    survival: 0.3
+-    foot_clearance: 60.0     # new — reward feet lifting during swing phase
+-  targets:
+-    base_height: 0.28        # slightly higher than phase4 to encourage clearance
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774580072.solar.87294.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774580072.solar.87294.0
+deleted file mode 100644
+index a893757..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774580072.solar.87294.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774581100.solar.91664.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774581100.solar.91664.0
+deleted file mode 100644
+index 53423ca..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774581100.solar.91664.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774581146.solar.92038.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774581146.solar.92038.0
+deleted file mode 100644
+index f37f0d8..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774581146.solar.92038.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774581277.solar.93242.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774581277.solar.93242.0
+deleted file mode 100644
+index d4bb72e..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774581277.solar.93242.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774581351.solar.93728.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774581351.solar.93728.0
+deleted file mode 100644
+index f0f0e28..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774581351.solar.93728.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774581389.solar.94114.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774581389.solar.94114.0
+deleted file mode 100644
+index 345c00e..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774581389.solar.94114.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774581430.solar.94430.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774581430.solar.94430.0
+deleted file mode 100644
+index bcb452b..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774581430.solar.94430.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774728281.solar.53271.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774728281.solar.53271.0
+deleted file mode 100644
+index 87021e8..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774728281.solar.53271.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774728364.solar.53660.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774728364.solar.53660.0
+deleted file mode 100644
+index 2867d03..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774728364.solar.53660.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774728431.solar.54012.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774728431.solar.54012.0
+deleted file mode 100644
+index 5316040..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774728431.solar.54012.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774728508.solar.54435.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774728508.solar.54435.0
+deleted file mode 100644
+index 71eef3f..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774728508.solar.54435.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774728662.solar.55484.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774728662.solar.55484.0
+deleted file mode 100644
+index dd2dc02..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774728662.solar.55484.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/events.out.tfevents.1774815325.solar.32404.0 b/savedlogs/catbot_phase5/events.out.tfevents.1774815325.solar.32404.0
+deleted file mode 100644
+index 82a97a7..0000000
+Binary files a/savedlogs/catbot_phase5/events.out.tfevents.1774815325.solar.32404.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/git/servobot-rl-genesis.diff b/savedlogs/catbot_phase5/git/servobot-rl-genesis.diff
+deleted file mode 100644
+index 84a56f4..0000000
+--- a/savedlogs/catbot_phase5/git/servobot-rl-genesis.diff
++++ /dev/null
+@@ -1,136 +0,0 @@
+---- git status ---
+-On branch main
+-Your branch is up to date with 'origin/main'.
+-
+-Changes not staged for commit:
+-  (use "git add <file>..." to update what will be committed)
+-  (use "git restore <file>..." to discard changes in working directory)
+-	modified:   scripts/train.py
+-	modified:   src/env/catbot.py
+-
+-Untracked files:
+-  (use "git add <file>..." to include in what will be committed)
+-	config/clay_experimenting/catbot_phase5_natural_gait.yaml
+-	savedlogs/catbot_really_good_stabler/events.out.tfevents.1774296224.solar.52905.0
+-	savedlogs/catbot_really_good_stabler/events.out.tfevents.1774398109.solar.20530.0
+-
+-no changes added to commit (use "git add" and/or "git commit -a") 
+-
+-
+---- git diff ---
+-diff --git a/scripts/train.py b/scripts/train.py
+-index 6bc2eab..cb21f3e 100644
+---- a/scripts/train.py
+-+++ b/scripts/train.py
+-@@ -83,6 +83,13 @@ def main():
+-         action="store_true",
+-         help="Prints environment debug information",
+-     )
+-+    parser.add_argument(
+-+        "--nre",
+-+        type=int,
+-+        default=1,
+-+        dest="num_rendered_envs",
+-+        help="Number of environments to render in the viewer (default: 1)",
+-+    )
+-     parser.add_argument(
+-         "--minecraft",
+-         action="store_true",
+-@@ -165,6 +172,7 @@ def main():
+-         config["commands"],
+-         args.headless,
+-         args.debug,
+-+        num_rendered_envs=args.num_rendered_envs,
+-         **({"minecraft": True} if args.minecraft else {}),
+-     )
+- 
+-diff --git a/src/env/catbot.py b/src/env/catbot.py
+-index 4ae55b5..322b82b 100644
+---- a/src/env/catbot.py
+-+++ b/src/env/catbot.py
+-@@ -84,7 +84,7 @@ class CatbotEnv:
+-                 max_FPS=int(1.0 / self.dt),
+-             ),
+-             vis_options=gs.options.VisOptions(
+--                rendered_envs_idx=[0],
+-+                rendered_envs_idx=list(range(min(kwargs.get("num_rendered_envs", 1), num_envs))),
+-                 **(
+-                     {"background_color": (0.471, 0.655, 1.0)}
+-                     if kwargs.get("minecraft")
+-@@ -248,6 +248,18 @@ class CatbotEnv:
+-             env_cfg, "termination_if_body_contact_height", None
+-         )
+- 
+-+        # Foot position tracking for clearance reward
+-+        self.foot_link_idx = torch.tensor(
+-+            [self.robot.get_link(name).idx_local for name in foot_link_names],
+-+            dtype=gs.tc_int,
+-+            device=gs.device,
+-+        ) if foot_link_names else None
+-+        n_feet = len(foot_link_names)
+-+        self.foot_pos = torch.zeros(
+-+            (self.num_envs, n_feet, 3), dtype=gs.tc_float, device=gs.device
+-+        )
+-+        self.last_foot_pos = torch.zeros_like(self.foot_pos)
+-+
+-         # prepare reward functions and multiply reward scales by dt
+-         self.reward_functions, self.episode_sums = dict(), dict()
+-         for name in self.reward_scales.keys():
+-@@ -275,6 +287,11 @@ class CatbotEnv:
+-         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
+-         self.scene.step()
+- 
+-+        # update foot positions
+-+        if self.foot_link_idx is not None:
+-+            self.last_foot_pos.copy_(self.foot_pos)
+-+            self.foot_pos = self.robot.get_links_pos(self.foot_link_idx)
+-+
+-         # update buffers
+-         self.episode_length_buf += 1
+-         self.base_pos = self.robot.get_pos()
+-@@ -398,6 +415,8 @@ class CatbotEnv:
+-             self.actions.zero_()
+-             self.last_actions.zero_()
+-             self.last_dof_vel.zero_()
+-+            self.foot_pos.zero_()
+-+            self.last_foot_pos.zero_()
+-             self.episode_length_buf.zero_()
+-             self.reset_buf.fill_(True)
+-             return
+-@@ -429,6 +448,8 @@ class CatbotEnv:
+-             self.actions.masked_fill_(envs_idx[:, None], 0.0)
+-             self.last_actions.masked_fill_(envs_idx[:, None], 0.0)
+-             self.last_dof_vel.masked_fill_(envs_idx[:, None], 0.0)
+-+            self.foot_pos.masked_fill_(envs_idx[:, None, None], 0.0)
+-+            self.last_foot_pos.masked_fill_(envs_idx[:, None, None], 0.0)
+-             self.episode_length_buf.masked_fill_(envs_idx, 0)
+-             self.reset_buf.masked_fill_(envs_idx, True)
+- 
+-@@ -531,3 +552,27 @@ class CatbotEnv:
+-             torch.ones((self.num_envs,), device=gs.device, dtype=gs.tc_float)
+-             * speed_magnitude
+-         )
+-+
+-+    def _reward_foot_clearance(self):
+-+        # Reward feet lifting during swing phase.
+-+        # Uses horizontal foot speed as a proxy for swing: a foot moving
+-+        # horizontally relative to the last timestep is likely in swing, not stance.
+-+        # Only active when the robot has a non-zero velocity command so it doesn't
+-+        # learn to prance on the spot.
+-+        if self.foot_link_idx is None:
+-+            return torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
+-+
+-+        # Horizontal foot speed (world frame) via finite difference
+-+        foot_vel_xy = torch.norm(
+-+            (self.foot_pos[..., :2] - self.last_foot_pos[..., :2]) / self.dt, dim=-1
+-+        )  # (n_envs, n_feet)
+-+
+-+        foot_height = self.foot_pos[..., 2]  # (n_envs, n_feet)
+-+
+-+        # Gate clearance reward on the foot actually swinging (moving horizontally)
+-+        swing_mask = (foot_vel_xy > 0.05).float()
+-+        clearance = foot_height * swing_mask  # (n_envs, n_feet)
+-+
+-+        # Scale by command speed so reward is zero when standing still
+-+        cmd_speed = torch.norm(self.commands[:, :2], dim=1, keepdim=True)  # (n_envs, 1)
+-+        return (clearance * cmd_speed).sum(dim=1)
+\ No newline at end of file
+diff --git a/savedlogs/catbot_phase5/metadata.yaml b/savedlogs/catbot_phase5/metadata.yaml
+deleted file mode 100644
+index d194203..0000000
+--- a/savedlogs/catbot_phase5/metadata.yaml
++++ /dev/null
+@@ -1,4 +0,0 @@
+-max_iterations: 500
+-num_envs: 1000
+-resumed_from: logs/catbot_really_good_stabler_resumed_20260326-213402/model_2095.pt
+-timestamp: '2026-03-26T21:54:22.401918'
+diff --git a/savedlogs/catbot_phase5/model_2100.pt b/savedlogs/catbot_phase5/model_2100.pt
+deleted file mode 100644
+index 48f8244..0000000
+Binary files a/savedlogs/catbot_phase5/model_2100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/model_2200.pt b/savedlogs/catbot_phase5/model_2200.pt
+deleted file mode 100644
+index 2c5c298..0000000
+Binary files a/savedlogs/catbot_phase5/model_2200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/model_2300.pt b/savedlogs/catbot_phase5/model_2300.pt
+deleted file mode 100644
+index 49e3ecb..0000000
+Binary files a/savedlogs/catbot_phase5/model_2300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/model_2400.pt b/savedlogs/catbot_phase5/model_2400.pt
+deleted file mode 100644
+index 6f88e55..0000000
+Binary files a/savedlogs/catbot_phase5/model_2400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/model_2500.pt b/savedlogs/catbot_phase5/model_2500.pt
+deleted file mode 100644
+index 83507ae..0000000
+Binary files a/savedlogs/catbot_phase5/model_2500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase5/model_2594.pt b/savedlogs/catbot_phase5/model_2594.pt
+deleted file mode 100644
+index 5759b61..0000000
+Binary files a/savedlogs/catbot_phase5/model_2594.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/config.pkl b/savedlogs/catbot_phase6/config.pkl
+deleted file mode 100644
+index 41acc95..0000000
+Binary files a/savedlogs/catbot_phase6/config.pkl and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/config.yaml b/savedlogs/catbot_phase6/config.yaml
+deleted file mode 100644
+index 65dbda1..0000000
+--- a/savedlogs/catbot_phase6/config.yaml
++++ /dev/null
+@@ -1,122 +0,0 @@
+-# Phase 6 - DR Introduction
+-# Picks up from phase 5. Reward structure is identical — no new objectives.
+-# Goal: teach the policy to cope with sensor noise and surface variation
+-#       without disrupting the natural gait it already learned.
+-# Key additions:
+-#   - obs noise: light IMU and joint noise (closest to real hardware baseline)
+-#   - friction: ±20% range on foot links (covers most floor surfaces)
+-#   - kp/kd and pushes deliberately held back — too much change at once
+-#     risks collapsing the phase 5 gait before DR has any benefit
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  seed: 1
+-  obs_groups: { "policy": ["main"], "critic": ["main"] }
+-  experiment_name: catbot
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  max_iterations: 1000
+-  run_name: ""
+-
+-  policy:
+-    class_name: ActorCritic
+-    activation: elu
+-    actor_obs_normalization: true
+-    critic_obs_normalization: true
+-    actor_hidden_dims: [512, 256, 128]
+-    critic_hidden_dims: [512, 256, 128]
+-    init_noise_std: 1.0
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -1000
+-    action_rate: -4
+-    similar_to_default: -0.5
+-    energy: -0.15
+-    survival: 0.3
+-    foot_clearance: 0.0
+-  targets:
+-    base_height: 0.28
+-
+-domain_randomization:
+-  enabled: true
+-
+-  on_reset:
+-    friction: [0.8, 1.2]       # ±20% — covers hardwood, tile, smooth concrete
+-
+-  obs_noise:
+-    ang_vel: 0.05              # ~MPU6050 noise floor (rad/s)
+-    dof_pos: 0.01              # encoder/flex noise (rad)
+-    dof_vel: 0.5               # finite-diff velocity estimate noise (rad/s)
+-
+-  pushes:
+-    enabled: false
+diff --git a/savedlogs/catbot_phase6/events.out.tfevents.1774928137.solar.95691.0 b/savedlogs/catbot_phase6/events.out.tfevents.1774928137.solar.95691.0
+deleted file mode 100644
+index 21348b6..0000000
+Binary files a/savedlogs/catbot_phase6/events.out.tfevents.1774928137.solar.95691.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/events.out.tfevents.1774977700.solar.69537.0 b/savedlogs/catbot_phase6/events.out.tfevents.1774977700.solar.69537.0
+deleted file mode 100644
+index a9d1bde..0000000
+Binary files a/savedlogs/catbot_phase6/events.out.tfevents.1774977700.solar.69537.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/git/servobot-rl-genesis.diff b/savedlogs/catbot_phase6/git/servobot-rl-genesis.diff
+deleted file mode 100644
+index cac901b..0000000
+--- a/savedlogs/catbot_phase6/git/servobot-rl-genesis.diff
++++ /dev/null
+@@ -1,184 +0,0 @@
+---- git status ---
+-On branch main
+-Your branch is up to date with 'origin/main'.
+-
+-Changes not staged for commit:
+-  (use "git add <file>..." to update what will be committed)
+-  (use "git restore <file>..." to discard changes in working directory)
+-	modified:   config/catbot_leg.yaml
+-	modified:   config/randomized/catbot_phase6_dr_intro.yaml
+-	modified:   config/randomized/catbot_phase7_dr_moderate.yaml
+-	modified:   config/randomized/catbot_phase8_dr_full.yaml
+-	modified:   config/schemas/domain_randomization.json
+-	modified:   src/config/config.py
+-	modified:   src/env/catbot_leg.py
+-
+-no changes added to commit (use "git add" and/or "git commit -a") 
+-
+-
+---- git diff ---
+-diff --git a/config/catbot_leg.yaml b/config/catbot_leg.yaml
+-index f94f9a2..8761f7b 100644
+---- a/config/catbot_leg.yaml
+-+++ b/config/catbot_leg.yaml
+-@@ -83,6 +83,11 @@ reward:
+-     soft_landing: -0.025
+-   targets:
+-     base_height: .3
+-+    foot_clearance_max_height: 0.12  # clamp foot height reward above this (m)
+- 
+- domain_randomization:
+-   enabled: false
+-+  stumbles:
+-+    enabled: false
+-+    probability: 0.05       # per-step chance of a stumble when leg is swinging
+-+    max_vel_impulse: 2.0    # rad/s impulse added to joint velocities
+-diff --git a/config/randomized/catbot_phase6_dr_intro.yaml b/config/randomized/catbot_phase6_dr_intro.yaml
+-index 924ee0a..65dbda1 100644
+---- a/config/randomized/catbot_phase6_dr_intro.yaml
+-+++ b/config/randomized/catbot_phase6_dr_intro.yaml
+-@@ -103,7 +103,7 @@ reward:
+-     similar_to_default: -0.5
+-     energy: -0.15
+-     survival: 0.3
+--    foot_clearance: 60.0
+-+    foot_clearance: 0.0
+-   targets:
+-     base_height: 0.28
+- 
+-diff --git a/config/randomized/catbot_phase7_dr_moderate.yaml b/config/randomized/catbot_phase7_dr_moderate.yaml
+-index 1f36ab2..5d9fab9 100644
+---- a/config/randomized/catbot_phase7_dr_moderate.yaml
+-+++ b/config/randomized/catbot_phase7_dr_moderate.yaml
+-@@ -105,7 +105,7 @@ reward:
+-     similar_to_default: -0.5
+-     energy: -0.15
+-     survival: 0.3
+--    foot_clearance: 60.0
+-+    foot_clearance: 0.0
+-   targets:
+-     base_height: 0.28
+- 
+-diff --git a/config/randomized/catbot_phase8_dr_full.yaml b/config/randomized/catbot_phase8_dr_full.yaml
+-index 7cb2fd4..7630e31 100644
+---- a/config/randomized/catbot_phase8_dr_full.yaml
+-+++ b/config/randomized/catbot_phase8_dr_full.yaml
+-@@ -106,7 +106,7 @@ reward:
+-     similar_to_default: -0.5
+-     energy: -0.15
+-     survival: 0.3
+--    foot_clearance: 15.0
+-+    foot_clearance: 0.0
+-   targets:
+-     base_height: 0.28
+- 
+-diff --git a/config/schemas/domain_randomization.json b/config/schemas/domain_randomization.json
+-index 98fbb1b..b3f845f 100644
+---- a/config/schemas/domain_randomization.json
+-+++ b/config/schemas/domain_randomization.json
+-@@ -85,6 +85,25 @@
+-       },
+-       "required": ["enabled"],
+-       "additionalProperties": false
+-+    },
+-+    "stumbles": {
+-+      "type": "object",
+-+      "description": "Random joint velocity impulses applied to foot DOFs during swing to simulate tripping",
+-+      "properties": {
+-+        "enabled": {
+-+          "type": "boolean"
+-+        },
+-+        "probability": {
+-+          "type": "number",
+-+          "description": "Per-step probability (0–1) of a stumble occurring when leg is in swing"
+-+        },
+-+        "max_vel_impulse": {
+-+          "type": "number",
+-+          "description": "Maximum impulse magnitude added to joint velocities (rad/s)"
+-+        }
+-+      },
+-+      "required": ["enabled"],
+-+      "additionalProperties": false
+-     }
+-   },
+-   "additionalProperties": false
+-diff --git a/src/config/config.py b/src/config/config.py
+-index 6c3dc5b..70eb0e5 100644
+---- a/src/config/config.py
+-+++ b/src/config/config.py
+-@@ -24,11 +24,18 @@ class DomainRandPushesConfig(TypedDict, total=False):
+-     max_vel_xy: float
+- 
+- 
+-+class DomainRandStumblesConfig(TypedDict, total=False):
+-+    enabled: Required[bool]
+-+    probability: float
+-+    max_vel_impulse: float
+-+
+-+
+- class DomainRandConfig(TypedDict, total=False):
+-     enabled: bool
+-     on_reset: DomainRandOnResetConfig
+-     obs_noise: DomainRandObsNoiseConfig
+-     pushes: DomainRandPushesConfig
+-+    stumbles: DomainRandStumblesConfig
+- r"""
+- Command_Config.
+- 
+-diff --git a/src/env/catbot_leg.py b/src/env/catbot_leg.py
+-index cbaf759..17e9c90 100644
+---- a/src/env/catbot_leg.py
+-+++ b/src/env/catbot_leg.py
+-@@ -300,6 +300,9 @@ class CatbotLegEnv:
+-         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
+-         self.scene.step()
+- 
+-+        # apply stumbling perturbations
+-+        self._apply_stumbles()
+-+
+-         # update buffers
+-         self.episode_length_buf += 1
+-         self.imu_pos = self.imu_link.get_pos()
+-@@ -586,6 +589,29 @@ class CatbotLegEnv:
+-             com_rand = torch.randn(n, n_links, 3, device=gs.device) * std
+-             self.robot.set_COM_shift(com_rand, envs_idx=env_indices)
+- 
+-+    def _apply_stumbles(self):
+-+        """Apply random joint velocity impulses during swing to simulate foot catching on obstacles."""
+-+        stumbles_cfg = self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
+-+        if not stumbles_cfg.get("enabled", False):
+-+            return
+-+
+-+        probability = stumbles_cfg.get("probability", 0.05)
+-+        max_impulse = stumbles_cfg.get("max_vel_impulse", 2.0)
+-+
+-+        # Only stumble envs where the leg is actively swinging
+-+        swing_mask = torch.abs(self.yaw_vel[:, 0]) > 0.05
+-+        stumble_mask = swing_mask & (torch.rand(self.num_envs, device=gs.device) < probability)
+-+        stumble_indices = torch.where(stumble_mask)[0]
+-+        if len(stumble_indices) == 0:
+-+            return
+-+
+-+        n = len(stumble_indices)
+-+        impulse = (torch.rand(n, self.num_actions, device=gs.device) * 2 - 1) * max_impulse
+-+        current_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+-+        new_vel = current_vel.clone()
+-+        new_vel[stumble_indices] += impulse
+-+        self.robot.set_dofs_velocity(new_vel, self.motors_dof_idx, envs_idx=stumble_indices)
+-+
+-     # ------------ reward functions----------------
+-     def _reward_foot_clearance(self):
+-         # Reward foot height when the leg is actively swinging (yaw velocity as proxy).
+-@@ -594,9 +620,11 @@ class CatbotLegEnv:
+-             return torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
+- 
+-         foot_height = self.foot_pos[:, 0, 2]  # (n_envs,) — single foot
+-+        max_height = self.cfg.get("targets", {}).get("foot_clearance_max_height", 0.12)
+-+        foot_height_clamped = foot_height.clamp(max=max_height)
+-         swing_mask = (torch.abs(self.yaw_vel[:, 0]) > 0.05).float()
+-         cmd_magnitude = torch.abs(self.commands[:, 0])
+--        return foot_height * swing_mask * cmd_magnitude
+-+        return foot_height_clamped * swing_mask * cmd_magnitude
+- 
+-     def _reward_energy(self):
+-         exec_actions = (
+\ No newline at end of file
+diff --git a/savedlogs/catbot_phase6/metadata.yaml b/savedlogs/catbot_phase6/metadata.yaml
+deleted file mode 100644
+index 2b110f7..0000000
+--- a/savedlogs/catbot_phase6/metadata.yaml
++++ /dev/null
+@@ -1,4 +0,0 @@
+-max_iterations: 10000
+-num_envs: 1000
+-resumed_from: logs/catbot_phase5_resumed_20260329-175449_resumed_20260329-194024_resumed_20260329-225345_resumed_20260330-100601/model_13100.pt
+-timestamp: '2026-03-30T22:35:26.344711'
+diff --git a/savedlogs/catbot_phase6/model_13100.pt b/savedlogs/catbot_phase6/model_13100.pt
+deleted file mode 100644
+index 6a17165..0000000
+Binary files a/savedlogs/catbot_phase6/model_13100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_13200.pt b/savedlogs/catbot_phase6/model_13200.pt
+deleted file mode 100644
+index 9528ae5..0000000
+Binary files a/savedlogs/catbot_phase6/model_13200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_13300.pt b/savedlogs/catbot_phase6/model_13300.pt
+deleted file mode 100644
+index 8815056..0000000
+Binary files a/savedlogs/catbot_phase6/model_13300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_13400.pt b/savedlogs/catbot_phase6/model_13400.pt
+deleted file mode 100644
+index 507023d..0000000
+Binary files a/savedlogs/catbot_phase6/model_13400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_13500.pt b/savedlogs/catbot_phase6/model_13500.pt
+deleted file mode 100644
+index 52c485e..0000000
+Binary files a/savedlogs/catbot_phase6/model_13500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_13600.pt b/savedlogs/catbot_phase6/model_13600.pt
+deleted file mode 100644
+index 045281a..0000000
+Binary files a/savedlogs/catbot_phase6/model_13600.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_13700.pt b/savedlogs/catbot_phase6/model_13700.pt
+deleted file mode 100644
+index afbb2f1..0000000
+Binary files a/savedlogs/catbot_phase6/model_13700.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_13800.pt b/savedlogs/catbot_phase6/model_13800.pt
+deleted file mode 100644
+index e61b65e..0000000
+Binary files a/savedlogs/catbot_phase6/model_13800.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_13900.pt b/savedlogs/catbot_phase6/model_13900.pt
+deleted file mode 100644
+index dd94e99..0000000
+Binary files a/savedlogs/catbot_phase6/model_13900.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14000.pt b/savedlogs/catbot_phase6/model_14000.pt
+deleted file mode 100644
+index c47e726..0000000
+Binary files a/savedlogs/catbot_phase6/model_14000.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14100.pt b/savedlogs/catbot_phase6/model_14100.pt
+deleted file mode 100644
+index e74c436..0000000
+Binary files a/savedlogs/catbot_phase6/model_14100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14200.pt b/savedlogs/catbot_phase6/model_14200.pt
+deleted file mode 100644
+index f189b2f..0000000
+Binary files a/savedlogs/catbot_phase6/model_14200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14300.pt b/savedlogs/catbot_phase6/model_14300.pt
+deleted file mode 100644
+index d8a4cf9..0000000
+Binary files a/savedlogs/catbot_phase6/model_14300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14400.pt b/savedlogs/catbot_phase6/model_14400.pt
+deleted file mode 100644
+index f5f8592..0000000
+Binary files a/savedlogs/catbot_phase6/model_14400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14500.pt b/savedlogs/catbot_phase6/model_14500.pt
+deleted file mode 100644
+index 462c67a..0000000
+Binary files a/savedlogs/catbot_phase6/model_14500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14600.pt b/savedlogs/catbot_phase6/model_14600.pt
+deleted file mode 100644
+index 999ef2b..0000000
+Binary files a/savedlogs/catbot_phase6/model_14600.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14700.pt b/savedlogs/catbot_phase6/model_14700.pt
+deleted file mode 100644
+index 731f4e6..0000000
+Binary files a/savedlogs/catbot_phase6/model_14700.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14800.pt b/savedlogs/catbot_phase6/model_14800.pt
+deleted file mode 100644
+index b026f27..0000000
+Binary files a/savedlogs/catbot_phase6/model_14800.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_14900.pt b/savedlogs/catbot_phase6/model_14900.pt
+deleted file mode 100644
+index 1aee32b..0000000
+Binary files a/savedlogs/catbot_phase6/model_14900.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15000.pt b/savedlogs/catbot_phase6/model_15000.pt
+deleted file mode 100644
+index ae2875a..0000000
+Binary files a/savedlogs/catbot_phase6/model_15000.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15100.pt b/savedlogs/catbot_phase6/model_15100.pt
+deleted file mode 100644
+index 094f618..0000000
+Binary files a/savedlogs/catbot_phase6/model_15100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15200.pt b/savedlogs/catbot_phase6/model_15200.pt
+deleted file mode 100644
+index 113e91e..0000000
+Binary files a/savedlogs/catbot_phase6/model_15200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15300.pt b/savedlogs/catbot_phase6/model_15300.pt
+deleted file mode 100644
+index 549ae0f..0000000
+Binary files a/savedlogs/catbot_phase6/model_15300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15400.pt b/savedlogs/catbot_phase6/model_15400.pt
+deleted file mode 100644
+index 32b7368..0000000
+Binary files a/savedlogs/catbot_phase6/model_15400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15500.pt b/savedlogs/catbot_phase6/model_15500.pt
+deleted file mode 100644
+index c9491a3..0000000
+Binary files a/savedlogs/catbot_phase6/model_15500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15600.pt b/savedlogs/catbot_phase6/model_15600.pt
+deleted file mode 100644
+index e0255b7..0000000
+Binary files a/savedlogs/catbot_phase6/model_15600.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15700.pt b/savedlogs/catbot_phase6/model_15700.pt
+deleted file mode 100644
+index c956a22..0000000
+Binary files a/savedlogs/catbot_phase6/model_15700.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15800.pt b/savedlogs/catbot_phase6/model_15800.pt
+deleted file mode 100644
+index 1a632f2..0000000
+Binary files a/savedlogs/catbot_phase6/model_15800.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_15900.pt b/savedlogs/catbot_phase6/model_15900.pt
+deleted file mode 100644
+index d3d62c2..0000000
+Binary files a/savedlogs/catbot_phase6/model_15900.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16000.pt b/savedlogs/catbot_phase6/model_16000.pt
+deleted file mode 100644
+index f2c4071..0000000
+Binary files a/savedlogs/catbot_phase6/model_16000.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16100.pt b/savedlogs/catbot_phase6/model_16100.pt
+deleted file mode 100644
+index c6db419..0000000
+Binary files a/savedlogs/catbot_phase6/model_16100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16200.pt b/savedlogs/catbot_phase6/model_16200.pt
+deleted file mode 100644
+index 2a0486d..0000000
+Binary files a/savedlogs/catbot_phase6/model_16200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16300.pt b/savedlogs/catbot_phase6/model_16300.pt
+deleted file mode 100644
+index 4af09c0..0000000
+Binary files a/savedlogs/catbot_phase6/model_16300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16400.pt b/savedlogs/catbot_phase6/model_16400.pt
+deleted file mode 100644
+index 5ea9e78..0000000
+Binary files a/savedlogs/catbot_phase6/model_16400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16500.pt b/savedlogs/catbot_phase6/model_16500.pt
+deleted file mode 100644
+index a846d07..0000000
+Binary files a/savedlogs/catbot_phase6/model_16500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16600.pt b/savedlogs/catbot_phase6/model_16600.pt
+deleted file mode 100644
+index b04471e..0000000
+Binary files a/savedlogs/catbot_phase6/model_16600.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16700.pt b/savedlogs/catbot_phase6/model_16700.pt
+deleted file mode 100644
+index 2715274..0000000
+Binary files a/savedlogs/catbot_phase6/model_16700.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16800.pt b/savedlogs/catbot_phase6/model_16800.pt
+deleted file mode 100644
+index 57de434..0000000
+Binary files a/savedlogs/catbot_phase6/model_16800.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_16900.pt b/savedlogs/catbot_phase6/model_16900.pt
+deleted file mode 100644
+index 723f438..0000000
+Binary files a/savedlogs/catbot_phase6/model_16900.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_17000.pt b/savedlogs/catbot_phase6/model_17000.pt
+deleted file mode 100644
+index 0177987..0000000
+Binary files a/savedlogs/catbot_phase6/model_17000.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_17100.pt b/savedlogs/catbot_phase6/model_17100.pt
+deleted file mode 100644
+index e11f0c4..0000000
+Binary files a/savedlogs/catbot_phase6/model_17100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_17200.pt b/savedlogs/catbot_phase6/model_17200.pt
+deleted file mode 100644
+index 342459c..0000000
+Binary files a/savedlogs/catbot_phase6/model_17200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase6/model_17300.pt b/savedlogs/catbot_phase6/model_17300.pt
+deleted file mode 100644
+index 5e68dcc..0000000
+Binary files a/savedlogs/catbot_phase6/model_17300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/config.pkl b/savedlogs/catbot_phase7/config.pkl
+deleted file mode 100644
+index 977c468..0000000
+Binary files a/savedlogs/catbot_phase7/config.pkl and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/config.yaml b/savedlogs/catbot_phase7/config.yaml
+deleted file mode 100644
+index 894d005..0000000
+--- a/savedlogs/catbot_phase7/config.yaml
++++ /dev/null
+@@ -1,131 +0,0 @@
+-# Phase 8 - Full DR
+-# Picks up from phase 7. Reward structure unchanged.
+-# Goal: maximum sim-to-real robustness. Ranges should comfortably bracket
+-#       the worst-case variance you'd see on the real catbot across
+-#       different units, surfaces, and operating conditions.
+-# Key changes from phase 7:
+-#   - kp/kd: widened to ±15% / ±30% (covers worn servos and temperature drift)
+-#   - friction: widened to ±50% (adds very slippery tile and grippy rubber)
+-#   - mass_shift: widened to ±50g (covers small payload on back)
+-#   - com_shift: added at 2cm std (assembly asymmetry, uneven cable routing)
+-#   - obs noise: full levels (what you'd measure on stationary hardware)
+-#   - pushes: stronger and more frequent
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  seed: 1
+-  obs_groups: { "policy": ["main"], "critic": ["main"] }
+-  experiment_name: catbot
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  max_iterations: 2000
+-  run_name: ""
+-
+-  policy:
+-    class_name: ActorCritic
+-    activation: elu
+-    actor_obs_normalization: true
+-    critic_obs_normalization: true
+-    actor_hidden_dims: [512, 256, 128]
+-    critic_hidden_dims: [512, 256, 128]
+-    init_noise_std: 1.0
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 20.0
+-  kd: 0.5
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-0.8, 0.8]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -100
+-    roll_angle: -200
+-    pitch_angle: -300
+-    base_height: -1000
+-    action_rate: -4
+-    similar_to_default: -3
+-    energy: -0.15
+-    survival: 0.3
+-    foot_clearance: 0.0
+-  targets:
+-    base_height: 0.28
+-
+-domain_randomization:
+-  enabled: true
+-
+-  on_reset:
+-    kp: [17.0, 23.0]           # ±15% — covers worn servos and temperature drift
+-    kd: [0.35, 0.65]           # ±30% — high end of expected damping variance
+-    friction: [0.5, 1.5]       # ±50% — slippery tile through grippy rubber mat
+-    mass_shift: [-0.05, 0.05]  # ±50g per link — small payload, dense print fill
+-    com_shift: 0.02            # 2cm std per link — asymmetric cable routing
+-
+-  obs_noise:
+-    ang_vel: 0.15              # measured noise floor on stationary catbot IMU
+-    dof_pos: 0.03              # joint flex under full load
+-    dof_vel: 2.0               # worst-case finite-diff velocity at high speed
+-
+-  pushes:
+-    enabled: true
+-    interval_s: 8.0            # more frequent than phase 7
+-    max_vel_xy: 0.5            # 0.5 m/s — a solid shove
+diff --git a/savedlogs/catbot_phase7/events.out.tfevents.1775106655.solar.12948.0 b/savedlogs/catbot_phase7/events.out.tfevents.1775106655.solar.12948.0
+deleted file mode 100644
+index 632ba0f..0000000
+Binary files a/savedlogs/catbot_phase7/events.out.tfevents.1775106655.solar.12948.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/events.out.tfevents.1775106902.solar.14003.0 b/savedlogs/catbot_phase7/events.out.tfevents.1775106902.solar.14003.0
+deleted file mode 100644
+index 73ba569..0000000
+Binary files a/savedlogs/catbot_phase7/events.out.tfevents.1775106902.solar.14003.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/events.out.tfevents.1775137976.solar.94279.0 b/savedlogs/catbot_phase7/events.out.tfevents.1775137976.solar.94279.0
+deleted file mode 100644
+index 64e0e94..0000000
+Binary files a/savedlogs/catbot_phase7/events.out.tfevents.1775137976.solar.94279.0 and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/git/servobot-rl-genesis.diff b/savedlogs/catbot_phase7/git/servobot-rl-genesis.diff
+deleted file mode 100644
+index 9ce6f12..0000000
+--- a/savedlogs/catbot_phase7/git/servobot-rl-genesis.diff
++++ /dev/null
+@@ -1,228 +0,0 @@
+---- git status ---
+-On branch main
+-Your branch is up to date with 'origin/main'.
+-
+-Changes not staged for commit:
+-  (use "git add <file>..." to update what will be committed)
+-  (use "git restore <file>..." to discard changes in working directory)
+-	modified:   config/catbot_leg.yaml
+-	modified:   config/randomized/catbot_phase6_dr_intro.yaml
+-	modified:   config/randomized/catbot_phase7_dr_moderate.yaml
+-	modified:   config/randomized/catbot_phase8_dr_full.yaml
+-	modified:   config/schemas/domain_randomization.json
+-	modified:   src/config/config.py
+-	modified:   src/env/catbot.py
+-	modified:   src/env/catbot_leg.py
+-
+-Untracked files:
+-  (use "git add <file>..." to include in what will be committed)
+-	savedlogs/catbot_phase6/
+-	savedlogs/catbot_phase7/
+-
+-no changes added to commit (use "git add" and/or "git commit -a") 
+-
+-
+---- git diff ---
+-diff --git a/config/catbot_leg.yaml b/config/catbot_leg.yaml
+-index f94f9a2..8761f7b 100644
+---- a/config/catbot_leg.yaml
+-+++ b/config/catbot_leg.yaml
+-@@ -83,6 +83,11 @@ reward:
+-     soft_landing: -0.025
+-   targets:
+-     base_height: .3
+-+    foot_clearance_max_height: 0.12  # clamp foot height reward above this (m)
+- 
+- domain_randomization:
+-   enabled: false
+-+  stumbles:
+-+    enabled: false
+-+    probability: 0.05       # per-step chance of a stumble when leg is swinging
+-+    max_vel_impulse: 2.0    # rad/s impulse added to joint velocities
+-diff --git a/config/randomized/catbot_phase6_dr_intro.yaml b/config/randomized/catbot_phase6_dr_intro.yaml
+-index 924ee0a..38984b0 100644
+---- a/config/randomized/catbot_phase6_dr_intro.yaml
+-+++ b/config/randomized/catbot_phase6_dr_intro.yaml
+-@@ -103,7 +103,7 @@ reward:
+-     similar_to_default: -0.5
+-     energy: -0.15
+-     survival: 0.3
+--    foot_clearance: 60.0
+-+    foot_clearance: 
+-   targets:
+-     base_height: 0.28
+- 
+-diff --git a/config/randomized/catbot_phase7_dr_moderate.yaml b/config/randomized/catbot_phase7_dr_moderate.yaml
+-index 1f36ab2..5d9fab9 100644
+---- a/config/randomized/catbot_phase7_dr_moderate.yaml
+-+++ b/config/randomized/catbot_phase7_dr_moderate.yaml
+-@@ -105,7 +105,7 @@ reward:
+-     similar_to_default: -0.5
+-     energy: -0.15
+-     survival: 0.3
+--    foot_clearance: 60.0
+-+    foot_clearance: 0.0
+-   targets:
+-     base_height: 0.28
+- 
+-diff --git a/config/randomized/catbot_phase8_dr_full.yaml b/config/randomized/catbot_phase8_dr_full.yaml
+-index 7cb2fd4..894d005 100644
+---- a/config/randomized/catbot_phase8_dr_full.yaml
+-+++ b/config/randomized/catbot_phase8_dr_full.yaml
+-@@ -80,7 +80,7 @@ env:
+-   termination_if_body_contact_height: 0.05
+- 
+- commands:
+--  lin_vel_x: [-1.0, 1.0]
+-+  lin_vel_x: [-0.8, 0.8]
+-   lin_vel_y: [-1.5, 1.5]
+-   ang_vel_z: [-0.1, 0.1]
+- 
+-@@ -103,10 +103,10 @@ reward:
+-     pitch_angle: -300
+-     base_height: -1000
+-     action_rate: -4
+--    similar_to_default: -0.5
+-+    similar_to_default: -3
+-     energy: -0.15
+-     survival: 0.3
+--    foot_clearance: 15.0
+-+    foot_clearance: 0.0
+-   targets:
+-     base_height: 0.28
+- 
+-diff --git a/config/schemas/domain_randomization.json b/config/schemas/domain_randomization.json
+-index 98fbb1b..b3f845f 100644
+---- a/config/schemas/domain_randomization.json
+-+++ b/config/schemas/domain_randomization.json
+-@@ -85,6 +85,25 @@
+-       },
+-       "required": ["enabled"],
+-       "additionalProperties": false
+-+    },
+-+    "stumbles": {
+-+      "type": "object",
+-+      "description": "Random joint velocity impulses applied to foot DOFs during swing to simulate tripping",
+-+      "properties": {
+-+        "enabled": {
+-+          "type": "boolean"
+-+        },
+-+        "probability": {
+-+          "type": "number",
+-+          "description": "Per-step probability (0–1) of a stumble occurring when leg is in swing"
+-+        },
+-+        "max_vel_impulse": {
+-+          "type": "number",
+-+          "description": "Maximum impulse magnitude added to joint velocities (rad/s)"
+-+        }
+-+      },
+-+      "required": ["enabled"],
+-+      "additionalProperties": false
+-     }
+-   },
+-   "additionalProperties": false
+-diff --git a/src/config/config.py b/src/config/config.py
+-index 6c3dc5b..70eb0e5 100644
+---- a/src/config/config.py
+-+++ b/src/config/config.py
+-@@ -24,11 +24,18 @@ class DomainRandPushesConfig(TypedDict, total=False):
+-     max_vel_xy: float
+- 
+- 
+-+class DomainRandStumblesConfig(TypedDict, total=False):
+-+    enabled: Required[bool]
+-+    probability: float
+-+    max_vel_impulse: float
+-+
+-+
+- class DomainRandConfig(TypedDict, total=False):
+-     enabled: bool
+-     on_reset: DomainRandOnResetConfig
+-     obs_noise: DomainRandObsNoiseConfig
+-     pushes: DomainRandPushesConfig
+-+    stumbles: DomainRandStumblesConfig
+- r"""
+- Command_Config.
+- 
+-diff --git a/src/env/catbot.py b/src/env/catbot.py
+-index ced2522..f5d8858 100644
+---- a/src/env/catbot.py
+-+++ b/src/env/catbot.py
+-@@ -589,14 +589,15 @@ class CatbotEnv:
+- 
+-         angles = torch.rand(n, device=gs.device) * 2 * math.pi
+-         mags = torch.rand(n, device=gs.device) * max_vel
+--        delta_vel = torch.zeros(n, 3, device=gs.device)
+-+        delta_vel = torch.zeros(n, 2, device=gs.device)
+-         delta_vel[:, 0] = mags * torch.cos(angles)
+-         delta_vel[:, 1] = mags * torch.sin(angles)
+- 
+--        current_vel = self.robot.get_vel()  # (n_envs, 3) world frame
+--        new_vel = current_vel.clone()
+--        new_vel[push_indices] += delta_vel
+--        self.robot.set_vel(new_vel, envs_idx=push_indices)
+-+        # For a free-floating MJCF robot the first two DOFs are base x,y velocity (world frame)
+-+        base_xy_dof_idx = torch.tensor([0, 1], dtype=gs.tc_int, device=gs.device)
+-+        current_vel = self.robot.get_dofs_velocity(base_xy_dof_idx)  # (n_envs, 2)
+-+        push_vel = current_vel[push_indices] + delta_vel  # (n_push, 2)
+-+        self.robot.set_dofs_velocity(push_vel, base_xy_dof_idx, envs_idx=push_indices)
+- 
+-         self.push_buf.masked_fill_(push_mask, 0)
+- 
+-diff --git a/src/env/catbot_leg.py b/src/env/catbot_leg.py
+-index cbaf759..17e9c90 100644
+---- a/src/env/catbot_leg.py
+-+++ b/src/env/catbot_leg.py
+-@@ -300,6 +300,9 @@ class CatbotLegEnv:
+-         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
+-         self.scene.step()
+- 
+-+        # apply stumbling perturbations
+-+        self._apply_stumbles()
+-+
+-         # update buffers
+-         self.episode_length_buf += 1
+-         self.imu_pos = self.imu_link.get_pos()
+-@@ -586,6 +589,29 @@ class CatbotLegEnv:
+-             com_rand = torch.randn(n, n_links, 3, device=gs.device) * std
+-             self.robot.set_COM_shift(com_rand, envs_idx=env_indices)
+- 
+-+    def _apply_stumbles(self):
+-+        """Apply random joint velocity impulses during swing to simulate foot catching on obstacles."""
+-+        stumbles_cfg = self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
+-+        if not stumbles_cfg.get("enabled", False):
+-+            return
+-+
+-+        probability = stumbles_cfg.get("probability", 0.05)
+-+        max_impulse = stumbles_cfg.get("max_vel_impulse", 2.0)
+-+
+-+        # Only stumble envs where the leg is actively swinging
+-+        swing_mask = torch.abs(self.yaw_vel[:, 0]) > 0.05
+-+        stumble_mask = swing_mask & (torch.rand(self.num_envs, device=gs.device) < probability)
+-+        stumble_indices = torch.where(stumble_mask)[0]
+-+        if len(stumble_indices) == 0:
+-+            return
+-+
+-+        n = len(stumble_indices)
+-+        impulse = (torch.rand(n, self.num_actions, device=gs.device) * 2 - 1) * max_impulse
+-+        current_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+-+        new_vel = current_vel.clone()
+-+        new_vel[stumble_indices] += impulse
+-+        self.robot.set_dofs_velocity(new_vel, self.motors_dof_idx, envs_idx=stumble_indices)
+-+
+-     # ------------ reward functions----------------
+-     def _reward_foot_clearance(self):
+-         # Reward foot height when the leg is actively swinging (yaw velocity as proxy).
+-@@ -594,9 +620,11 @@ class CatbotLegEnv:
+-             return torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
+- 
+-         foot_height = self.foot_pos[:, 0, 2]  # (n_envs,) — single foot
+-+        max_height = self.cfg.get("targets", {}).get("foot_clearance_max_height", 0.12)
+-+        foot_height_clamped = foot_height.clamp(max=max_height)
+-         swing_mask = (torch.abs(self.yaw_vel[:, 0]) > 0.05).float()
+-         cmd_magnitude = torch.abs(self.commands[:, 0])
+--        return foot_height * swing_mask * cmd_magnitude
+-+        return foot_height_clamped * swing_mask * cmd_magnitude
+- 
+-     def _reward_energy(self):
+-         exec_actions = (
+\ No newline at end of file
+diff --git a/savedlogs/catbot_phase7/metadata.yaml b/savedlogs/catbot_phase7/metadata.yaml
+deleted file mode 100644
+index c55cb91..0000000
+--- a/savedlogs/catbot_phase7/metadata.yaml
++++ /dev/null
+@@ -1,4 +0,0 @@
+-max_iterations: 10000
+-num_envs: 1000
+-resumed_from: savedlogs/catbot_phase7/model_19000.pt
+-timestamp: '2026-04-02T00:09:46.860909'
+diff --git a/savedlogs/catbot_phase7/model_19000.pt b/savedlogs/catbot_phase7/model_19000.pt
+deleted file mode 100644
+index c838f53..0000000
+Binary files a/savedlogs/catbot_phase7/model_19000.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19100.pt b/savedlogs/catbot_phase7/model_19100.pt
+deleted file mode 100644
+index 864bdf6..0000000
+Binary files a/savedlogs/catbot_phase7/model_19100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19200.pt b/savedlogs/catbot_phase7/model_19200.pt
+deleted file mode 100644
+index 213a9d0..0000000
+Binary files a/savedlogs/catbot_phase7/model_19200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19300.pt b/savedlogs/catbot_phase7/model_19300.pt
+deleted file mode 100644
+index 65a8666..0000000
+Binary files a/savedlogs/catbot_phase7/model_19300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19400.pt b/savedlogs/catbot_phase7/model_19400.pt
+deleted file mode 100644
+index eea3b67..0000000
+Binary files a/savedlogs/catbot_phase7/model_19400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19500.pt b/savedlogs/catbot_phase7/model_19500.pt
+deleted file mode 100644
+index 3b013fb..0000000
+Binary files a/savedlogs/catbot_phase7/model_19500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19600.pt b/savedlogs/catbot_phase7/model_19600.pt
+deleted file mode 100644
+index 1106514..0000000
+Binary files a/savedlogs/catbot_phase7/model_19600.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19700.pt b/savedlogs/catbot_phase7/model_19700.pt
+deleted file mode 100644
+index 4f9f031..0000000
+Binary files a/savedlogs/catbot_phase7/model_19700.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19800.pt b/savedlogs/catbot_phase7/model_19800.pt
+deleted file mode 100644
+index 69a31fc..0000000
+Binary files a/savedlogs/catbot_phase7/model_19800.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_19900.pt b/savedlogs/catbot_phase7/model_19900.pt
+deleted file mode 100644
+index ffaee7f..0000000
+Binary files a/savedlogs/catbot_phase7/model_19900.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20000.pt b/savedlogs/catbot_phase7/model_20000.pt
+deleted file mode 100644
+index 87489ab..0000000
+Binary files a/savedlogs/catbot_phase7/model_20000.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20100.pt b/savedlogs/catbot_phase7/model_20100.pt
+deleted file mode 100644
+index d69d5cf..0000000
+Binary files a/savedlogs/catbot_phase7/model_20100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20200.pt b/savedlogs/catbot_phase7/model_20200.pt
+deleted file mode 100644
+index 6808efb..0000000
+Binary files a/savedlogs/catbot_phase7/model_20200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20300.pt b/savedlogs/catbot_phase7/model_20300.pt
+deleted file mode 100644
+index e7c7523..0000000
+Binary files a/savedlogs/catbot_phase7/model_20300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20400.pt b/savedlogs/catbot_phase7/model_20400.pt
+deleted file mode 100644
+index 943e732..0000000
+Binary files a/savedlogs/catbot_phase7/model_20400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20500.pt b/savedlogs/catbot_phase7/model_20500.pt
+deleted file mode 100644
+index 4359526..0000000
+Binary files a/savedlogs/catbot_phase7/model_20500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20600.pt b/savedlogs/catbot_phase7/model_20600.pt
+deleted file mode 100644
+index cb65319..0000000
+Binary files a/savedlogs/catbot_phase7/model_20600.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20700.pt b/savedlogs/catbot_phase7/model_20700.pt
+deleted file mode 100644
+index 93595a1..0000000
+Binary files a/savedlogs/catbot_phase7/model_20700.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20800.pt b/savedlogs/catbot_phase7/model_20800.pt
+deleted file mode 100644
+index bdf93b4..0000000
+Binary files a/savedlogs/catbot_phase7/model_20800.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_20900.pt b/savedlogs/catbot_phase7/model_20900.pt
+deleted file mode 100644
+index f8e671b..0000000
+Binary files a/savedlogs/catbot_phase7/model_20900.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21000.pt b/savedlogs/catbot_phase7/model_21000.pt
+deleted file mode 100644
+index db4738c..0000000
+Binary files a/savedlogs/catbot_phase7/model_21000.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21100.pt b/savedlogs/catbot_phase7/model_21100.pt
+deleted file mode 100644
+index d870368..0000000
+Binary files a/savedlogs/catbot_phase7/model_21100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21200.pt b/savedlogs/catbot_phase7/model_21200.pt
+deleted file mode 100644
+index d5f3080..0000000
+Binary files a/savedlogs/catbot_phase7/model_21200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21300.pt b/savedlogs/catbot_phase7/model_21300.pt
+deleted file mode 100644
+index 77665a9..0000000
+Binary files a/savedlogs/catbot_phase7/model_21300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21400.pt b/savedlogs/catbot_phase7/model_21400.pt
+deleted file mode 100644
+index e40e4e0..0000000
+Binary files a/savedlogs/catbot_phase7/model_21400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21500.pt b/savedlogs/catbot_phase7/model_21500.pt
+deleted file mode 100644
+index cecfa52..0000000
+Binary files a/savedlogs/catbot_phase7/model_21500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21600.pt b/savedlogs/catbot_phase7/model_21600.pt
+deleted file mode 100644
+index 53dad09..0000000
+Binary files a/savedlogs/catbot_phase7/model_21600.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21700.pt b/savedlogs/catbot_phase7/model_21700.pt
+deleted file mode 100644
+index a7fedfd..0000000
+Binary files a/savedlogs/catbot_phase7/model_21700.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21800.pt b/savedlogs/catbot_phase7/model_21800.pt
+deleted file mode 100644
+index 9248ae2..0000000
+Binary files a/savedlogs/catbot_phase7/model_21800.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_21900.pt b/savedlogs/catbot_phase7/model_21900.pt
+deleted file mode 100644
+index d45906d..0000000
+Binary files a/savedlogs/catbot_phase7/model_21900.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_22000.pt b/savedlogs/catbot_phase7/model_22000.pt
+deleted file mode 100644
+index 39edd58..0000000
+Binary files a/savedlogs/catbot_phase7/model_22000.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_22100.pt b/savedlogs/catbot_phase7/model_22100.pt
+deleted file mode 100644
+index 246736d..0000000
+Binary files a/savedlogs/catbot_phase7/model_22100.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_22200.pt b/savedlogs/catbot_phase7/model_22200.pt
+deleted file mode 100644
+index ddfbe71..0000000
+Binary files a/savedlogs/catbot_phase7/model_22200.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_22300.pt b/savedlogs/catbot_phase7/model_22300.pt
+deleted file mode 100644
+index 1911af2..0000000
+Binary files a/savedlogs/catbot_phase7/model_22300.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_22400.pt b/savedlogs/catbot_phase7/model_22400.pt
+deleted file mode 100644
+index 0502d9e..0000000
+Binary files a/savedlogs/catbot_phase7/model_22400.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_22500.pt b/savedlogs/catbot_phase7/model_22500.pt
+deleted file mode 100644
+index a325eca..0000000
+Binary files a/savedlogs/catbot_phase7/model_22500.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/model_22600.pt b/savedlogs/catbot_phase7/model_22600.pt
+deleted file mode 100644
+index b906e4a..0000000
+Binary files a/savedlogs/catbot_phase7/model_22600.pt and /dev/null differ
+diff --git a/savedlogs/catbot_phase7/teacher_22600.pt b/savedlogs/catbot_phase7/teacher_22600.pt
+deleted file mode 100644
+index 24e98c2..0000000
+Binary files a/savedlogs/catbot_phase7/teacher_22600.pt and /dev/null differ
+diff --git a/scripts/debug_yaw.py b/scripts/debug_yaw.py
+deleted file mode 100644
+index 360d078..0000000
+--- a/scripts/debug_yaw.py
++++ /dev/null
+@@ -1,205 +0,0 @@
+-import pickle
+-from pathlib import Path
+-
+-import genesis as gs
+-import numpy as np
+-import torch
+-
+-from src.config import Config
+-from src.utils import get_class
+-
+-
+-def main():
+-    gs.init(precision="32", logging_level="warning")
+-
+-    # Load environment
+-    exp_dir = "savedlogs/catbot_leg_student"
+-    config = pickle.load(open(f"{exp_dir}/config.pkl", "rb"))
+-
+-    env_class = get_class("src.env", config["env"]["class_name"])
+-    env = env_class(
+-        1,  # Single environment for debugging
+-        config["env"],
+-        config["obs"],
+-        config["reward"],
+-        config["commands"],
+-        headless=True,
+-    )
+-
+-    print("=" * 80)
+-    print("YAW VELOCITY BIAS DIAGNOSTIC")
+-    print("=" * 80)
+-
+-    # Test 1: Random actions, track correlations
+-    print("\nTest 1: Random Actions with Data Collection")
+-    print("-" * 80)
+-
+-    num_episodes = 10
+-    all_yaw_vels = []
+-    all_commands = []
+-    all_actions = []
+-    all_rewards = []
+-
+-    for episode in range(num_episodes):
+-        obs = env.reset()
+-        episode_yaw_vels = []
+-        episode_commands = []
+-        episode_actions = []
+-        episode_rewards = []
+-
+-        for step in range(50):
+-            # Random actions (like untrained agent)
+-            actions = torch.randn(1, env.num_actions) * 0.2
+-
+-            obs, rewards, dones, extras = env.step(actions)
+-
+-            episode_yaw_vels.append(env.yaw_vel[0, 0].item())
+-            episode_commands.append(env.commands[0, 0].item())
+-            episode_actions.append(actions[0, 0].item())  # Take first action
+-            episode_rewards.append(rewards[0].item())
+-
+-            if dones[0]:
+-                break
+-
+-        all_yaw_vels.extend(episode_yaw_vels)
+-        all_commands.extend(episode_commands)
+-        all_actions.extend(episode_actions)
+-        all_rewards.extend(episode_rewards)
+-
+-    yaw_vels_array = np.array(all_yaw_vels)
+-    commands_array = np.array(all_commands)
+-    actions_array = np.array(all_actions)
+-    rewards_array = np.array(all_rewards)
+-
+-    print(f"\nYaw Velocity Statistics:")
+-    print(f"  Mean:          {np.mean(yaw_vels_array):>10.6f}")
+-    print(f"  Std Dev:       {np.std(yaw_vels_array):>10.6f}")
+-    print(f"  Min:           {np.min(yaw_vels_array):>10.6f}")
+-    print(f"  Max:           {np.max(yaw_vels_array):>10.6f}")
+-    pos_count = np.sum(yaw_vels_array > 0)
+-    neg_count = np.sum(yaw_vels_array < 0)
+-    zero_count = np.sum(np.abs(yaw_vels_array) < 1e-6)
+-    total = len(yaw_vels_array)
+-    print(
+-        f"  Positive:      {pos_count:>6}/{total} ({100 * pos_count / total:>5.1f}%) [CLOCKWISE]"
+-    )
+-    print(
+-        f"  Negative:      {neg_count:>6}/{total} ({100 * neg_count / total:>5.1f}%) [COUNTER-CW]"
+-    )
+-    print(
+-        f"  Zero:          {zero_count:>6}/{total} ({100 * zero_count / total:>5.1f}%)"
+-    )
+-
+-    print(f"\nCommand Statistics:")
+-    print(f"  Mean:          {np.mean(commands_array):>10.6f}")
+-    print(f"  Std Dev:       {np.std(commands_array):>10.6f}")
+-    print(f"  Min:           {np.min(commands_array):>10.6f}")
+-    print(f"  Max:           {np.max(commands_array):>10.6f}")
+-
+-    # Correlation analysis
+-    print(f"\nCorrelation Analysis:")
+-    if len(all_commands) > 1:
+-        corr_yaw_cmd = np.corrcoef(yaw_vels_array, commands_array)[0, 1]
+-        print(f"  yaw_vel vs commands:  {corr_yaw_cmd:>10.6f}")
+-        if abs(corr_yaw_cmd) < 0.3:
+-            print(f"    ⚠️  LOW CORRELATION - yaw_vel not tracking commands properly!")
+-
+-    corr_yaw_action = np.corrcoef(yaw_vels_array, actions_array)[0, 1]
+-    print(f"  yaw_vel vs actions:   {corr_yaw_action:>10.6f}")
+-
+-    corr_cmd_action = np.corrcoef(commands_array, actions_array)[0, 1]
+-    print(f"  commands vs actions:  {corr_cmd_action:>10.6f}")
+-
+-    # Test 2: Fixed positive command
+-    print("\n" + "=" * 80)
+-    print("Test 2: Fixed Positive Command")
+-    print("-" * 80)
+-
+-    obs = env.reset()
+-    pos_yaws = []
+-    for _ in range(100):
+-        actions = torch.zeros(1, env.num_actions)
+-        obs, _, _, _ = env.step(actions, command=(1.0,))  # Full positive command
+-        pos_yaws.append(env.yaw_vel[0, 0].item())
+-
+-    print(f"Command sent: +1.0 (max positive)")
+-    print(f"  Avg yaw_vel:  {np.mean(pos_yaws):>10.6f}")
+-    print(f"  Expected:     Should be POSITIVE (counter-clockwise)")
+-    if np.mean(pos_yaws) > 0:
+-        print(f"  ✓ CORRECT")
+-    else:
+-        print(f"  ✗ INVERTED - positive command gives negative yaw!")
+-
+-    # Test 3: Fixed negative command
+-    print("\nTest 3: Fixed Negative Command")
+-    print("-" * 80)
+-
+-    obs = env.reset()
+-    neg_yaws = []
+-    for _ in range(100):
+-        actions = torch.zeros(1, env.num_actions)
+-        obs, _, _, _ = env.step(actions, command=(-1.0,))  # Full negative command
+-        neg_yaws.append(env.yaw_vel[0, 0].item())
+-
+-    print(f"Command sent: -1.0 (max negative)")
+-    print(f"  Avg yaw_vel:  {np.mean(neg_yaws):>10.6f}")
+-    print(f"  Expected:     Should be NEGATIVE (clockwise)")
+-    if np.mean(neg_yaws) < 0:
+-        print(f"  ✓ CORRECT")
+-    else:
+-        print(f"  ✗ INVERTED - negative command gives positive yaw!")
+-
+-    # Test 4: Environment and reward configuration
+-    print("\n" + "=" * 80)
+-    print("Test 4: Environment Configuration")
+-    print("-" * 80)
+-    print(f"Joint names: {env.joint_names}")
+-    print(f"Num actions: {env.num_actions}")
+-    print(f"Command velocity range: {env.command_cfg['vel']}")
+-    print(f"Tracking sigma: {env.reward_cfg.get('tracking_sigma', 'N/A')}")
+-    print(f"\nYaw velocity shape: {env.yaw_vel.shape}")
+-    print(f"Commands shape: {env.commands.shape}")
+-
+-    # Test 5: Check reward function computation
+-    print("\n" + "=" * 80)
+-    print("Test 5: Reward Function Analysis")
+-    print("-" * 80)
+-
+-    # Simulate what the reward function does
+-    obs = env.reset()
+-    test_commands = np.linspace(-1, 1, 11)
+-
+-    for cmd_val in test_commands:
+-        # Set up scenario
+-        for _ in range(10):  # Let it stabilize
+-            actions = torch.zeros(1, env.num_actions)
+-            obs, _, _, _ = env.step(actions, command=(cmd_val,))
+-
+-        yaw = env.yaw_vel[0, 0].item()
+-        cmd = env.commands[0, 0].item()
+-
+-        # Compute reward manually
+-        sigma = env.reward_cfg.get("tracking_sigma", 0.25)
+-        lin_vel_error = (cmd - yaw) ** 2
+-        reward = np.exp(-lin_vel_error / sigma)
+-
+-        print(
+-            f"  Command: {cmd_val:>6.2f} → Yaw: {yaw:>8.4f} → Error: {lin_vel_error:>8.4f} → Reward: {reward:>8.4f}"
+-        )
+-
+-    print("\n" + "=" * 80)
+-    print("SUMMARY")
+-    print("=" * 80)
+-    print(f"Yaw velocity bias: {np.mean(yaw_vels_array):.6f}")
+-    if np.mean(yaw_vels_array) > 0.01:
+-        print("⚠️  STRONG CLOCKWISE BIAS DETECTED")
+-    elif np.mean(yaw_vels_array) < -0.01:
+-        print("⚠️  STRONG COUNTER-CLOCKWISE BIAS DETECTED")
+-    else:
+-        print("✓  No significant directional bias")
+-
+-    print("=" * 80)
+-
+-
+-if __name__ == "__main__":
+-    main()
+diff --git a/scripts/debug_yaw_simple.py b/scripts/debug_yaw_simple.py
+deleted file mode 100644
+index 6a2ef27..0000000
+--- a/scripts/debug_yaw_simple.py
++++ /dev/null
+@@ -1,130 +0,0 @@
+-import pickle
+-from pathlib import Path
+-
+-import genesis as gs
+-import numpy as np
+-import torch
+-
+-from src.config import Config
+-from src.utils import get_class
+-
+-
+-def main():
+-    gs.init(precision="32", logging_level="warning")
+-
+-    # Load environment
+-    exp_dir = "savedlogs/catbot_leg_student"
+-    config = pickle.load(open(f"{exp_dir}/config.pkl", "rb"))
+-
+-    env_class = get_class("src.env", config["env"]["class_name"])
+-    env = env_class(
+-        1,  # Single environment
+-        config["env"],
+-        config["obs"],
+-        config["reward"],
+-        config["commands"],
+-        headless=True,
+-    )
+-
+-    print("=" * 80)
+-    print("SIMPLIFIED YAW VELOCITY SIGN TEST")
+-    print("=" * 80)
+-
+-    # First, reset and take one step to initialize all buffers properly
+-    print("\n[1] Initial State (After Reset)")
+-    obs = env.reset()
+-    actions = torch.zeros(1, env.num_actions)
+-    obs, _, _, _ = env.step(actions)
+-    # Now yaw_vel should be properly initialized
+-    print(f"    Yaw velocity shape: {env.yaw_vel.shape}")
+-    print(f"    Yaw velocity: {env.yaw_vel.squeeze().item():.6f}")
+-    print(f"    Yaw joint index: {env.yaw_idx}")
+-    print(f"    Command: {env.commands[0, 0].item():.6f}")
+-
+-    # Test positive command with zero actions
+-    print("\n[2] Positive Command +0.5 (Zero Actions)")
+-    obs = env.reset()
+-    yaw_vels_pos = []
+-    for i in range(20):
+-        actions = torch.zeros(1, env.num_actions)
+-        obs, rewards, dones, extras = env.step(actions, command=(0.5,))
+-        yaw_vel = env.yaw_vel.squeeze().item()
+-        if i < 5 or i >= 15:
+-            print(
+-                f"    Step {i:2d}: yaw_vel={yaw_vel:>8.5f}, cmd={env.commands[0, 0].item():>7.4f}"
+-            )
+-        elif i == 5:
+-            print(f"    ...")
+-        yaw_vels_pos.append(yaw_vel)
+-
+-    mean_yaw_pos = np.mean(yaw_vels_pos)
+-    print(f"    Average yaw velocity: {mean_yaw_pos:.6f}")
+-    print(f"    Expected: POSITIVE (command is +0.5)")
+-    if mean_yaw_pos > 0.001:
+-        print(f"    ✓ CORRECT")
+-    else:
+-        print(f"    ✗ WRONG (expected positive, got {mean_yaw_pos:.6f})")
+-
+-    # Test negative command with zero actions
+-    print("\n[3] Negative Command -0.5 (Zero Actions)")
+-    obs = env.reset()
+-    yaw_vels_neg = []
+-    for i in range(20):
+-        actions = torch.zeros(1, env.num_actions)
+-        obs, rewards, dones, extras = env.step(actions, command=(-0.5,))
+-        yaw_vel = env.yaw_vel.squeeze().item()
+-        if i < 5 or i >= 15:
+-            print(
+-                f"    Step {i:2d}: yaw_vel={yaw_vel:>8.5f}, cmd={env.commands[0, 0].item():>7.4f}"
+-            )
+-        elif i == 5:
+-            print(f"    ...")
+-        yaw_vels_neg.append(yaw_vel)
+-
+-    mean_yaw_neg = np.mean(yaw_vels_neg)
+-    print(f"    Average yaw velocity: {mean_yaw_neg:.6f}")
+-    print(f"    Expected: NEGATIVE (command is -0.5)")
+-    if mean_yaw_neg < -0.001:
+-        print(f"    ✓ CORRECT")
+-    else:
+-        print(f"    ✗ WRONG (expected negative, got {mean_yaw_neg:.6f})")
+-
+-    # Test with random actions to see if actions affect yaw
+-    print("\n[4] Effect of Actions on Yaw (Positive Command)")
+-    obs = env.reset()
+-    print("    Testing different action values...")
+-    for action_val in [-1.0, -0.5, 0.0, 0.5, 1.0]:
+-        yaw_samples = []
+-        for _ in range(10):
+-            actions = torch.tensor([[action_val, action_val]])
+-            obs, _, _, _ = env.step(actions, command=(0.5,))
+-            yaw_samples.append(env.yaw_vel.squeeze().item())
+-        avg_yaw = np.mean(yaw_samples)
+-        print(
+-            f"    Actions=[{action_val:>4.1f}, {action_val:>4.1f}] → avg yaw={avg_yaw:>8.5f}"
+-        )
+-
+-    # Summary
+-    print("\n" + "=" * 80)
+-    print("SUMMARY")
+-    print("=" * 80)
+-    print(f"Positive command (+0.5) → yaw velocity: {mean_yaw_pos:>8.6f}")
+-    print(f"Negative command (-0.5) → yaw velocity: {mean_yaw_neg:>8.6f}")
+-
+-    if mean_yaw_pos > 0.001 and mean_yaw_neg < -0.001:
+-        print("\n✓ YAW VELOCITY SIGN IS CORRECT")
+-    elif mean_yaw_pos < -0.001 and mean_yaw_neg > 0.001:
+-        print("\n✗ YAW VELOCITY SIGN IS INVERTED")
+-        print("  Need to invert the sign again or check joint direction")
+-    else:
+-        print("\n⚠️  YAW VELOCITY NOT RESPONDING TO COMMANDS")
+-        print("  Yaw joint may not be actuated or may be locked")
+-        print(
+-            f"  Both commands resulted in small velocities: {mean_yaw_pos:.6f} vs {mean_yaw_neg:.6f}"
+-        )
+-
+-    print("=" * 80)
+-
+-
+-if __name__ == "__main__":
+-    main()
+diff --git a/scripts/diagnose_leg_motion.py b/scripts/diagnose_leg_motion.py
+deleted file mode 100644
+index 0fc1377..0000000
+--- a/scripts/diagnose_leg_motion.py
++++ /dev/null
+@@ -1,113 +0,0 @@
+-import pickle
+-from pathlib import Path
+-import genesis as gs
+-import torch
+-import numpy as np
+-from src.config import Config
+-from src.utils import get_class
+-
+-def main():
+-    gs.init(precision="32", logging_level="warning")
+-
+-    # Load environment
+-    exp_dir = "savedlogs/catbot_leg_student"
+-    config = pickle.load(open(f"{exp_dir}/config.pkl", "rb"))
+-
+-    env_class = get_class("src.env", config["env"]["class_name"])
+-    env = env_class(
+-        1,
+-        config["env"],
+-        config["obs"],
+-        config["reward"],
+-        config["commands"],
+-        headless=True,
+-    )
+-
+-    print("=" * 100)
+-    print("LEG MOTION DIAGNOSTIC")
+-    print("=" * 100)
+-    print(f"\nJoint limits:")
+-    print(f"  'a': {env.dofs_limit[0, 0]:.4f} to {env.dofs_limit[0, 1]:.4f} rad")
+-    print(f"  'l': {env.dofs_limit[1, 0]:.4f} to {env.dofs_limit[1, 1]:.4f} rad")
+-    print(f"\nAction scale: {env.cfg['action_scale']}")
+-    print(f"Clip actions: {env.cfg['clip_actions']}")
+-
+-    obs = env.reset()
+-
+-    print("\n" + "=" * 100)
+-    print("STEP-BY-STEP MOTION DATA")
+-    print("=" * 100)
+-    print(f"\n{'Step':>5} | {'Cmd':>6} | {'Act_a':>7} | {'Act_l':>7} | {'Pos_a':>7} | {'Pos_l':>7} | {'Vel_a':>7} | {'Vel_l':>7} | {'Foot_z':>7}")
+-    print("-" * 100)
+-
+-    steps_to_show = 100
+-    for step in range(steps_to_show):
+-        # Random actions for now - just to see what happens
+-        actions = torch.randn(1, 2) * 0.5
+-
+-        obs, reward, done, extras = env.step(actions)
+-
+-        cmd = env.commands[0, 0].item()
+-        act_a = actions[0, 0].item()
+-        act_l = actions[0, 1].item()
+-        pos_a = env.dof_pos[0, 0].item()
+-        pos_l = env.dof_pos[0, 1].item()
+-        vel_a = env.dof_vel[0, 0].item()
+-        vel_l = env.dof_vel[0, 1].item()
+-        foot_z = env.foot_pos[0, 0, 2].item() if env.foot_link_idx is not None else 0.0
+-
+-        if step % 10 == 0:
+-            print(f"{step:>5} | {cmd:>6.3f} | {act_a:>7.3f} | {act_l:>7.3f} | {pos_a:>7.3f} | {pos_l:>7.3f} | {vel_a:>7.3f} | {vel_l:>7.3f} | {foot_z:>7.3f}")
+-
+-    print("\n" + "=" * 100)
+-    print("STATISTICS")
+-    print("=" * 100)
+-
+-    # Run another episode to collect stats
+-    obs = env.reset()
+-    pos_a_history = []
+-    pos_l_history = []
+-    vel_a_history = []
+-    vel_l_history = []
+-    foot_z_history = []
+-
+-    for step in range(200):
+-        actions = torch.randn(1, 2) * 0.5
+-        obs, reward, done, extras = env.step(actions)
+-
+-        pos_a_history.append(env.dof_pos[0, 0].item())
+-        pos_l_history.append(env.dof_pos[0, 1].item())
+-        vel_a_history.append(env.dof_vel[0, 0].item())
+-        vel_l_history.append(env.dof_vel[0, 1].item())
+-        foot_z_history.append(env.foot_pos[0, 0, 2].item() if env.foot_link_idx is not None else 0.0)
+-
+-    pos_a = np.array(pos_a_history)
+-    pos_l = np.array(pos_l_history)
+-    vel_a = np.array(vel_a_history)
+-    vel_l = np.array(vel_l_history)
+-    foot_z = np.array(foot_z_history)
+-
+-    print(f"\nJoint 'a' (angle joint):")
+-    print(f"  Position range: {pos_a.min():.4f} to {pos_a.max():.4f} rad")
+-    print(f"  Position std: {pos_a.std():.4f} rad")
+-    print(f"  Velocity range: {vel_a.min():.4f} to {vel_a.max():.4f} rad/s")
+-    print(f"  Velocity std: {vel_a.std():.4f} rad/s")
+-    print(f"  Motion type: {'OSCILLATING' if pos_a.std() > 0.1 else 'STUCK/BARELY MOVING'}")
+-
+-    print(f"\nJoint 'l' (length joint):")
+-    print(f"  Position range: {pos_l.min():.4f} to {pos_l.max():.4f} rad")
+-    print(f"  Position std: {pos_l.std():.4f} rad")
+-    print(f"  Velocity range: {vel_l.min():.4f} to {vel_l.max():.4f} rad/s")
+-    print(f"  Velocity std: {vel_l.std():.4f} rad/s")
+-    print(f"  Motion type: {'OSCILLATING' if pos_l.std() > 0.1 else 'STUCK/BARELY MOVING'}")
+-
+-    print(f"\nFoot motion:")
+-    print(f"  Height range: {foot_z.min():.4f} to {foot_z.max():.4f} m")
+-    print(f"  Height std: {foot_z.std():.4f} m")
+-    print(f"  Foot cycling: {'YES - leaving ground' if foot_z.max() - foot_z.min() > 0.01 else 'NO - always in contact'}")
+-
+-    print("\n" + "=" * 100)
+-
+-if __name__ == "__main__":
+-    main()
+-
+diff --git a/src/env/__init__.py b/src/env/__init__.py
+index 61e468a..023646f 100644
+--- a/src/env/__init__.py
++++ b/src/env/__init__.py
+@@ -1,9 +1,8 @@
+ from .catbot import CatbotEnv
+-from .catbot_distill import CatbotDistillEnv
++from .catbot_hw import CatbotHwEnv
+ from .catbot_leg import CatbotLegEnv
+ from .genesis import GenesisEnv
+-from .null import NullEnv
+ from .servobot import ServobotEnv
+ 
+ 
+-__all__ = ["CatbotEnv", "CatbotDistillEnv", "CatbotLegEnv", "GenesisEnv", "NullEnv", "ServobotEnv"]
++__all__ = ["CatbotEnv", "CatbotHwEnv", "CatbotLegEnv", "GenesisEnv", "ServobotEnv"]
+diff --git a/src/env/catbot.py b/src/env/catbot.py
+index cb248db..3e3d5dd 100644
+--- a/src/env/catbot.py
++++ b/src/env/catbot.py
+@@ -149,7 +149,8 @@ class CatbotEnv:
+         **kwargs,
+     ):
+         self.num_envs = num_envs
+-        self.num_obs = obs_cfg["num_obs"]
++        num_obs_raw = obs_cfg["num_obs"]
++        self.num_obs = num_obs_raw["main"] if isinstance(num_obs_raw, dict) else num_obs_raw
+         self.num_privileged_obs = None
+         self.num_commands = len(command_cfg)
+         self.device = gs.device
+@@ -270,6 +271,12 @@ class CatbotEnv:
+             device=gs.device,
+         )
+ 
++        # masks into dof_pos for hip vs non-hip joints (used by split default-pose rewards)
++        self.hip_dof_mask = torch.tensor(
++            ["hip" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
++        )
++        self.leg_dof_mask = ~self.hip_dof_mask
++
+         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
+         linkage_dof_idx = all_dof_idx[~torch.isin(all_dof_idx, self.motors_dof_idx)]
+         self.robot.set_dofs_kp([0.0] * len(linkage_dof_idx), linkage_dof_idx)
+@@ -818,6 +825,16 @@ class CatbotEnv:
+         # Penalize joint poses far away from default pose
+         return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1)
+ 
++    def _reward_similar_to_default_legs(self):
++        # Penalize non-hip joint poses far from default (a and l joints)
++        diff = torch.abs(self.dof_pos - self.default_dof_pos)
++        return torch.sum(diff[:, self.leg_dof_mask], dim=1)
++
++    def _reward_similar_to_default_hips(self):
++        # Penalize hip joint poses far from default
++        diff = torch.abs(self.dof_pos - self.default_dof_pos)
++        return torch.sum(diff[:, self.hip_dof_mask], dim=1)
++
+     def _reward_base_height(self):
+         # Penalize base height away from target
+         return torch.square(self.base_pos[:, 2] - self.targets["base_height"])
+diff --git a/src/env/catbot_leg.py b/src/env/catbot_leg.py
+index 76fbc62..23352d3 100644
+--- a/src/env/catbot_leg.py
++++ b/src/env/catbot_leg.py
+@@ -560,8 +560,8 @@ class CatbotLegEnv:
+ 
+         self.obs_dict["shared"] = torch.concatenate(
+             (
+-                # ang_vel * self.obs_scales["ang_vel"],  # 3
+-                # self.projected_gravity,  # 3
++                ang_vel * self.obs_scales["ang_vel"],  # 3
++                self.projected_gravity,  # 3
+                 self.commands * self.commands_scale,  # 1
+                 dof_pos * self.obs_scales["dof_pos"],  # 2
+                 dof_vel * self.obs_scales["dof_vel"],  # 2
+@@ -571,7 +571,7 @@ class CatbotLegEnv:
+         )
+         self.obs_dict["teacher"] = torch.concatenate(
+             (
+-                self.imu_ang_vel * self.obs_scales["ang_vel"],  # 3
++                ang_vel * self.obs_scales["ang_vel"],  # 3
+                 self.projected_gravity,  # 3
+             ),
+             dim=-1,
