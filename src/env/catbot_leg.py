@@ -2,9 +2,9 @@ import math
 from typing import TYPE_CHECKING
 
 import genesis as gs
-from genesis.engine.sensors.imu import IMUData, IMUSensor
 import numpy as np
 import torch
+from genesis.engine.sensors.imu import IMUData, IMUSensor
 from genesis.utils.geom import (
     inv_quat,
     quat_to_xyz,
@@ -13,7 +13,13 @@ from genesis.utils.geom import (
 )
 from tensordict import TensorDict
 
-from src.config import CommandConfig, DomainRandConfig, EnvConfig, ObsConfig, RewardConfig
+from src.config import (
+    CommandConfig,
+    DomainRandConfig,
+    EnvConfig,
+    ObsConfig,
+    RewardConfig,
+)
 from src.env.genesis import get_or_default
 
 if TYPE_CHECKING:
@@ -26,6 +32,50 @@ def gs_rand(lower, upper, batch_shape):
     return (upper - lower) * torch.rand(
         size=(*batch_shape, *lower.shape), dtype=gs.tc_float, device=gs.device
     ) + lower
+
+
+A_MIN = -2.70526
+A_MAX = 0.261799
+
+L0 = 8.5
+L1 = 6.2
+L2 = 8.7
+L3 = 16.63
+
+K1 = L0 / L1
+K2 = L0 / L3
+K3 = (L1**2 - L2**2 + L3**2 + L0**2) / (2 * L1 * L3)
+
+
+def calculate_theta3(theta1: torch.Tensor, open_mode=True):
+    """
+    Calculates the output angle (theta3) of a four-bar linkage.
+
+    Parameters:
+    l0, l1, l2, l3: Lengths of the links (l0 is ground)
+    theta1_deg: Input angle in degrees
+    open_mode: Boolean to choose between the two assembly configurations
+    """
+    # Quadratic coefficients for the half-angle tangent substitution
+    # (At^2 + Bt + C = 0)
+    A = torch.cos(theta1) - K1 - K2 * torch.cos(theta1) + K3
+    B = -2 * torch.sin(theta1)
+    C = K1 - (K2 + 1) * torch.cos(theta1) + K3
+
+    # Discriminant check
+    discriminant = B**2 - 4 * A * C
+    return torch.where(
+        discriminant < 0,
+        torch.empty_like(theta1),
+        torch.where(
+            A == 0,
+            theta1,
+            2
+            * torch.atan(
+                (-B + ((1 if open_mode else -1) * torch.sqrt(discriminant))) / (2 * A)
+            ),
+        ),
+    )
 
 
 class CatbotLegEnv:
@@ -63,7 +113,9 @@ class CatbotLegEnv:
         self.targets = reward_cfg["targets"]
         self.dr_cfg: DomainRandConfig = domain_rand_cfg or {}
 
-        dr_on_reset = self.dr_cfg.get("on_reset", {}) if self.dr_cfg.get("enabled", False) else {}
+        dr_on_reset = (
+            self.dr_cfg.get("on_reset", {}) if self.dr_cfg.get("enabled", False) else {}
+        )
         _needs_dof_batching = "kp" in dr_on_reset or "kd" in dr_on_reset
 
         # create scene
@@ -156,6 +208,8 @@ class CatbotLegEnv:
             dtype=gs.tc_int,
             device=gs.device,
         )
+        self.a_idx = self.joint_names.index("a")
+        self.l_idx = self.joint_names.index("l")
 
         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
         linkage_dof_idx = all_dof_idx[~torch.isin(all_dof_idx, self.motors_dof_idx)]
@@ -257,11 +311,15 @@ class CatbotLegEnv:
         foot_idx_local_set = {
             self.robot.get_link(name).idx_local for name in foot_link_names
         }
-        self.foot_link_idx = torch.tensor(
-            [self.robot.get_link(name).idx_local for name in foot_link_names],
-            dtype=gs.tc_int,
-            device=gs.device,
-        ) if foot_link_names else None
+        self.foot_link_idx = (
+            torch.tensor(
+                [self.robot.get_link(name).idx_local for name in foot_link_names],
+                dtype=gs.tc_int,
+                device=gs.device,
+            )
+            if foot_link_names
+            else None
+        )
         self.non_foot_link_idx = torch.tensor(
             [
                 link.idx_local
@@ -273,6 +331,10 @@ class CatbotLegEnv:
         )
         self.body_contact_height_threshold = get_or_default(
             env_cfg, "termination_if_body_contact_height", None
+        )
+
+        self.near_limits = torch.zeros(
+            (self.num_envs, self.num_actions), dtype=gs.tc_float, device=gs.device
         )
 
         # prepare reward functions and multiply reward scales by dt
@@ -301,6 +363,24 @@ class CatbotLegEnv:
         target_dof_pos = exec_actions * self.cfg["action_scale"] + self.default_dof_pos
         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
         self.scene.step()
+
+        a_pos = target_dof_pos[:, self.a_idx]
+        l_pos = target_dof_pos[:, self.l_idx]
+
+        # print("a_pos:", a_pos, "l_pos:", l_pos)
+
+        theta3 = calculate_theta3(a_pos - (torch.pi / 2)) + torch.pi
+        l_min = theta3 - 1.22173
+        l_max = theta3 + 1.047198
+
+        # print("theta3:", theta3, "l_min:", l_min, "l_max:", l_max)
+
+        self.near_limits[:, 0] = torch.min(
+            torch.abs(a_pos - A_MIN), torch.abs(a_pos - A_MAX)
+        )
+        self.near_limits[:, 1] = torch.min(
+            torch.abs(l_pos - l_min), torch.abs(l_pos - l_max)
+        )
 
         # apply stumbling perturbations
         self._apply_stumbles()
@@ -374,10 +454,22 @@ class CatbotLegEnv:
 
         # check termination and reset
         self.reset_buf = self.episode_length_buf > self.max_episode_length
-        if self.body_contact_height_threshold is not None and len(self.non_foot_link_idx) > 0:
+        if (
+            self.body_contact_height_threshold is not None
+            and len(self.non_foot_link_idx) > 0
+        ):
             non_foot_pos = self.robot.get_links_pos(self.non_foot_link_idx)
-            print(f"[DEBUG] non_foot z range: min={non_foot_pos[0, :, 2].min().item():.4f}  max={non_foot_pos[0, :, 2].max().item():.4f}  threshold={self.body_contact_height_threshold}")
-            self.reset_buf |= (non_foot_pos[..., 2] < self.body_contact_height_threshold).any(dim=-1)
+            print(
+                f"[DEBUG] non_foot z range: min={non_foot_pos[0, :, 2].min().item():.4f}  max={non_foot_pos[0, :, 2].max().item():.4f}  threshold={self.body_contact_height_threshold}"
+            )
+            self.reset_buf |= (
+                non_foot_pos[..., 2] < self.body_contact_height_threshold
+            ).any(dim=-1)
+
+        # self.reset_buf |= a_pos < A_MIN
+        # self.reset_buf |= a_pos > A_MAX
+        # self.reset_buf |= l_pos < l_min
+        # self.reset_buf |= l_pos > l_max
 
         # Compute timeout
         self.extras["time_outs"] = (
@@ -471,7 +563,7 @@ class CatbotLegEnv:
         self._resample_commands(envs_idx)
 
     def _update_observation(self):
-        data: IMUData = self.imu.read() # type: ignore
+        data: IMUData = self.imu.read()  # type: ignore
         # ang_vel = self.imu_ang_vel
         dof_pos = self.dof_pos - self.default_dof_pos
         dof_vel = self.dof_vel
@@ -505,8 +597,8 @@ class CatbotLegEnv:
         )
         self.obs_dict["student"] = torch.concatenate(
             (
-                data.ang_vel, # 3
-                data.lin_acc, # 3
+                data.ang_vel,  # 3
+                data.lin_acc,  # 3
             ),
             dim=-1,
         )
@@ -578,12 +670,16 @@ class CatbotLegEnv:
 
         if "kp" in on_reset:
             lo, hi = on_reset["kp"]
-            kp_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(lo, hi)
+            kp_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(
+                lo, hi
+            )
             self.robot.set_dofs_kp(kp_rand, self.motors_dof_idx, envs_idx=env_indices)
 
         if "kd" in on_reset:
             lo, hi = on_reset["kd"]
-            kd_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(lo, hi)
+            kd_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(
+                lo, hi
+            )
             self.robot.set_dofs_kv(kd_rand, self.motors_dof_idx, envs_idx=env_indices)
 
         if "friction" in on_reset and self.foot_link_idx is not None:
@@ -608,7 +704,9 @@ class CatbotLegEnv:
 
     def _apply_stumbles(self):
         """Apply random joint velocity impulses during swing to simulate foot catching on obstacles."""
-        stumbles_cfg = self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
+        stumbles_cfg = (
+            self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
+        )
         if not stumbles_cfg.get("enabled", False):
             return
 
@@ -617,19 +715,28 @@ class CatbotLegEnv:
 
         # Only stumble envs where the leg is actively swinging
         swing_mask = torch.abs(self.yaw_vel[:, 0]) > 0.05
-        stumble_mask = swing_mask & (torch.rand(self.num_envs, device=gs.device) < probability)
+        stumble_mask = swing_mask & (
+            torch.rand(self.num_envs, device=gs.device) < probability
+        )
         stumble_indices = torch.where(stumble_mask)[0]
         if len(stumble_indices) == 0:
             return
 
         n = len(stumble_indices)
-        impulse = (torch.rand(n, self.num_actions, device=gs.device) * 2 - 1) * max_impulse
+        impulse = (
+            torch.rand(n, self.num_actions, device=gs.device) * 2 - 1
+        ) * max_impulse
         current_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
         new_vel = current_vel.clone()
         new_vel[stumble_indices] += impulse
-        self.robot.set_dofs_velocity(new_vel, self.motors_dof_idx, envs_idx=stumble_indices)
+        self.robot.set_dofs_velocity(
+            new_vel, self.motors_dof_idx, envs_idx=stumble_indices
+        )
 
     # ------------ reward functions----------------
+    def _reward_near_limits(self):
+        return 1.0 / (1.0 + self.near_limits.sum(dim=1))
+
     def _reward_foot_clearance(self):
         # Reward foot height when the leg is actively swinging (yaw velocity as proxy).
         # Gates on command magnitude so standing still gives no reward.
