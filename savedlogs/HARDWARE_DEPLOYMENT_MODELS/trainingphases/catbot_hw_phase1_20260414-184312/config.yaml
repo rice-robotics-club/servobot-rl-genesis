@@ -1,0 +1,106 @@
+runner:
+  class_name: OnPolicyRunner
+  num_steps_per_env: 96
+  save_interval: 100
+  obs_groups: { "actor": ["main"], "critic": ["main"] }
+  logger: tensorboard
+  neptune_project: legged_gym
+  wandb_project: legged_gym
+  run_name: "catbot_hw_phase1"
+
+  actor:
+    class_name: MLPModel
+    activation: elu
+    obs_normalization: true
+    hidden_dims: [512, 256, 128]
+    distribution_cfg:
+      class_name: GaussianDistribution
+      init_std: 1.0
+      std_type: scalar
+
+  critic:
+    class_name: MLPModel
+    activation: elu
+    obs_normalization: true
+    hidden_dims: [512, 256, 128]
+
+  algorithm:
+    class_name: PPO
+    learning_rate: 0.001
+    num_learning_epochs: 5
+    num_mini_batches: 4
+    schedule: adaptive
+    value_loss_coef: 1.0
+    clip_param: 0.2
+    use_clipped_value_loss: true
+    desired_kl: 0.02
+    entropy_coef: 0.01
+    gamma: 0.99
+    lam: 0.95
+    max_grad_norm: 1.0
+
+env:
+  class_name: CatbotHwEnv
+  robot_description_path: robots/catbot_description/robot.xml
+  robot_description_type: MJCF
+  joints:
+    BL_a: 0.0
+    BL_hip: 0.0
+    BL_l: 0.0
+    BR_a: 0.0
+    BR_hip: 0.0
+    BR_l: 0.0
+    FL_a: 0.0
+    FL_hip: 0.0
+    FL_l: 0.0
+    FR_a: 0.0
+    FR_hip: 0.0
+    FR_l: 0.0
+  base_init_pos: [0.0, 0.0, 0.4]
+  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+  episode_length: 20.0
+  resampling_time: 4.0
+  action_scale: 0.25
+  simulate_action_latency: True
+  clip_actions: 100.0
+  dt: 0.02
+  termination_if_pitch_greater_than: 0.7
+  termination_if_roll_greater_than: 0.7
+  kp: 20.0
+  kd: 0.5
+  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+  termination_if_body_contact_height: 0.05
+
+commands:
+  lin_vel_x: [-1.0, 1.0]
+  lin_vel_y: [-1, 1.0]
+  ang_vel_z: [-0.1, 0.1]
+
+obs:
+  num_obs:
+    main: 45
+  scales:
+    lin_vel_x: 2.0
+    lin_vel_y: 2.0
+    ang_vel_z: 0.25
+    dof_pos: 1.0
+    dof_vel: 0.05
+
+reward:
+  tracking_sigma: 0.10
+  rewards:
+    tracking_lin_vel: 100
+    tracking_ang_vel: 20
+    lin_vel_z: 0
+    roll_angle: 0
+    pitch_angle: 0
+    base_height: 0
+    action_rate: -1
+    similar_to_default: 0
+    energy: 0
+    survival: 0.2
+  targets:
+    base_height: .3
+
+domain_randomization:
+  enabled: false

@@ -149,7 +149,8 @@ class CatbotEnv:
         **kwargs,
     ):
         self.num_envs = num_envs
-        self.num_obs = obs_cfg["num_obs"]
+        num_obs_raw = obs_cfg["num_obs"]
+        self.num_obs = num_obs_raw["main"] if isinstance(num_obs_raw, dict) else num_obs_raw
         self.num_privileged_obs = None
         self.num_commands = len(command_cfg)
         self.device = gs.device
@@ -269,6 +270,12 @@ class CatbotEnv:
             dtype=gs.tc_int,
             device=gs.device,
         )
+
+        # masks into dof_pos for hip vs non-hip joints (used by split default-pose rewards)
+        self.hip_dof_mask = torch.tensor(
+            ["hip" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
+        )
+        self.leg_dof_mask = ~self.hip_dof_mask
 
         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
         linkage_dof_idx = all_dof_idx[~torch.isin(all_dof_idx, self.motors_dof_idx)]
@@ -817,6 +824,16 @@ class CatbotEnv:
     def _reward_similar_to_default(self):
         # Penalize joint poses far away from default pose
         return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1)
+
+    def _reward_similar_to_default_legs(self):
+        # Penalize non-hip joint poses far from default (a and l joints)
+        diff = torch.abs(self.dof_pos - self.default_dof_pos)
+        return torch.sum(diff[:, self.leg_dof_mask], dim=1)
+
+    def _reward_similar_to_default_hips(self):
+        # Penalize hip joint poses far from default
+        diff = torch.abs(self.dof_pos - self.default_dof_pos)
+        return torch.sum(diff[:, self.hip_dof_mask], dim=1)
 
     def _reward_base_height(self):
         # Penalize base height away from target

@@ -1,12 +1,3 @@
-# Phase 6 - DR Introduction
-# Picks up from phase 5. Reward structure is identical — no new objectives.
-# Goal: teach the policy to cope with sensor noise and surface variation
-#       without disrupting the natural gait it already learned.
-# Key additions:
-#   - obs noise: light IMU and joint noise (closest to real hardware baseline)
-#   - friction: ±20% range on foot links (covers most floor surfaces)
-#   - kp/kd and pushes deliberately held back — too much change at once
-#     risks collapsing the phase 5 gait before DR has any benefit
 runner:
   class_name: OnPolicyRunner
   num_steps_per_env: 96
@@ -15,7 +6,7 @@ runner:
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
-  run_name: ""
+  run_name: "catbot_hw_phase1"
 
   actor:
     class_name: MLPModel
@@ -49,7 +40,7 @@ runner:
     max_grad_norm: 1.0
 
 env:
-  class_name: CatbotEnv
+  class_name: CatbotHwEnv
   robot_description_path: robots/catbot_description/robot.xml
   robot_description_type: MJCF
   joints:
@@ -69,7 +60,7 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.40
+  action_scale: 0.25
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
@@ -82,7 +73,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.5, 1.5]
+  lin_vel_y: [-1, 1.0]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -96,32 +87,20 @@ obs:
     dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.025
+  tracking_sigma: 0.10
   rewards:
-    tracking_lin_vel: 200
-    tracking_ang_vel: 60
-    lin_vel_z: -100
-    roll_angle: -200
-    pitch_angle: -200
-    base_height: -1000
-    action_rate: -4
-    similar_to_default: -0.5
-    energy: -0.15
-    survival: 0.3
-    foot_clearance: 
+    tracking_lin_vel: 100
+    tracking_ang_vel: 20
+    lin_vel_z: 0
+    roll_angle: 0
+    pitch_angle: 0
+    base_height: 0
+    action_rate: -1
+    similar_to_default: 0
+    energy: 0
+    survival: 0.2
   targets:
-    base_height: 0.28
+    base_height: .3
 
 domain_randomization:
-  enabled: true
-
-  on_reset:
-    friction: [0.8, 1.2]       # ±20% — covers hardwood, tile, smooth concrete
-
-  obs_noise:
-    ang_vel: 0.05              # ~MPU6050 noise floor (rad/s)
-    dof_pos: 0.01              # encoder/flex noise (rad)
-    dof_vel: 0.5               # finite-diff velocity estimate noise (rad/s)
-
-  pushes:
-    enabled: false
+  enabled: false
