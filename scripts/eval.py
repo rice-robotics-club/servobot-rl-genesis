@@ -106,21 +106,6 @@ def main():
     )
     runner.load(str(model_path), map_location=str(gs.device))
 
-    # Handle both PPO and Distillation runners
-    if hasattr(runner.alg, "actor"):
-        # PPO runner
-        actor = runner.alg.actor
-        obs_group_key = "actor"
-    elif hasattr(runner.alg, "student"):
-        # Distillation runner
-        actor = runner.alg.student
-        obs_group_key = "student"
-    else:
-        raise ValueError("Could not determine actor model from runner")
-
-    actor.to("cpu")
-    actor.eval()
-
     # Validate observation dimensions match between saved model and environment
     # This is important because if the environment code has been updated to produce
     # different observation dimensions, the saved model will fail to run
@@ -159,44 +144,6 @@ def main():
                 f"dims but environment provides {expected_obs_size} dims. "
                 "Please retrain the model with the current environment."
             )
-
-    num_obs = config["obs"]["num_obs"]
-    if isinstance(num_obs, dict):
-        num_obs = num_obs.get("main", next(iter(num_obs.values())))
-
-    # Wrap actor so ONNX sees a plain flat tensor instead of TensorDict
-    obs_group = list(runner.cfg["obs_groups"][obs_group_key])[0]
-
-    import tensordict as td_lib
-
-    class ActorWrapper(torch.nn.Module):
-        def __init__(self, model, group):
-            super().__init__()
-            self.model = model
-            self.group = group
-
-        def forward(self, obs_flat: torch.Tensor) -> torch.Tensor:
-            obs_td = td_lib.TensorDict(
-                {self.group: obs_flat.unsqueeze(0)}, batch_size=[1]
-            )
-            return self.model(obs_td).squeeze(0)
-
-    # ONNX export only supported for PPO models
-    if obs_group_key == "actor":
-        onnx_model = ActorWrapper(actor, obs_group)
-        onnx_model.eval()
-
-        # Trace and save the model
-        torch.onnx.export(
-            onnx_model,
-            torch.zeros(num_obs).to("cpu"),
-            "./policy.onnx",
-            export_params=True,
-            opset_version=18,
-            verbose=False,
-        )
-
-    policy = runner.get_inference_policy(device=str(gs.device))
 
     input = None
 
@@ -274,7 +221,6 @@ def main():
                     env.scene.viewer.follow_entity(env.robot)
 
             actions = policy(obs)
-            print(actions)
             obs, _, _, _ = env.step(
                 actions, input.command if input is not None else None
             )

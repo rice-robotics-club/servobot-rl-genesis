@@ -100,18 +100,18 @@ reward:
   rewards:
     tracking_lin_vel: 200
     tracking_ang_vel: 60
-    lin_vel_z: -100
+    lin_vel_z: -10
     roll_angle: -200
     pitch_angle: -200
-    base_height: -1000
+    base_height: -100
     action_rate: -4          # up from -2 — penalises rapid shuffling more
     similar_to_default_legs: -0.5 # up from -0.1 — gentle pull back to neutral between steps
-    similar_to_default_hips: -1
-    energy: -0.15            # up from -0.075 — many small steps are expensive
-    survival: 0.3
-    foot_clearance: 60.0     # new — reward feet lifting during swing phase
+    similar_to_default_hips: -2
+    energy: -0.15           # up from -0.075 — many small steps are expensive
+    survival: 0.8 # up from 0.2 — encourages longer survival to achieve better gait
+    stretching_pain: -3  # new — encourages staying away from joint angles that damage hardware
   targets:
-    base_height: 0.28        # slightly higher than phase4 to encourage clearance
+    base_height: 0.25        # slightly higher than phase4 to encourage clearance
 
 domain_randomization:
   enabled: false

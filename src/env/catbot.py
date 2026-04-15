@@ -59,16 +59,14 @@ class CatbotEnv:
 
         # 4-bar linkage lengths for stretching pain calculation
         self.l0, self.l1, self.l2, self.l3 = 8.5, 6.2, 8.7, 16.63
-        from src.env.ik_solver import convert_ta_tl_to_160_225, get_tc_limits
+        from src.env.ik_solver import convert_ta_tl_to_160_225
 
         self.convert_ta_tl_to_160_225 = convert_ta_tl_to_160_225
 
-        # Compute safe limits for t_c
-        self.tc_min, self.tc_max = get_tc_limits(
-            self.l0, self.l1, self.l2, self.l3, step=2.0
-        )
-        if self.tc_min is None or self.tc_max is None:
-            self.tc_min, self.tc_max = 0.0, 3.14
+        # Physical t_c limits derived from catbot_leg hardware constants.
+        # t_c = l_pos - theta3; bounds match the linkage hard stops.
+        self.tc_min = -1.22173   # -70°
+        self.tc_max =  1.047198  # +60°
 
         self.kp = get_or_default(env_cfg, "kp", 20.0)
         self.kv = get_or_default(env_cfg, "kd", 0.5)
@@ -826,106 +824,48 @@ class CatbotEnv:
         cmd_speed = torch.norm(self.commands[:, :2], dim=1, keepdim=True)  # (n_envs, 1)
         return (clearance * cmd_speed).sum(dim=1)
 
-def _reward_stretching_pain(self):
+    def _reward_stretching_pain(self):
         """
-        Penalizes the robot when the leg approaches the physical bounds of the t_c angle.
-        The penalty ramps up ^2 the closer it gets to the boundary.
+        Penalizes each leg when its t_c angle (between 160mm and 225mm_top links)
+        enters the danger zone within 5° of the physical limits.
+        Returns a positive value; apply a negative weight in the config.
+
+        Uses the same direct calculate_theta3 approach as catbot_leg to avoid
+        Freudenstein branch-selection ambiguity.
         """
+        from src.env.catbot_leg import calculate_theta3 as _calc_theta3
+
         pain = torch.zeros(self.num_envs, device=self.device)
 
-        # We need to process all legs. We'll identify the 'a' and 'l' joints for each leg based on their names.
-        a_indices = []
-        l_indices = []
-        for i, name in enumerate(self.joint_names):
-            if (
-                name.endswith("_a")
-                or name == "a"
-                or "_a_" in name
-                or name.split("_")[-1] == "a"
-            ):
-                a_indices.append(i)
-            elif (
-                name.endswith("_l")
-                or name == "l"
-                or "_l_" in name
-                or name.split("_")[-1] == "l"
-            ):
-                l_indices.append(i)
+        a_indices = [i for i, n in enumerate(self.joint_names) if n.split("_")[-1] == "a" or n == "a"]
+        l_indices = [i for i, n in enumerate(self.joint_names) if n.split("_")[-1] == "l" or n == "l"]
 
-        # If we can't cleanly match the pairs, just return zero penalty
         if len(a_indices) != len(l_indices) or len(a_indices) == 0:
             return pain
 
+        threshold = 5.0 * math.pi / 180.0  # 5° danger zone
+
         for a_idx, l_idx in zip(a_indices, l_indices):
-            t_a_rad = self.dof_pos[:, a_idx]
-            t_l_rad = self.dof_pos[:, l_idx]
+            a_pos = self.dof_pos[:, a_idx]
+            l_pos = self.dof_pos[:, l_idx]
 
-            t_a_deg = t_a_rad * (180.0 / 3.141592653589793) - 90.0
-            t_l_deg = t_l_rad * (180.0 / 3.141592653589793) - 90.0
+            # Same convention as catbot_leg._clamp_target_dof_pos
+            theta3 = _calc_theta3(a_pos - (torch.pi / 2)) + torch.pi
+            l_min = theta3 - 1.22173
+            l_max = theta3 + 1.047198
 
-            # Vectorized Freudenstein Inverse
-            target_theta3_rad = (t_a_deg - 180.0) * (math.pi / 180.0)
+            # t_c = 0 at center of range, negative toward l_min, positive toward l_max
+            t_c = l_pos - theta3
+            dist_min_side = torch.abs(l_pos - l_min)   # distance to lower limit
+            dist_max_side = torch.abs(l_max - l_pos)   # distance to upper limit
+            min_dist = torch.minimum(dist_min_side, dist_max_side)
 
-            l0, l1, l2, l3 = self.l0, self.l1, self.l2, self.l3
-
-            K1_inv = l0 / l1
-            K2_inv = l0 / l3
-            K3_inv = (l1**2 - l2**2 + l3**2 + l0**2) / (2.0 * l1 * l3)
-
-            cos_th1 = torch.cos(target_theta3_rad)
-            sin_th1 = torch.sin(target_theta3_rad)
-
-            A = cos_th1 - K1_inv - K2_inv * cos_th1 + K3_inv
-            B = -2.0 * sin_th1
-            C = K1_inv - (K2_inv + 1.0) * cos_th1 + K3_inv
-
-            disc = B**2 - 4.0 * A * C
-            valid_mask = disc >= 0.0
-            safe_disc = torch.clamp(disc, min=0.0)
-
-            t_false = (-B - torch.sqrt(safe_disc)) / (2.0 * A)
-            t_3_false = 2.0 * torch.atan(t_false)
-
-            t_true = (-B + torch.sqrt(safe_disc)) / (2.0 * A)
-            t_3_true = 2.0 * torch.atan(t_true)
-
-            # Forward check: calculate_theta3(l0, l3, l2, l1, t_3, open_mode=False)
-            K1_fwd = l0 / l3
-            K2_fwd = l0 / l1
-            K3_fwd = (l3**2 - l2**2 + l1**2 + l0**2) / (2.0 * l3 * l1)
-
-            def forward_pass(t_3_in):
-                c_th = torch.cos(t_3_in)
-                s_th = torch.sin(t_3_in)
-                A_f = c_th - K1_fwd - K2_fwd * c_th + K3_fwd
-                B_f = -2.0 * s_th
-                C_f = K1_fwd - (K2_fwd + 1.0) * c_th + K3_fwd
-                d_f = torch.clamp(B_f**2 - 4.0 * A_f * C_f, min=0.0)
-                t_f = (-B_f - torch.sqrt(d_f)) / (2.0 * A_f)
-                return 2.0 * torch.atan(t_f)
-
-            out_false = forward_pass(t_3_false)
-            out_true = forward_pass(t_3_true)
-
-            err_false = torch.abs(out_false - target_theta3_rad)
-            err_true = torch.abs(out_true - target_theta3_rad)
-
-            t_3 = torch.where(err_false < err_true, t_3_false, t_3_true)
-
-            t_c = (t_l_deg - 180.0) * (math.pi / 180.0) - t_3
-            t_c = (t_c + math.pi) % (2.0 * math.pi) - math.pi
-
-            dist_min = torch.abs(t_c - self.tc_min)
-            dist_max = torch.abs(self.tc_max - t_c)
-            min_dist = torch.minimum(dist_min, dist_max)
-
-            threshold = 0.3
+            normalized = (threshold - min_dist) / threshold
             leg_pain = torch.where(
                 min_dist < threshold,
-                -(((threshold - min_dist) / threshold) ** 2),
-                torch.zeros_like(t_a_rad),
+                torch.exp(normalized * 6.0) - 1.0,
+                torch.zeros_like(a_pos),
             )
-
-            pain += torch.where(valid_mask, leg_pain, -1.0)
+            pain += leg_pain
 
         return pain

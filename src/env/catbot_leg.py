@@ -353,6 +353,25 @@ class CatbotLegEnv:
         else:
             torch.where(envs_idx[:, None], commands, self.commands, out=self.commands)
 
+    def _clamp_target_dof_pos(self, target_dof_pos: torch.Tensor):
+        """Clamp target joint positions to safe ranges before sending to the PD controller.
+
+        Returns the clamped tensor plus intermediate values needed for near_limits tracking:
+            (target_dof_pos, a_pos, l_pos, l_min, l_max)
+
+        Safe to call from hardware code with a (1, 2) tensor.
+        """
+        a_pos = target_dof_pos[:, self.a_idx].clamp(A_MIN, A_MAX)
+        target_dof_pos[:, self.a_idx] = a_pos
+
+        theta3 = calculate_theta3(a_pos - (torch.pi / 2)) + torch.pi
+        l_min = theta3 - 1.22173
+        l_max = theta3 + 1.047198
+        l_pos = target_dof_pos[:, self.l_idx].clamp(l_min, l_max)
+        target_dof_pos[:, self.l_idx] = l_pos
+
+        return target_dof_pos, a_pos, l_pos, l_min, l_max
+
     def step(self, actions, command=None):
         self.actions = torch.clip(
             actions, -self.cfg["clip_actions"], self.cfg["clip_actions"]
@@ -361,19 +380,10 @@ class CatbotLegEnv:
             self.last_actions if self.simulate_action_latency else self.actions
         )
         target_dof_pos = exec_actions * self.cfg["action_scale"] + self.default_dof_pos
+        target_dof_pos, a_pos, l_pos, l_min, l_max = self._clamp_target_dof_pos(target_dof_pos)
+
         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
         self.scene.step()
-
-        a_pos = target_dof_pos[:, self.a_idx]
-        l_pos = target_dof_pos[:, self.l_idx]
-
-        # print("a_pos:", a_pos, "l_pos:", l_pos)
-
-        theta3 = calculate_theta3(a_pos - (torch.pi / 2)) + torch.pi
-        l_min = theta3 - 1.22173
-        l_max = theta3 + 1.047198
-
-        # print("theta3:", theta3, "l_min:", l_min, "l_max:", l_max)
 
         self.near_limits[:, 0] = torch.min(
             torch.abs(a_pos - A_MIN), torch.abs(a_pos - A_MAX)
@@ -735,7 +745,9 @@ class CatbotLegEnv:
 
     # ------------ reward functions----------------
     def _reward_near_limits(self):
-        return 1.0 / (1.0 + self.near_limits.sum(dim=1))
+        # Returns a positive value that grows as joints approach their limits.
+        # Apply a negative weight in the config to penalize limit proximity.
+        return torch.exp(-self.near_limits.sum(dim=1))
 
     def _reward_foot_clearance(self):
         # Reward foot height when the leg is actively swinging (yaw velocity as proxy).
