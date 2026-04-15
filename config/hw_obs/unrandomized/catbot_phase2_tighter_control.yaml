@@ -40,13 +40,23 @@ runner:
     max_grad_norm: 1.0
 
 env:
-  class_name: CatbotLegEnv
-  robot_description_path: robots/catbot_leg_description/urdf/robot.urdf
-  robot_description_type: URDF
+  class_name: CatbotHwEnv
+  robot_description_path: robots/catbot_description/robot.xml
+  robot_description_type: MJCF
   joints:
-    a: 0.0
-    l: 0.0
-  base_init_pos: [0.0, 0.0, 0.0]
+    BL_a: 0.0
+    BL_hip: 0.0
+    BL_l: 0.0
+    BR_a: 0.0
+    BR_hip: 0.0
+    BR_l: 0.0
+    FL_a: 0.0
+    FL_hip: 0.0
+    FL_l: 0.0
+    FR_a: 0.0
+    FR_hip: 0.0
+    FR_l: 0.0
+  base_init_pos: [0.0, 0.0, 0.4]
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
@@ -54,43 +64,43 @@ env:
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
-  kp: 20.0
-  kd: 0.5
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
-  foot_link_names: ["160mm", "base_link"]
+  kp: 20.0
+  kd: 0.5
+  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
   termination_if_body_contact_height: 0.05
 
 commands:
-  vel: [-1.0, 1.0]
+  lin_vel_x: [-1.0, 1.0]
+  lin_vel_y: [-1, 1.0]
+  ang_vel_z: [-0.1, 0.1]
 
 obs:
   num_obs:
-    main: 13
+    main: 45
   scales:
-    vel: 1.0
-    ang_vel: 1.0
+    lin_vel_x: 2.0
+    lin_vel_y: 2.0
+    ang_vel_z: 0.25
     dof_pos: 1.0
     dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.15
+  tracking_sigma: 0.025
   rewards:
-    tracking_vel: 1.0 # 1.0
-    lin_vel_z: 0.5 # -1.0
-    # roll_angle: 0.0
-    # pitch_angle: 0.0
-    base_height: -0.1
-    action_rate: -0.005 # -0.005
-    similar_to_default: -0.01
-    soft_landing: -0.025
+    tracking_lin_vel: 100
+    tracking_ang_vel: 20
+    lin_vel_z: 0
+    roll_angle: 0
+    pitch_angle: 0
+    base_height: -5000
+    action_rate: -1
+    similar_to_default: 0
+    energy: 0
+    survival: 0.2
   targets:
     base_height: .3
-    foot_clearance_max_height: 0.12 # clamp foot height reward above this (m)
 
 domain_randomization:
   enabled: false
-  stumbles:
-    enabled: false
-    probability: 0.05 # per-step chance of a stumble when leg is swinging
-    max_vel_impulse: 2.0 # rad/s impulse added to joint velocities

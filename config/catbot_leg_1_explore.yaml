@@ -1,12 +1,14 @@
+# yaml-language-server: $schema=./schemas/config.json
 runner:
   class_name: OnPolicyRunner
-  num_steps_per_env: 96
+  num_steps_per_env: 24
   save_interval: 100
-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+  obs_groups:
+    { "actor": ["shared", "teacher"], "critic": ["shared", "teacher"] }
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
-  run_name: ""
+  run_name: catbot_leg
 
   actor:
     class_name: MLPModel
@@ -23,6 +25,10 @@ runner:
     activation: elu
     obs_normalization: true
     hidden_dims: [512, 256, 128]
+    distribution_cfg:
+      class_name: GaussianDistribution
+      init_std: 1.0
+      std_type: scalar
 
   algorithm:
     class_name: PPO
@@ -33,7 +39,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.02
+    desired_kl: 0.01
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -50,14 +56,12 @@ env:
   base_init_quat: [1.0, 0.0, 0.0, 0.0]
   episode_length: 20.0
   resampling_time: 4.0
-  action_scale: 0.25
+  action_scale: 1.0
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
   kp: 20.0
   kd: 0.5
-  termination_if_pitch_greater_than: 0.7
-  termination_if_roll_greater_than: 0.7
   foot_link_names: ["160mm", "base_link"]
   termination_if_body_contact_height: 0.05
 
@@ -66,7 +70,9 @@ commands:
 
 obs:
   num_obs:
-    main: 13
+    shared: 13
+    teacher: 6
+    student: 8
   scales:
     vel: 1.0
     ang_vel: 1.0
@@ -74,23 +80,15 @@ obs:
     dof_vel: 0.05
 
 reward:
-  tracking_sigma: 0.15
+  tracking_sigma: 0.05
   rewards:
-    tracking_vel: 1.0 # 1.0
-    lin_vel_z: 0.5 # -1.0
-    # roll_angle: 0.0
-    # pitch_angle: 0.0
-    base_height: -0.1
-    action_rate: -0.005 # -0.005
-    similar_to_default: -0.01
-    soft_landing: -0.025
+    tracking_vel: 1.0
+    lin_vel_z: 0.0
+    base_height: 0.0
+    action_rate: 0 # explore!
+    similar_to_default: 0.0
+    soft_landing: 0.0
+    stretching_pain: 0.0 # no pain, hopefully still some gain
+    
   targets:
     base_height: .3
-    foot_clearance_max_height: 0.12 # clamp foot height reward above this (m)
-
-domain_randomization:
-  enabled: false
-  stumbles:
-    enabled: false
-    probability: 0.05 # per-step chance of a stumble when leg is swinging
-    max_vel_impulse: 2.0 # rad/s impulse added to joint velocities

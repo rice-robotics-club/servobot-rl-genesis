@@ -714,7 +714,7 @@ class CatbotLegEnv:
         max_impulse = stumbles_cfg.get("max_vel_impulse", 2.0)
 
         # Only stumble envs where the leg is actively swinging
-        swing_mask = torch.abs(self.yaw_vel[:, 0]) > 0.05
+        swing_mask = torch.abs(self.yaw_vel) > 0.05
         stumble_mask = swing_mask & (
             torch.rand(self.num_envs, device=gs.device) < probability
         )
@@ -746,7 +746,7 @@ class CatbotLegEnv:
         foot_height = self.foot_pos[:, 0, 2]  # (n_envs,) — single foot
         max_height = self.cfg.get("targets", {}).get("foot_clearance_max_height", 0.12)
         foot_height_clamped = foot_height.clamp(max=max_height)
-        swing_mask = (torch.abs(self.yaw_vel[:, 0]) > 0.05).float()
+        swing_mask = (torch.abs(self.yaw_vel) > 0.05).float()
         cmd_magnitude = torch.abs(self.commands[:, 0])
         return foot_height_clamped * swing_mask * cmd_magnitude
 

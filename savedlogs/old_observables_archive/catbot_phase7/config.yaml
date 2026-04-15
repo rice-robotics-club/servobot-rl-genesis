@@ -1,0 +1,131 @@
+# Phase 8 - Full DR
+# Picks up from phase 7. Reward structure unchanged.
+# Goal: maximum sim-to-real robustness. Ranges should comfortably bracket
+#       the worst-case variance you'd see on the real catbot across
+#       different units, surfaces, and operating conditions.
+# Key changes from phase 7:
+#   - kp/kd: widened to ±15% / ±30% (covers worn servos and temperature drift)
+#   - friction: widened to ±50% (adds very slippery tile and grippy rubber)
+#   - mass_shift: widened to ±50g (covers small payload on back)
+#   - com_shift: added at 2cm std (assembly asymmetry, uneven cable routing)
+#   - obs noise: full levels (what you'd measure on stationary hardware)
+#   - pushes: stronger and more frequent
+runner:
+  class_name: OnPolicyRunner
+  num_steps_per_env: 96
+  save_interval: 100
+  seed: 1
+  obs_groups: { "policy": ["main"], "critic": ["main"] }
+  experiment_name: catbot
+  logger: tensorboard
+  neptune_project: legged_gym
+  wandb_project: legged_gym
+  max_iterations: 2000
+  run_name: ""
+
+  policy:
+    class_name: ActorCritic
+    activation: elu
+    actor_obs_normalization: true
+    critic_obs_normalization: true
+    actor_hidden_dims: [512, 256, 128]
+    critic_hidden_dims: [512, 256, 128]
+    init_noise_std: 1.0
+
+  algorithm:
+    class_name: PPO
+    learning_rate: 0.001
+    num_learning_epochs: 5
+    num_mini_batches: 4
+    schedule: adaptive
+    value_loss_coef: 1.0
+    clip_param: 0.2
+    use_clipped_value_loss: true
+    desired_kl: 0.02
+    entropy_coef: 0.01
+    gamma: 0.99
+    lam: 0.95
+    max_grad_norm: 1.0
+
+env:
+  class_name: CatbotEnv
+  robot_description_path: robots/catbot_description/robot.xml
+  robot_description_type: MJCF
+  joints:
+    BL_a: 0.0
+    BL_hip: 0.0
+    BL_l: 0.0
+    BR_a: 0.0
+    BR_hip: 0.0
+    BR_l: 0.0
+    FL_a: 0.0
+    FL_hip: 0.0
+    FL_l: 0.0
+    FR_a: 0.0
+    FR_hip: 0.0
+    FR_l: 0.0
+  base_init_pos: [0.0, 0.0, 0.4]
+  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+  episode_length: 20.0
+  resampling_time: 4.0
+  action_scale: 0.40
+  simulate_action_latency: True
+  clip_actions: 100.0
+  dt: 0.02
+  termination_if_pitch_greater_than: 0.7
+  termination_if_roll_greater_than: 0.7
+  kp: 20.0
+  kd: 0.5
+  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+  termination_if_body_contact_height: 0.05
+
+commands:
+  lin_vel_x: [-0.8, 0.8]
+  lin_vel_y: [-1.5, 1.5]
+  ang_vel_z: [-0.1, 0.1]
+
+obs:
+  num_obs: 45
+  scales:
+    lin_vel_x: 2.0
+    lin_vel_y: 2.0
+    ang_vel_z: 0.25
+    dof_pos: 1.0
+    dof_vel: 0.05
+
+reward:
+  tracking_sigma: 0.025
+  rewards:
+    tracking_lin_vel: 200
+    tracking_ang_vel: 60
+    lin_vel_z: -100
+    roll_angle: -200
+    pitch_angle: -300
+    base_height: -1000
+    action_rate: -4
+    similar_to_default: -3
+    energy: -0.15
+    survival: 0.3
+    foot_clearance: 0.0
+  targets:
+    base_height: 0.28
+
+domain_randomization:
+  enabled: true
+
+  on_reset:
+    kp: [17.0, 23.0]           # ±15% — covers worn servos and temperature drift
+    kd: [0.35, 0.65]           # ±30% — high end of expected damping variance
+    friction: [0.5, 1.5]       # ±50% — slippery tile through grippy rubber mat
+    mass_shift: [-0.05, 0.05]  # ±50g per link — small payload, dense print fill
+    com_shift: 0.02            # 2cm std per link — asymmetric cable routing
+
+  obs_noise:
+    ang_vel: 0.15              # measured noise floor on stationary catbot IMU
+    dof_pos: 0.03              # joint flex under full load
+    dof_vel: 2.0               # worst-case finite-diff velocity at high speed
+
+  pushes:
+    enabled: true
+    interval_s: 8.0            # more frequent than phase 7
+    max_vel_xy: 0.5            # 0.5 m/s — a solid shove

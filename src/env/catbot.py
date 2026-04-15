@@ -10,9 +10,15 @@ from genesis.utils.geom import (
     transform_quat_by_quat,
 )
 from tensordict import TensorDict
-from src.env.genesis import get_or_default
 
-from src.config import CommandConfig, DomainRandConfig, EnvConfig, ObsConfig, RewardConfig
+from src.config import (
+    CommandConfig,
+    DomainRandConfig,
+    EnvConfig,
+    ObsConfig,
+    RewardConfig,
+)
+from src.env.genesis import get_or_default
 
 if TYPE_CHECKING:
     from genesis.engine.entities import RigidEntity
@@ -26,6 +32,110 @@ def gs_rand(lower, upper, batch_shape):
 
 
 class CatbotEnv:
+    def _reward_stretching_pain(self):
+        """
+        Penalizes the robot when the leg approaches the physical bounds of the t_c angle.
+        The penalty ramps up ^2 the closer it gets to the boundary.
+        """
+        pain = torch.zeros(self.num_envs, device=self.device)
+
+        # We need to process all legs. We'll identify the 'a' and 'l' joints for each leg based on their names.
+        a_indices = []
+        l_indices = []
+        for i, name in enumerate(self.joint_names):
+            if (
+                name.endswith("_a")
+                or name == "a"
+                or "_a_" in name
+                or name.split("_")[-1] == "a"
+            ):
+                a_indices.append(i)
+            elif (
+                name.endswith("_l")
+                or name == "l"
+                or "_l_" in name
+                or name.split("_")[-1] == "l"
+            ):
+                l_indices.append(i)
+
+        # If we can't cleanly match the pairs, just return zero penalty
+        if len(a_indices) != len(l_indices) or len(a_indices) == 0:
+            return pain
+
+        for a_idx, l_idx in zip(a_indices, l_indices):
+            t_a_rad = self.dof_pos[:, a_idx]
+            t_l_rad = self.dof_pos[:, l_idx]
+
+            t_a_deg = t_a_rad * (180.0 / 3.141592653589793) - 90.0
+            t_l_deg = t_l_rad * (180.0 / 3.141592653589793) - 90.0
+
+            # Vectorized Freudenstein Inverse
+            target_theta3_rad = (t_a_deg - 180.0) * (math.pi / 180.0)
+
+            l0, l1, l2, l3 = self.l0, self.l1, self.l2, self.l3
+
+            K1_inv = l0 / l1
+            K2_inv = l0 / l3
+            K3_inv = (l1**2 - l2**2 + l3**2 + l0**2) / (2.0 * l1 * l3)
+
+            cos_th1 = torch.cos(target_theta3_rad)
+            sin_th1 = torch.sin(target_theta3_rad)
+
+            A = cos_th1 - K1_inv - K2_inv * cos_th1 + K3_inv
+            B = -2.0 * sin_th1
+            C = K1_inv - (K2_inv + 1.0) * cos_th1 + K3_inv
+
+            disc = B**2 - 4.0 * A * C
+            valid_mask = disc >= 0.0
+            safe_disc = torch.clamp(disc, min=0.0)
+
+            t_false = (-B - torch.sqrt(safe_disc)) / (2.0 * A)
+            t_3_false = 2.0 * torch.atan(t_false)
+
+            t_true = (-B + torch.sqrt(safe_disc)) / (2.0 * A)
+            t_3_true = 2.0 * torch.atan(t_true)
+
+            # Forward check: calculate_theta3(l0, l3, l2, l1, t_3, open_mode=False)
+            K1_fwd = l0 / l3
+            K2_fwd = l0 / l1
+            K3_fwd = (l3**2 - l2**2 + l1**2 + l0**2) / (2.0 * l3 * l1)
+
+            def forward_pass(t_3_in):
+                c_th = torch.cos(t_3_in)
+                s_th = torch.sin(t_3_in)
+                A_f = c_th - K1_fwd - K2_fwd * c_th + K3_fwd
+                B_f = -2.0 * s_th
+                C_f = K1_fwd - (K2_fwd + 1.0) * c_th + K3_fwd
+                d_f = torch.clamp(B_f**2 - 4.0 * A_f * C_f, min=0.0)
+                t_f = (-B_f - torch.sqrt(d_f)) / (2.0 * A_f)
+                return 2.0 * torch.atan(t_f)
+
+            out_false = forward_pass(t_3_false)
+            out_true = forward_pass(t_3_true)
+
+            err_false = torch.abs(out_false - target_theta3_rad)
+            err_true = torch.abs(out_true - target_theta3_rad)
+
+            t_3 = torch.where(err_false < err_true, t_3_false, t_3_true)
+
+            t_c = (t_l_deg - 180.0) * (math.pi / 180.0) - t_3
+            t_c = (t_c + math.pi) % (2.0 * math.pi) - math.pi
+
+            dist_min = torch.abs(t_c - self.tc_min)
+            dist_max = torch.abs(self.tc_max - t_c)
+            min_dist = torch.minimum(dist_min, dist_max)
+
+            threshold = 0.3
+            leg_pain = torch.where(
+                min_dist < threshold,
+                -(((threshold - min_dist) / threshold) ** 2),
+                torch.zeros_like(t_a_rad),
+            )
+
+            pain += torch.where(valid_mask, leg_pain, -1.0)
+
+        return pain
+
     def __init__(
         self,
         num_envs,
@@ -39,7 +149,8 @@ class CatbotEnv:
         **kwargs,
     ):
         self.num_envs = num_envs
-        self.num_obs = obs_cfg["num_obs"]
+        num_obs_raw = obs_cfg["num_obs"]
+        self.num_obs = num_obs_raw["main"] if isinstance(num_obs_raw, dict) else num_obs_raw
         self.num_privileged_obs = None
         self.num_commands = len(command_cfg)
         self.device = gs.device
@@ -48,6 +159,19 @@ class CatbotEnv:
         self.max_episode_length = math.ceil(env_cfg["episode_length"] / self.dt)
         self.joint_names = sorted(env_cfg["joints"].keys())
         self.num_actions = len(self.joint_names)
+
+        # 4-bar linkage lengths for stretching pain calculation
+        self.l0, self.l1, self.l2, self.l3 = 8.5, 6.2, 8.7, 16.63
+        from src.env.ik_solver import convert_ta_tl_to_160_225, get_tc_limits
+
+        self.convert_ta_tl_to_160_225 = convert_ta_tl_to_160_225
+
+        # Compute safe limits for t_c
+        self.tc_min, self.tc_max = get_tc_limits(
+            self.l0, self.l1, self.l2, self.l3, step=2.0
+        )
+        if self.tc_min is None or self.tc_max is None:
+            self.tc_min, self.tc_max = 0.0, 3.14
 
         self.kp = get_or_default(env_cfg, "kp", 20.0)
         self.kv = get_or_default(env_cfg, "kd", 0.5)
@@ -69,7 +193,9 @@ class CatbotEnv:
         self.targets = reward_cfg["targets"]
 
         # kp/kd per-env randomization requires batch_dofs_info storage in Genesis
-        dr_on_reset = self.dr_cfg.get("on_reset", {}) if self.dr_cfg.get("enabled", False) else {}
+        dr_on_reset = (
+            self.dr_cfg.get("on_reset", {}) if self.dr_cfg.get("enabled", False) else {}
+        )
         _needs_dof_batching = "kp" in dr_on_reset or "kd" in dr_on_reset
 
         # create scene
@@ -91,7 +217,9 @@ class CatbotEnv:
                 max_FPS=int(1.0 / self.dt),
             ),
             vis_options=gs.options.VisOptions(
-                rendered_envs_idx=list(range(min(kwargs.get("num_rendered_envs", 1), num_envs))),
+                rendered_envs_idx=list(
+                    range(min(kwargs.get("num_rendered_envs", 1), num_envs))
+                ),
                 **(
                     {"background_color": (0.471, 0.655, 1.0)}
                     if kwargs.get("minecraft")
@@ -130,6 +258,9 @@ class CatbotEnv:
             ),
         )  # type: ignore
 
+        # allow subclasses to attach sensors before the scene is compiled
+        self._add_sensors_before_build()
+
         # build
         self.scene.build(n_envs=num_envs)
 
@@ -139,6 +270,12 @@ class CatbotEnv:
             dtype=gs.tc_int,
             device=gs.device,
         )
+
+        # masks into dof_pos for hip vs non-hip joints (used by split default-pose rewards)
+        self.hip_dof_mask = torch.tensor(
+            ["hip" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
+        )
+        self.leg_dof_mask = ~self.hip_dof_mask
 
         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
         linkage_dof_idx = all_dof_idx[~torch.isin(all_dof_idx, self.motors_dof_idx)]
@@ -236,9 +373,7 @@ class CatbotEnv:
             (self.num_envs, 4), dtype=gs.tc_float, device=gs.device
         )
         self.extras = dict()  # extra information for logging
-        self.push_buf = torch.zeros(
-            (self.num_envs,), dtype=gs.tc_int, device=gs.device
-        )
+        self.push_buf = torch.zeros((self.num_envs,), dtype=gs.tc_int, device=gs.device)
 
         # Set up end effector (foot) link tracking for body contact termination
         foot_link_names = get_or_default(env_cfg, "foot_link_names", [])
@@ -259,11 +394,15 @@ class CatbotEnv:
         )
 
         # Foot position tracking for clearance reward
-        self.foot_link_idx = torch.tensor(
-            [self.robot.get_link(name).idx_local for name in foot_link_names],
-            dtype=gs.tc_int,
-            device=gs.device,
-        ) if foot_link_names else None
+        self.foot_link_idx = (
+            torch.tensor(
+                [self.robot.get_link(name).idx_local for name in foot_link_names],
+                dtype=gs.tc_int,
+                device=gs.device,
+            )
+            if foot_link_names
+            else None
+        )
         n_feet = len(foot_link_names)
         self.foot_pos = torch.zeros(
             (self.num_envs, n_feet, 3), dtype=gs.tc_float, device=gs.device
@@ -279,6 +418,10 @@ class CatbotEnv:
                 (self.num_envs,), dtype=gs.tc_float, device=gs.device
             )
 
+    def _add_sensors_before_build(self) -> None:
+        """Hook for subclasses to attach Genesis sensors before scene.build()."""
+        pass
+
     def _resample_commands(self, envs_idx):
         commands = gs_rand(*self.commands_limits, (self.num_envs,))
         if envs_idx is None:
@@ -287,9 +430,7 @@ class CatbotEnv:
             torch.where(envs_idx[:, None], commands, self.commands, out=self.commands)
 
     def step(self, actions, command=None):
-        self.actions = torch.clip(
-            actions, -self.clip_actions, self.clip_actions
-        )
+        self.actions = torch.clip(actions, -self.clip_actions, self.clip_actions)
         exec_actions = (
             self.last_actions if self.simulate_action_latency else self.actions
         )
@@ -369,7 +510,9 @@ class CatbotEnv:
                 cmd_vec.cpu(),
                 color=(0, 0, 1, 0.5),
             )
-            vel_vec: torch.Tensor = transform_by_quat(self.base_lin_vel[0, :], self.base_quat[0, :])  # type: ignore
+            vel_vec: torch.Tensor = transform_by_quat(
+                self.base_lin_vel[0, :], self.base_quat[0, :]
+            )  # type: ignore
             self.vel_debug_arrow = self.scene.draw_debug_arrow(
                 self.base_pos[0, :].cpu(),
                 vel_vec.cpu(),
@@ -386,10 +529,17 @@ class CatbotEnv:
             torch.abs(self.base_euler[:, 0])
             > self.cfg["termination_if_roll_greater_than"]
         )
-        if self.body_contact_height_threshold is not None and len(self.non_foot_link_idx) > 0:
+        if (
+            self.body_contact_height_threshold is not None
+            and len(self.non_foot_link_idx) > 0
+        ):
             # Terminate if any non-foot link touches the ground
-            non_foot_pos = self.robot.get_links_pos(self.non_foot_link_idx)  # (n_envs, n_links, 3)
-            self.reset_buf |= (non_foot_pos[..., 2] < self.body_contact_height_threshold).any(dim=-1)
+            non_foot_pos = self.robot.get_links_pos(
+                self.non_foot_link_idx
+            )  # (n_envs, n_links, 3)
+            self.reset_buf |= (
+                non_foot_pos[..., 2] < self.body_contact_height_threshold
+            ).any(dim=-1)
 
         # Compute timeout
         self.extras["time_outs"] = (
@@ -492,7 +642,11 @@ class CatbotEnv:
         dof_pos = self.dof_pos - self.default_dof_pos
         dof_vel = self.dof_vel
 
-        noise_cfg = self.dr_cfg.get("obs_noise", {}) if self.dr_cfg.get("enabled", False) else {}
+        noise_cfg = (
+            self.dr_cfg.get("obs_noise", {})
+            if self.dr_cfg.get("enabled", False)
+            else {}
+        )
         if noise_cfg:
             if "ang_vel" in noise_cfg:
                 ang_vel = ang_vel + torch.randn_like(ang_vel) * noise_cfg["ang_vel"]
@@ -543,12 +697,16 @@ class CatbotEnv:
 
         if "kp" in on_reset:
             lo, hi = on_reset["kp"]
-            kp_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(lo, hi)
+            kp_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(
+                lo, hi
+            )
             self.robot.set_dofs_kp(kp_rand, self.motors_dof_idx, envs_idx=env_indices)
 
         if "kd" in on_reset:
             lo, hi = on_reset["kd"]
-            kd_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(lo, hi)
+            kd_rand = torch.empty(n, self.num_actions, device=gs.device).uniform_(
+                lo, hi
+            )
             self.robot.set_dofs_kv(kd_rand, self.motors_dof_idx, envs_idx=env_indices)
 
         if "friction" in on_reset and self.foot_link_idx is not None:
@@ -573,7 +731,9 @@ class CatbotEnv:
 
     def _apply_pushes(self):
         """Apply random velocity impulses to the robot base on a fixed interval."""
-        pushes_cfg = self.dr_cfg.get("pushes", {}) if self.dr_cfg.get("enabled", False) else {}
+        pushes_cfg = (
+            self.dr_cfg.get("pushes", {}) if self.dr_cfg.get("enabled", False) else {}
+        )
         if not pushes_cfg.get("enabled", False):
             return
 
@@ -604,7 +764,9 @@ class CatbotEnv:
 
     def _apply_stumbles(self):
         """Apply random joint velocity impulses when the robot is moving to simulate feet catching on obstacles."""
-        stumbles_cfg = self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
+        stumbles_cfg = (
+            self.dr_cfg.get("stumbles", {}) if self.dr_cfg.get("enabled", False) else {}
+        )
         if not stumbles_cfg.get("enabled", False):
             return
 
@@ -613,16 +775,22 @@ class CatbotEnv:
 
         # Only stumble envs where the robot is actively moving
         moving_mask = self.base_lin_vel[:, :2].norm(dim=-1) > 0.1
-        stumble_mask = moving_mask & (torch.rand(self.num_envs, device=gs.device) < probability)
+        stumble_mask = moving_mask & (
+            torch.rand(self.num_envs, device=gs.device) < probability
+        )
         stumble_indices = torch.where(stumble_mask)[0]
         if len(stumble_indices) == 0:
             return
 
         n = len(stumble_indices)
-        impulse = (torch.rand(n, self.num_actions, device=gs.device) * 2 - 1) * max_impulse
+        impulse = (
+            torch.rand(n, self.num_actions, device=gs.device) * 2 - 1
+        ) * max_impulse
         current_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
         push_vel = current_vel[stumble_indices] + impulse
-        self.robot.set_dofs_velocity(push_vel, self.motors_dof_idx, envs_idx=stumble_indices)
+        self.robot.set_dofs_velocity(
+            push_vel, self.motors_dof_idx, envs_idx=stumble_indices
+        )
 
     # ------------ reward functions----------------
     def _reward_tracking_lin_vel(self):
@@ -657,10 +825,20 @@ class CatbotEnv:
         # Penalize joint poses far away from default pose
         return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1)
 
+    def _reward_similar_to_default_legs(self):
+        # Penalize non-hip joint poses far from default (a and l joints)
+        diff = torch.abs(self.dof_pos - self.default_dof_pos)
+        return torch.sum(diff[:, self.leg_dof_mask], dim=1)
+
+    def _reward_similar_to_default_hips(self):
+        # Penalize hip joint poses far from default
+        diff = torch.abs(self.dof_pos - self.default_dof_pos)
+        return torch.sum(diff[:, self.hip_dof_mask], dim=1)
+
     def _reward_base_height(self):
         # Penalize base height away from target
         return torch.square(self.base_pos[:, 2] - self.targets["base_height"])
-    
+
     def _reward_energy(self):
         # Penalize energy consumption (torque * velocity)
         # For PD control: torque = kp * (target - current) + kv * (0 - vel)
@@ -680,7 +858,7 @@ class CatbotEnv:
         torques = self.kp * pos_error + self.kv * vel_error
 
         # Energy = |torque * velocity|
-        return torch.sum(torch.abs(torques * self.dof_vel), dim=1) 
+        return torch.sum(torch.abs(torques * self.dof_vel), dim=1)
 
     def _reward_survival(self):
         # Small constant reward for survival
@@ -709,7 +887,9 @@ class CatbotEnv:
             foot_disp_world.view(self.num_envs, -1, 3),
             inv_base_quat[:, None, :].expand(-1, foot_disp_world.shape[1], -1),
         )  # (n_envs, n_feet, 3)
-        foot_vel_forward = torch.abs(foot_disp_local[..., 0]) / self.dt  # (n_envs, n_feet)
+        foot_vel_forward = (
+            torch.abs(foot_disp_local[..., 0]) / self.dt
+        )  # (n_envs, n_feet)
 
         foot_height = self.foot_pos[..., 2]  # (n_envs, n_feet)
 
