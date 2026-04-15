@@ -132,6 +132,7 @@ domain_randomization:
     friction: [0.5, 1.5]       # ±50% — slippery tile through grippy rubber mat
     mass_shift: [-0.05, 0.05]  # ±50g per link — small payload, dense print fill
     com_shift: 0.02            # 2cm std per link — asymmetric cable routing
+    calibration_offset: [-0.2, 0.2]  # ±0.2 rad — full realistic miscalibration
 
   obs_noise:
     dof_pos: 0.03              # joint flex under full load

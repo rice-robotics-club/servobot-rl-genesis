@@ -60,15 +60,10 @@ env:
   simulate_action_latency: True
   clip_actions: 100.0
   dt: 0.02
-<<<<<<< HEAD
   kp: 78.4141526336
   kd: 3.92070763168
-=======
-  kp: 20.0
-  kd: 0.5
   foot_link_names: ["160mm", "base_link"]
   termination_if_body_contact_height: 0.05
->>>>>>> a41f1bad40e0ad24be1cd084feeda9305c02abdf
 
 commands:
   vel: [-1.0, 1.0]
@@ -93,13 +88,6 @@ reward:
     base_height: -0.1
     action_rate: -0.005
     similar_to_default: -0.01
-<<<<<<< HEAD
     near_limits: -1.0
-    # energy: 0.0002
-    # survival: 0.1
-=======
-    soft_landing: -0.025
-    stretching_pain: 1.0
->>>>>>> a41f1bad40e0ad24be1cd084feeda9305c02abdf
   targets:
     base_height: .3

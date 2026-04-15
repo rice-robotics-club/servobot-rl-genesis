@@ -6,7 +6,7 @@ runner:
   logger: tensorboard
   neptune_project: legged_gym
   wandb_project: legged_gym
-  run_name: ""
+  run_name: "catbot_hw_phase2"
 
   actor:
     class_name: MLPModel

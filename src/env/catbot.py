@@ -32,109 +32,6 @@ def gs_rand(lower, upper, batch_shape):
 
 
 class CatbotEnv:
-    def _reward_stretching_pain(self):
-        """
-        Penalizes the robot when the leg approaches the physical bounds of the t_c angle.
-        The penalty ramps up ^2 the closer it gets to the boundary.
-        """
-        pain = torch.zeros(self.num_envs, device=self.device)
-
-        # We need to process all legs. We'll identify the 'a' and 'l' joints for each leg based on their names.
-        a_indices = []
-        l_indices = []
-        for i, name in enumerate(self.joint_names):
-            if (
-                name.endswith("_a")
-                or name == "a"
-                or "_a_" in name
-                or name.split("_")[-1] == "a"
-            ):
-                a_indices.append(i)
-            elif (
-                name.endswith("_l")
-                or name == "l"
-                or "_l_" in name
-                or name.split("_")[-1] == "l"
-            ):
-                l_indices.append(i)
-
-        # If we can't cleanly match the pairs, just return zero penalty
-        if len(a_indices) != len(l_indices) or len(a_indices) == 0:
-            return pain
-
-        for a_idx, l_idx in zip(a_indices, l_indices):
-            t_a_rad = self.dof_pos[:, a_idx]
-            t_l_rad = self.dof_pos[:, l_idx]
-
-            t_a_deg = t_a_rad * (180.0 / 3.141592653589793) - 90.0
-            t_l_deg = t_l_rad * (180.0 / 3.141592653589793) - 90.0
-
-            # Vectorized Freudenstein Inverse
-            target_theta3_rad = (t_a_deg - 180.0) * (math.pi / 180.0)
-
-            l0, l1, l2, l3 = self.l0, self.l1, self.l2, self.l3
-
-            K1_inv = l0 / l1
-            K2_inv = l0 / l3
-            K3_inv = (l1**2 - l2**2 + l3**2 + l0**2) / (2.0 * l1 * l3)
-
-            cos_th1 = torch.cos(target_theta3_rad)
-            sin_th1 = torch.sin(target_theta3_rad)
-
-            A = cos_th1 - K1_inv - K2_inv * cos_th1 + K3_inv
-            B = -2.0 * sin_th1
-            C = K1_inv - (K2_inv + 1.0) * cos_th1 + K3_inv
-
-            disc = B**2 - 4.0 * A * C
-            valid_mask = disc >= 0.0
-            safe_disc = torch.clamp(disc, min=0.0)
-
-            t_false = (-B - torch.sqrt(safe_disc)) / (2.0 * A)
-            t_3_false = 2.0 * torch.atan(t_false)
-
-            t_true = (-B + torch.sqrt(safe_disc)) / (2.0 * A)
-            t_3_true = 2.0 * torch.atan(t_true)
-
-            # Forward check: calculate_theta3(l0, l3, l2, l1, t_3, open_mode=False)
-            K1_fwd = l0 / l3
-            K2_fwd = l0 / l1
-            K3_fwd = (l3**2 - l2**2 + l1**2 + l0**2) / (2.0 * l3 * l1)
-
-            def forward_pass(t_3_in):
-                c_th = torch.cos(t_3_in)
-                s_th = torch.sin(t_3_in)
-                A_f = c_th - K1_fwd - K2_fwd * c_th + K3_fwd
-                B_f = -2.0 * s_th
-                C_f = K1_fwd - (K2_fwd + 1.0) * c_th + K3_fwd
-                d_f = torch.clamp(B_f**2 - 4.0 * A_f * C_f, min=0.0)
-                t_f = (-B_f - torch.sqrt(d_f)) / (2.0 * A_f)
-                return 2.0 * torch.atan(t_f)
-
-            out_false = forward_pass(t_3_false)
-            out_true = forward_pass(t_3_true)
-
-            err_false = torch.abs(out_false - target_theta3_rad)
-            err_true = torch.abs(out_true - target_theta3_rad)
-
-            t_3 = torch.where(err_false < err_true, t_3_false, t_3_true)
-
-            t_c = (t_l_deg - 180.0) * (math.pi / 180.0) - t_3
-            t_c = (t_c + math.pi) % (2.0 * math.pi) - math.pi
-
-            dist_min = torch.abs(t_c - self.tc_min)
-            dist_max = torch.abs(self.tc_max - t_c)
-            min_dist = torch.minimum(dist_min, dist_max)
-
-            threshold = 0.3
-            leg_pain = torch.where(
-                min_dist < threshold,
-                -(((threshold - min_dist) / threshold) ** 2),
-                torch.zeros_like(t_a_rad),
-            )
-
-            pain += torch.where(valid_mask, leg_pain, -1.0)
-
-        return pain
 
     def __init__(
         self,
@@ -291,6 +188,16 @@ class CatbotEnv:
             device=gs.device,
         )
         self.robot.set_dofs_position(self.default_dof_pos, self.motors_dof_idx)
+
+        # Per-env calibration offset buffers (zeroed until DR randomizes them).
+        # obs_offset: added to observed dof_pos — simulates encoder miscalibration.
+        # init_offset: added to the reset joint pose — simulates physical misalignment.
+        self.dof_pos_obs_offset = torch.zeros(
+            (self.num_envs, self.num_actions), dtype=gs.tc_float, device=gs.device
+        )
+        self.dof_pos_init_offset = torch.zeros(
+            (self.num_envs, self.num_actions), dtype=gs.tc_float, device=gs.device
+        )
 
         # PD control parameters
 
@@ -571,7 +478,7 @@ class CatbotEnv:
             self.base_pos.copy_(self.init_base_pos)
             self.base_quat.copy_(self.init_base_quat)
             self.projected_gravity.copy_(self.init_projected_gravity)
-            self.dof_pos.copy_(self.default_dof_pos)
+            self.dof_pos.copy_(self.default_dof_pos + self.dof_pos_init_offset)
             self.base_pos.copy_(self.init_base_pos)
             self.base_lin_vel.zero_()
             self.base_ang_vel.zero_()
@@ -603,7 +510,10 @@ class CatbotEnv:
                 out=self.projected_gravity,
             )
             torch.where(
-                envs_idx[:, None], self.default_dof_pos, self.dof_pos, out=self.dof_pos
+                envs_idx[:, None],
+                self.default_dof_pos + self.dof_pos_init_offset,
+                self.dof_pos,
+                out=self.dof_pos,
             )
             torch.where(
                 envs_idx[:, None], self.init_base_pos, self.base_pos, out=self.base_pos
@@ -639,7 +549,7 @@ class CatbotEnv:
 
     def _update_observation(self):
         ang_vel = self.base_ang_vel
-        dof_pos = self.dof_pos - self.default_dof_pos
+        dof_pos = self.dof_pos - self.default_dof_pos + self.dof_pos_obs_offset
         dof_vel = self.dof_vel
 
         noise_cfg = (
@@ -728,6 +638,17 @@ class CatbotEnv:
             n_links = self.robot.n_links
             com_rand = torch.randn(n, n_links, 3, device=gs.device) * std
             self.robot.set_COM_shift(com_rand, envs_idx=env_indices)
+
+        if "calibration_offset" in on_reset:
+            lo, hi = on_reset["calibration_offset"]
+            new_obs = torch.empty(n, self.num_actions, device=gs.device).uniform_(lo, hi)
+            new_init = torch.empty(n, self.num_actions, device=gs.device).uniform_(lo, hi)
+            if env_indices is None:
+                self.dof_pos_obs_offset.copy_(new_obs)
+                self.dof_pos_init_offset.copy_(new_init)
+            else:
+                self.dof_pos_obs_offset[env_indices] = new_obs
+                self.dof_pos_init_offset[env_indices] = new_init
 
     def _apply_pushes(self):
         """Apply random velocity impulses to the robot base on a fixed interval."""
@@ -821,18 +742,22 @@ class CatbotEnv:
         # Penalize changes in actions
         return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
 
+    def _perceived_dof_pos(self):
+        """dof_pos relative to default as the policy observes it (includes calibration offset)."""
+        return self.dof_pos - self.default_dof_pos + self.dof_pos_obs_offset
+
     def _reward_similar_to_default(self):
-        # Penalize joint poses far away from default pose
-        return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1)
+        # Penalize joint poses far from default, measured in perceived space
+        return torch.sum(torch.abs(self._perceived_dof_pos()), dim=1)
 
     def _reward_similar_to_default_legs(self):
         # Penalize non-hip joint poses far from default (a and l joints)
-        diff = torch.abs(self.dof_pos - self.default_dof_pos)
+        diff = torch.abs(self._perceived_dof_pos())
         return torch.sum(diff[:, self.leg_dof_mask], dim=1)
 
     def _reward_similar_to_default_hips(self):
         # Penalize hip joint poses far from default
-        diff = torch.abs(self.dof_pos - self.default_dof_pos)
+        diff = torch.abs(self._perceived_dof_pos())
         return torch.sum(diff[:, self.hip_dof_mask], dim=1)
 
     def _reward_base_height(self):
@@ -900,3 +825,107 @@ class CatbotEnv:
         # Scale by command speed so reward is zero when standing still
         cmd_speed = torch.norm(self.commands[:, :2], dim=1, keepdim=True)  # (n_envs, 1)
         return (clearance * cmd_speed).sum(dim=1)
+
+def _reward_stretching_pain(self):
+        """
+        Penalizes the robot when the leg approaches the physical bounds of the t_c angle.
+        The penalty ramps up ^2 the closer it gets to the boundary.
+        """
+        pain = torch.zeros(self.num_envs, device=self.device)
+
+        # We need to process all legs. We'll identify the 'a' and 'l' joints for each leg based on their names.
+        a_indices = []
+        l_indices = []
+        for i, name in enumerate(self.joint_names):
+            if (
+                name.endswith("_a")
+                or name == "a"
+                or "_a_" in name
+                or name.split("_")[-1] == "a"
+            ):
+                a_indices.append(i)
+            elif (
+                name.endswith("_l")
+                or name == "l"
+                or "_l_" in name
+                or name.split("_")[-1] == "l"
+            ):
+                l_indices.append(i)
+
+        # If we can't cleanly match the pairs, just return zero penalty
+        if len(a_indices) != len(l_indices) or len(a_indices) == 0:
+            return pain
+
+        for a_idx, l_idx in zip(a_indices, l_indices):
+            t_a_rad = self.dof_pos[:, a_idx]
+            t_l_rad = self.dof_pos[:, l_idx]
+
+            t_a_deg = t_a_rad * (180.0 / 3.141592653589793) - 90.0
+            t_l_deg = t_l_rad * (180.0 / 3.141592653589793) - 90.0
+
+            # Vectorized Freudenstein Inverse
+            target_theta3_rad = (t_a_deg - 180.0) * (math.pi / 180.0)
+
+            l0, l1, l2, l3 = self.l0, self.l1, self.l2, self.l3
+
+            K1_inv = l0 / l1
+            K2_inv = l0 / l3
+            K3_inv = (l1**2 - l2**2 + l3**2 + l0**2) / (2.0 * l1 * l3)
+
+            cos_th1 = torch.cos(target_theta3_rad)
+            sin_th1 = torch.sin(target_theta3_rad)
+
+            A = cos_th1 - K1_inv - K2_inv * cos_th1 + K3_inv
+            B = -2.0 * sin_th1
+            C = K1_inv - (K2_inv + 1.0) * cos_th1 + K3_inv
+
+            disc = B**2 - 4.0 * A * C
+            valid_mask = disc >= 0.0
+            safe_disc = torch.clamp(disc, min=0.0)
+
+            t_false = (-B - torch.sqrt(safe_disc)) / (2.0 * A)
+            t_3_false = 2.0 * torch.atan(t_false)
+
+            t_true = (-B + torch.sqrt(safe_disc)) / (2.0 * A)
+            t_3_true = 2.0 * torch.atan(t_true)
+
+            # Forward check: calculate_theta3(l0, l3, l2, l1, t_3, open_mode=False)
+            K1_fwd = l0 / l3
+            K2_fwd = l0 / l1
+            K3_fwd = (l3**2 - l2**2 + l1**2 + l0**2) / (2.0 * l3 * l1)
+
+            def forward_pass(t_3_in):
+                c_th = torch.cos(t_3_in)
+                s_th = torch.sin(t_3_in)
+                A_f = c_th - K1_fwd - K2_fwd * c_th + K3_fwd
+                B_f = -2.0 * s_th
+                C_f = K1_fwd - (K2_fwd + 1.0) * c_th + K3_fwd
+                d_f = torch.clamp(B_f**2 - 4.0 * A_f * C_f, min=0.0)
+                t_f = (-B_f - torch.sqrt(d_f)) / (2.0 * A_f)
+                return 2.0 * torch.atan(t_f)
+
+            out_false = forward_pass(t_3_false)
+            out_true = forward_pass(t_3_true)
+
+            err_false = torch.abs(out_false - target_theta3_rad)
+            err_true = torch.abs(out_true - target_theta3_rad)
+
+            t_3 = torch.where(err_false < err_true, t_3_false, t_3_true)
+
+            t_c = (t_l_deg - 180.0) * (math.pi / 180.0) - t_3
+            t_c = (t_c + math.pi) % (2.0 * math.pi) - math.pi
+
+            dist_min = torch.abs(t_c - self.tc_min)
+            dist_max = torch.abs(self.tc_max - t_c)
+            min_dist = torch.minimum(dist_min, dist_max)
+
+            threshold = 0.3
+            leg_pain = torch.where(
+                min_dist < threshold,
+                -(((threshold - min_dist) / threshold) ** 2),
+                torch.zeros_like(t_a_rad),
+            )
+
+            pain += torch.where(valid_mask, leg_pain, -1.0)
+
+        return pain

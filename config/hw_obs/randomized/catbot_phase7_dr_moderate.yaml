@@ -130,6 +130,7 @@ domain_randomization:
     kd: [0.4, 0.6]             # ±20% — damping more variable than stiffness
     friction: [0.6, 1.4]       # ±40% — adds carpet/rubber surfaces
     mass_shift: [-0.03, 0.03]  # ±30g per link — cable routing, print density
+    calibration_offset: [-0.15, 0.15]  # ±0.15 rad — moderate miscalibration
 
   obs_noise:
     dof_pos: 0.02              # 2× phase 6 — joint flex under load
