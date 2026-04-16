@@ -77,6 +77,7 @@ env:
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
   kp: 78.4141526336
+  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
   kd: 3.92070763168
   foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
   termination_if_body_contact_height: 0.05
@@ -105,12 +106,13 @@ reward:
     roll_angle: -200
     pitch_angle: -200
     base_height: -100
-    action_rate: -4
+    action_rate: -3
     similar_to_default_legs: -0.5
-    similar_to_default_hips: -2
-    energy: -0.15
-    survival: 0.8
+    similar_to_default_hips: -1.0
+    energy: -0.10
+    survival: 0.5
     stretching_pain: -3
+    hip_pain: -3
     # foot_clearance: 0.0
   targets:
     base_height: 0.25

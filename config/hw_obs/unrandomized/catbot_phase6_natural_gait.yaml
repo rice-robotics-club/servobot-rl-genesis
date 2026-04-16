@@ -76,6 +76,7 @@ env:
   termination_if_pitch_greater_than: 0.7
   termination_if_roll_greater_than: 0.7
   kp: 78.4141526336
+  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
   kd: 3.92070763168
   foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
   termination_if_body_contact_height: 0.05
@@ -109,9 +110,10 @@ reward:
     similar_to_default_hips: -1.0
     energy: -0.10           # up from -0.075 — many small steps are expensive
     survival: 0.5 # up from 0.2 — encourages longer survival to achieve better gait
-    stretching_pain: -3  # new — encourages staying away from joint angles that damage hardware
+    stretching_pain: -3
+    hip_pain: -3  # new — encourages staying away from joint angles that damage hardware
   targets:
-    base_height: 0.25        # slightly higher than phase4 to encourage clearance
+    base_height: 0.25   
 
 domain_randomization:
   enabled: false

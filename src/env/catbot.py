@@ -70,6 +70,9 @@ class CatbotEnv:
 
         self.kp = get_or_default(env_cfg, "kp", 20.0)
         self.kv = get_or_default(env_cfg, "kd", 0.5)
+        hip_limits = get_or_default(env_cfg, "hip_limits", [-0.3491, 0.7854])
+        self.hip_min = hip_limits[0]
+        self.hip_max = hip_limits[1]
         self.tracking_sigma = get_or_default(reward_cfg, "tracking_sigma", 0.25)
         self.clip_actions = get_or_default(env_cfg, "clip_actions", 100.0)
         self.simulate_action_latency = get_or_default(
@@ -171,6 +174,13 @@ class CatbotEnv:
             ["hip" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
         )
         self.leg_dof_mask = ~self.hip_dof_mask
+        # left/right hip masks — motors face opposite directions so limits are mirrored
+        self.left_hip_mask = torch.tensor(
+            ["hip" in name and "_L" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
+        )
+        self.right_hip_mask = torch.tensor(
+            ["hip" in name and "_R" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
+        )
 
         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
         linkage_dof_idx = all_dof_idx[~torch.isin(all_dof_idx, self.motors_dof_idx)]
@@ -345,6 +355,12 @@ class CatbotEnv:
             self.last_actions if self.simulate_action_latency else self.actions
         )
         target_dof_pos = exec_actions * self.cfg["action_scale"] + self.default_dof_pos
+        target_dof_pos[:, self.right_hip_mask] = target_dof_pos[:, self.right_hip_mask].clamp(
+            self.hip_min, self.hip_max
+        )
+        target_dof_pos[:, self.left_hip_mask] = target_dof_pos[:, self.left_hip_mask].clamp(
+            -self.hip_max, -self.hip_min
+        )
         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
         self.scene.step()
 
@@ -885,3 +901,26 @@ class CatbotEnv:
             pain += leg_pain
 
         return pain
+
+    def _reward_hip_pain(self):
+        """
+        Penalizes hip joints entering the danger zone within 5° of their physical limits.
+        Limits: -20° (-0.3491 rad) to +45° (0.7854 rad).
+        Returns a positive value; apply a negative weight in the config.
+        """
+        threshold = 5.0 * math.pi / 180.0
+
+        def _hip_pain(hip_pos, lo, hi):
+            dist_min = torch.abs(hip_pos - lo)
+            dist_max = torch.abs(hi - hip_pos)
+            min_dist = torch.minimum(dist_min, dist_max)
+            normalized = (threshold - min_dist) / threshold
+            return torch.where(
+                min_dist < threshold,
+                torch.exp(normalized * 6.0) - 1.0,
+                torch.zeros_like(hip_pos),
+            )
+
+        right_pain = _hip_pain(self.dof_pos[:, self.right_hip_mask], self.hip_min, self.hip_max)
+        left_pain  = _hip_pain(self.dof_pos[:, self.left_hip_mask], -self.hip_max, -self.hip_min)
+        return right_pain.sum(dim=1) + left_pain.sum(dim=1)

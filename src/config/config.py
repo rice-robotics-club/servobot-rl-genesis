@@ -12,6 +12,7 @@ class DomainRandOnResetConfig(TypedDict, total=False):
     com_shift: float
     body_mass_offset: float
     body_mass_shift: list[float]
+    calibration_offset: list[float]
 
 
 class DomainRandObsNoiseConfig(TypedDict, total=False):

@@ -55,6 +55,13 @@
           "minItems": 2,
           "maxItems": 2,
           "description": "[min, max] kg variance applied to chassis link mass (payload uncertainty)"
+        },
+        "calibration_offset": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[min, max] rad additive offset applied to joint positions to simulate miscalibration"
         }
       },
       "additionalProperties": false
