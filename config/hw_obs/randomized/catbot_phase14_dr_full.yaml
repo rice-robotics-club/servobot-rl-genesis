@@ -86,8 +86,8 @@ env:
   termination_if_body_contact_height: 0.05
 
 commands:
-  lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.0, 1.0]
+  lin_vel_x: [-0.8, 0.8]
+  lin_vel_y: [-0.8, 0.8]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -115,7 +115,7 @@ reward:
     energy: -0.10
     survival: 0.5
     stretching_pain: -3
-    hip_pain: -3
+    hip_pain: -0.3
   targets:
     base_height: 0.25
 
@@ -146,8 +146,8 @@ domain_randomization:
 
   pushes:
     enabled: true
-    interval_s: 8.0              # more frequent
-    max_vel_xy: 0.5              # stronger — a solid shove
+    interval_s: 5.0              # frequent
+    max_vel_xy: 1.2              # strong — real-world kick test level
 
   stumbles:
     enabled: true
