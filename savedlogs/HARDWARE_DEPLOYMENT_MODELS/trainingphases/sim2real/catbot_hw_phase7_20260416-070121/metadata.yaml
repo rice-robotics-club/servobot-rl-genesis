@@ -1,0 +1,4 @@
+max_iterations: 1000
+num_envs: 1000
+resumed_from: logs/catbot_hw_phase6.2_20260415-215834/model_3500.pt
+timestamp: '2026-04-16T07:01:21.875986'

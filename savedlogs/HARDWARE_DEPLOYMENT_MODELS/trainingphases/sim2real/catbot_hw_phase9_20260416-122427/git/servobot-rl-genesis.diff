@@ -1,0 +1,1112 @@
+--- git commit ---
+3a8bbc4ebc726fdda052e0e604dd9c175abd722e
+
+
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml
+	deleted:    config/hw_obs/randomized/catbot_phase11_pushes.yaml
+	deleted:    config/hw_obs/randomized/catbot_phase12_stumbles.yaml
+	deleted:    config/hw_obs/randomized/catbot_phase13_dr_full.yaml
+	deleted:    config/hw_obs/randomized/catbot_phase7_dr_intro.yaml
+	deleted:    config/hw_obs/randomized/catbot_phase8_kp_kd.yaml
+	deleted:    config/hw_obs/randomized/catbot_phase9_friction_mass.yaml
+	modified:   src/env/catbot.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	config/hw_obs/randomized/catbot_phase10_friction_mass.yaml
+	config/hw_obs/randomized/catbot_phase11_sensor_noise.yaml
+	config/hw_obs/randomized/catbot_phase12_pushes.yaml
+	config/hw_obs/randomized/catbot_phase13_stumbles.yaml
+	config/hw_obs/randomized/catbot_phase14_dr_full.yaml
+	config/hw_obs/randomized/catbot_phase7_lighter_frame_friction.yaml
+	config/hw_obs/randomized/catbot_phase8_dr_intro.yaml
+	config/hw_obs/randomized/catbot_phase9_kp_kd.yaml
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml b/config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml
+deleted file mode 100644
+index 9b407f5..0000000
+--- a/config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml
++++ /dev/null
+@@ -1,140 +0,0 @@
+-# yaml-language-server: $schema=../../schemas/config.json
+-# Phase 9 - Sensor Noise Escalation
+-# Picks up from phase 8. Reward structure unchanged.
+-# Goal: teach the policy to handle noisier sensor readings under load/vibration.
+-# Single addition from phase 8:
+-#   - IMU acc/gyro noise doubled (closer to what real hardware produces under vibration)
+-#   - obs dof_pos/dof_vel noise doubled (joint flex under load, finite-diff velocity noise)
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotHwEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 78.4141526336
+-  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
+-  kd: 3.92070763168
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -10
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -100
+-    action_rate: -3
+-    similar_to_default_legs: -0.5
+-    similar_to_default_hips: -1.0
+-    energy: -0.10
+-    survival: 0.5
+-    stretching_pain: -3
+-    hip_pain: -3
+-  targets:
+-    base_height: 0.25
+-
+-domain_randomization:
+-  enabled: true
+-
+-  imu:
+-    acc_noise:        [0.05, 0.05, 0.05]    # NEW: doubled — noisy real IMU under vibration
+-    gyro_noise:       [0.02, 0.02, 0.02]    # NEW: doubled
+-    acc_random_walk:  [0.001, 0.001, 0.001]
+-    gyro_random_walk: [0.001, 0.001, 0.001]
+-    delay: 0.02
+-    jitter: 0.005
+-
+-  on_reset:
+-    kp: [70.5727, 86.2556]
+-    kd: [3.5286, 4.3128]
+-    friction: [0.6, 1.4]
+-    mass_shift: [-0.03, 0.03]
+-    calibration_offset: [-0.1, 0.1]
+-    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+-
+-  obs_noise:
+-    dof_pos: 0.02                # NEW: doubled — joint flex under load
+-    dof_vel: 1.0                 # NEW: doubled — finite-diff velocity noisier at speed
+-
+-  pushes:
+-    enabled: false
+diff --git a/config/hw_obs/randomized/catbot_phase11_pushes.yaml b/config/hw_obs/randomized/catbot_phase11_pushes.yaml
+deleted file mode 100644
+index a98c849..0000000
+--- a/config/hw_obs/randomized/catbot_phase11_pushes.yaml
++++ /dev/null
+@@ -1,141 +0,0 @@
+-# yaml-language-server: $schema=../../schemas/config.json
+-# Phase 10 - External Pushes
+-# Picks up from phase 9. Reward structure unchanged.
+-# Goal: teach the policy to recover from unexpected external disturbances.
+-# Single addition from phase 9:
+-#   - pushes: enabled at low magnitude (gentle shoves, ~0.3 m/s impulse every ~10s)
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotHwEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 78.4141526336
+-  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
+-  kd: 3.92070763168
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -10
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -100
+-    action_rate: -3
+-    similar_to_default_legs: -0.5
+-    similar_to_default_hips: -1.0
+-    energy: -0.10
+-    survival: 0.5
+-    stretching_pain: -3
+-    hip_pain: -3
+-  targets:
+-    base_height: 0.25
+-
+-domain_randomization:
+-  enabled: true
+-
+-  imu:
+-    acc_noise:        [0.05, 0.05, 0.05]
+-    gyro_noise:       [0.02, 0.02, 0.02]
+-    acc_random_walk:  [0.001, 0.001, 0.001]
+-    gyro_random_walk: [0.001, 0.001, 0.001]
+-    delay: 0.02
+-    jitter: 0.005
+-
+-  on_reset:
+-    kp: [70.5727, 86.2556]
+-    kd: [3.5286, 4.3128]
+-    friction: [0.6, 1.4]
+-    mass_shift: [-0.03, 0.03]
+-    calibration_offset: [-0.1, 0.1]
+-    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+-
+-  obs_noise:
+-    dof_pos: 0.02
+-    dof_vel: 1.0
+-
+-  pushes:
+-    enabled: true                # NEW
+-    interval_s: 10.0             # push every ~10s per env
+-    max_vel_xy: 0.3              # gentle — 0.3 m/s max impulse
+diff --git a/config/hw_obs/randomized/catbot_phase12_stumbles.yaml b/config/hw_obs/randomized/catbot_phase12_stumbles.yaml
+deleted file mode 100644
+index b2f1462..0000000
+--- a/config/hw_obs/randomized/catbot_phase12_stumbles.yaml
++++ /dev/null
+@@ -1,146 +0,0 @@
+-# yaml-language-server: $schema=../../schemas/config.json
+-# Phase 11 - Stumbles
+-# Picks up from phase 10. Reward structure unchanged.
+-# Goal: teach the policy to recover from foot-slip and mid-swing impulses.
+-# Single addition from phase 10:
+-#   - stumbles: enabled at low probability (~1 stumble every 2.5s per env)
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotHwEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 78.4141526336
+-  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
+-  kd: 3.92070763168
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -10
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -100
+-    action_rate: -3
+-    similar_to_default_legs: -0.5
+-    similar_to_default_hips: -1.0
+-    energy: -0.10
+-    survival: 0.5
+-    stretching_pain: -3
+-    hip_pain: -3
+-  targets:
+-    base_height: 0.25
+-
+-domain_randomization:
+-  enabled: true
+-
+-  imu:
+-    acc_noise:        [0.05, 0.05, 0.05]
+-    gyro_noise:       [0.02, 0.02, 0.02]
+-    acc_random_walk:  [0.001, 0.001, 0.001]
+-    gyro_random_walk: [0.001, 0.001, 0.001]
+-    delay: 0.02
+-    jitter: 0.005
+-
+-  on_reset:
+-    kp: [70.5727, 86.2556]
+-    kd: [3.5286, 4.3128]
+-    friction: [0.6, 1.4]
+-    mass_shift: [-0.03, 0.03]
+-    calibration_offset: [-0.1, 0.1]
+-    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+-
+-  obs_noise:
+-    dof_pos: 0.02
+-    dof_vel: 1.0
+-
+-  pushes:
+-    enabled: true
+-    interval_s: 10.0
+-    max_vel_xy: 0.3
+-
+-  stumbles:
+-    enabled: true                # NEW
+-    probability: 0.01            # ~1 stumble every 2.5s per env while moving
+-    max_vel_impulse: 1.0         # rad/s — small stumbles, won't launch the leg
+diff --git a/config/hw_obs/randomized/catbot_phase13_dr_full.yaml b/config/hw_obs/randomized/catbot_phase13_dr_full.yaml
+deleted file mode 100644
+index 703a98d..0000000
+--- a/config/hw_obs/randomized/catbot_phase13_dr_full.yaml
++++ /dev/null
+@@ -1,155 +0,0 @@
+-# yaml-language-server: $schema=../../schemas/config.json
+-# Phase 12 - Full DR
+-# Picks up from phase 11. Reward structure tightened slightly.
+-# Goal: maximum sim-to-real robustness — all ranges pushed to worst-case hardware variance.
+-# Changes from phase 11:
+-#   - kp/kd: widened to ±15% / ±30% (worn servos, temperature drift)
+-#   - friction: widened to ±50% (slippery tile through grippy rubber mat)
+-#   - mass_shift: widened to ±50g (small payload, dense print fill)
+-#   - com_shift: added at 2cm std (asymmetric cable routing, assembly variance)
+-#   - calibration_offset: widened to ±0.2 rad
+-#   - obs noise: obs dof_vel pushed to worst-case 2.0 rad/s
+-#   - pushes: stronger (0.5 m/s) and more frequent (every 8s)
+-#   - stumbles: probability raised to 5%
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotHwEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 78.4141526336
+-  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
+-  kd: 3.92070763168
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -10
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -100
+-    action_rate: -3
+-    similar_to_default_legs: -0.5
+-    similar_to_default_hips: -1.0
+-    energy: -0.10
+-    survival: 0.5
+-    stretching_pain: -3
+-    hip_pain: -3
+-  targets:
+-    base_height: 0.25
+-
+-domain_randomization:
+-  enabled: true
+-
+-  imu:
+-    acc_noise:        [0.05, 0.05, 0.05]
+-    gyro_noise:       [0.02, 0.02, 0.02]
+-    acc_random_walk:  [0.001, 0.001, 0.001]
+-    gyro_random_walk: [0.001, 0.001, 0.001]
+-    delay: 0.02
+-    jitter: 0.005
+-
+-  on_reset:
+-    kp: [66.6520, 90.1763]       # widened to ±15%
+-    kd: [2.7445, 5.0969]        # widened to ±30%
+-    friction: [0.5, 1.5]         # widened to ±50%
+-    mass_shift: [-0.05, 0.05]    # ±50g per-link manufacturing variance
+-    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+-    body_mass_shift: [-0.453, 0.453]  # ±1 lb payload uncertainty (20–22 lbs real range)
+-    com_shift: 0.02              # 2cm std per link — asymmetric cable routing
+-    calibration_offset: [-0.2, 0.2]  # widened to ±0.2 rad
+-
+-  obs_noise:
+-    dof_pos: 0.03                # joint flex under full load
+-    dof_vel: 2.0                 # worst-case finite-diff velocity at high speed
+-
+-  pushes:
+-    enabled: true
+-    interval_s: 8.0              # more frequent
+-    max_vel_xy: 0.5              # stronger — a solid shove
+-
+-  stumbles:
+-    enabled: true
+-    probability: 0.05            # raised to 5% — ~1 stumble/s per env
+-    max_vel_impulse: 2.0         # rad/s — enough to disrupt a swing without launching the leg
+diff --git a/config/hw_obs/randomized/catbot_phase7_dr_intro.yaml b/config/hw_obs/randomized/catbot_phase7_dr_intro.yaml
+deleted file mode 100644
+index 9d5956c..0000000
+--- a/config/hw_obs/randomized/catbot_phase7_dr_intro.yaml
++++ /dev/null
+@@ -1,141 +0,0 @@
+-# Phase 6 - DR Introduction
+-# Picks up from phase 5. Reward structure is identical — no new objectives.
+-# Goal: teach the policy to cope with sensor noise and surface variation
+-#       without disrupting the natural gait it already learned.
+-# Key additions:
+-#   - IMU noise: light gyro/accel noise (closest to real hardware baseline)
+-#   - obs noise: light joint noise (closest to real hardware baseline)
+-#   - friction: ±20% range on foot links (covers most floor surfaces)
+-#   - kp/kd and pushes deliberately held back — too much change at once
+-#     risks collapsing the phase 5 gait before DR has any benefit
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotHwEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 78.4141526336
+-  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
+-  kd: 3.92070763168
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -10
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -100
+-    action_rate: -3
+-    similar_to_default_legs: -0.5
+-    similar_to_default_hips: -1.0
+-    energy: -0.10
+-    survival: 0.5
+-    stretching_pain: -3
+-    hip_pain: -3
+-    # foot_clearance: 0.0
+-  targets:
+-    base_height: 0.25
+-
+-domain_randomization:
+-  enabled: true
+-
+-  imu:
+-    acc_noise:        [0.025, 0.025, 0.025]  # ~half full level — light intro
+-    gyro_noise:       [0.01, 0.01, 0.01]     # ~half full level
+-    acc_random_walk:  [0.001, 0.001, 0.001]
+-    gyro_random_walk: [0.001, 0.001, 0.001]
+-    delay: 0.02    # seconds — matches real sensor latency
+-    jitter: 0.005  # seconds — timing jitter std
+-
+-  on_reset:
+-    friction: [0.8, 1.2]       # ±20% — covers hardwood, tile, smooth concrete
+-    calibration_offset: [-0.1, 0.1]  # ±0.1 rad — light intro to miscalibration
+-    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+-
+-  obs_noise:
+-    dof_pos: 0.01              # encoder/flex noise (rad)
+-    dof_vel: 0.5               # finite-diff velocity estimate noise (rad/s)
+-
+-  pushes:
+-    enabled: false
+diff --git a/config/hw_obs/randomized/catbot_phase8_kp_kd.yaml b/config/hw_obs/randomized/catbot_phase8_kp_kd.yaml
+deleted file mode 100644
+index e51262d..0000000
+--- a/config/hw_obs/randomized/catbot_phase8_kp_kd.yaml
++++ /dev/null
+@@ -1,139 +0,0 @@
+-# yaml-language-server: $schema=../../schemas/config.json
+-# Phase 7 - Servo Gain Variation
+-# Picks up from phase 6. Reward structure unchanged.
+-# Goal: teach the policy to cope with unit-to-unit servo gain spread.
+-# Single addition from phase 6:
+-#   - kp: ±10% range (unit-to-unit stiffness variation)
+-#   - kd: ±20% range (damping more variable than stiffness on cheap servos)
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotHwEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 78.4141526336
+-  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
+-  kd: 3.92070763168
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -10
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -100
+-    action_rate: -3
+-    similar_to_default_legs: -0.5
+-    similar_to_default_hips: -1.0
+-    energy: -0.10
+-    survival: 0.5
+-    stretching_pain: -3
+-    hip_pain: -3
+-  targets:
+-    base_height: 0.25
+-
+-domain_randomization:
+-  enabled: true
+-
+-  imu:
+-    acc_noise:        [0.025, 0.025, 0.025]
+-    gyro_noise:       [0.01, 0.01, 0.01]
+-    acc_random_walk:  [0.001, 0.001, 0.001]
+-    gyro_random_walk: [0.001, 0.001, 0.001]
+-    delay: 0.02
+-    jitter: 0.005
+-
+-  on_reset:
+-    kp: [70.5727, 86.2556]             # NEW: ±10% servo stiffness variation
+-    kd: [3.5286, 4.3128]               # NEW: ±10% servo damping variation
+-    friction: [0.8, 1.2]
+-    calibration_offset: [-0.1, 0.1]
+-    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+-
+-  obs_noise:
+-    dof_pos: 0.01
+-    dof_vel: 0.5
+-
+-  pushes:
+-    enabled: false
+diff --git a/config/hw_obs/randomized/catbot_phase9_friction_mass.yaml b/config/hw_obs/randomized/catbot_phase9_friction_mass.yaml
+deleted file mode 100644
+index 408f98e..0000000
+--- a/config/hw_obs/randomized/catbot_phase9_friction_mass.yaml
++++ /dev/null
+@@ -1,140 +0,0 @@
+-# yaml-language-server: $schema=../../schemas/config.json
+-# Phase 8 - Friction + Mass Variation
+-# Picks up from phase 7. Reward structure unchanged.
+-# Goal: teach the policy to handle surface and body mass variation.
+-# Single addition from phase 7:
+-#   - friction: widened to ±40% (adds carpet and grippy rubber surfaces)
+-#   - mass_shift: ±30g per link (cable routing, print density variation)
+-runner:
+-  class_name: OnPolicyRunner
+-  num_steps_per_env: 96
+-  save_interval: 100
+-  obs_groups: { "actor": ["main"], "critic": ["main"] }
+-  logger: tensorboard
+-  neptune_project: legged_gym
+-  wandb_project: legged_gym
+-  run_name: ""
+-
+-  actor:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-    distribution_cfg:
+-      class_name: GaussianDistribution
+-      init_std: 1.0
+-      std_type: scalar
+-
+-  critic:
+-    class_name: MLPModel
+-    activation: elu
+-    obs_normalization: true
+-    hidden_dims: [512, 256, 128]
+-
+-  algorithm:
+-    class_name: PPO
+-    learning_rate: 0.001
+-    num_learning_epochs: 5
+-    num_mini_batches: 4
+-    schedule: adaptive
+-    value_loss_coef: 1.0
+-    clip_param: 0.2
+-    use_clipped_value_loss: true
+-    desired_kl: 0.02
+-    entropy_coef: 0.01
+-    gamma: 0.99
+-    lam: 0.95
+-    max_grad_norm: 1.0
+-
+-env:
+-  class_name: CatbotHwEnv
+-  robot_description_path: robots/catbot_description/robot.xml
+-  robot_description_type: MJCF
+-  joints:
+-    BL_a: 0.0
+-    BL_hip: 0.0
+-    BL_l: 0.0
+-    BR_a: 0.0
+-    BR_hip: 0.0
+-    BR_l: 0.0
+-    FL_a: 0.0
+-    FL_hip: 0.0
+-    FL_l: 0.0
+-    FR_a: 0.0
+-    FR_hip: 0.0
+-    FR_l: 0.0
+-  base_init_pos: [0.0, 0.0, 0.4]
+-  base_init_quat: [1.0, 0.0, 0.0, 0.0]
+-  episode_length: 20.0
+-  resampling_time: 4.0
+-  action_scale: 0.40
+-  simulate_action_latency: True
+-  clip_actions: 100.0
+-  dt: 0.02
+-  termination_if_pitch_greater_than: 0.7
+-  termination_if_roll_greater_than: 0.7
+-  kp: 78.4141526336
+-  hip_limits: [-0.3491, 0.7854]  # -20° to +45°
+-  kd: 3.92070763168
+-  foot_link_names: ["160mm", "160mm_2", "160mm_3", "160mm_4"]
+-  termination_if_body_contact_height: 0.05
+-
+-commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
+-  ang_vel_z: [-0.1, 0.1]
+-
+-obs:
+-  num_obs:
+-    main: 45
+-  scales:
+-    lin_vel_x: 2.0
+-    lin_vel_y: 2.0
+-    ang_vel_z: 0.25
+-    dof_pos: 1.0
+-    dof_vel: 0.05
+-
+-reward:
+-  tracking_sigma: 0.025
+-  rewards:
+-    tracking_lin_vel: 200
+-    tracking_ang_vel: 60
+-    lin_vel_z: -10
+-    roll_angle: -200
+-    pitch_angle: -200
+-    base_height: -100
+-    action_rate: -3
+-    similar_to_default_legs: -0.5
+-    similar_to_default_hips: -1.0
+-    energy: -0.10
+-    survival: 0.5
+-    stretching_pain: -3
+-    hip_pain: -3
+-  targets:
+-    base_height: 0.25
+-
+-domain_randomization:
+-  enabled: true
+-
+-  imu:
+-    acc_noise:        [0.025, 0.025, 0.025]
+-    gyro_noise:       [0.01, 0.01, 0.01]
+-    acc_random_walk:  [0.001, 0.001, 0.001]
+-    gyro_random_walk: [0.001, 0.001, 0.001]
+-    delay: 0.02
+-    jitter: 0.005
+-
+-  on_reset:
+-    kp: [70.5727, 86.2556]
+-    kd: [3.5286, 4.3128]
+-    friction: [0.6, 1.4]         # NEW: widened to ±40% — adds carpet/rubber surfaces
+-    mass_shift: [-0.03, 0.03]    # NEW: ±30g per link
+-    calibration_offset: [-0.1, 0.1]
+-    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+-
+-  obs_noise:
+-    dof_pos: 0.01
+-    dof_vel: 0.5
+-
+-  pushes:
+-    enabled: false
+diff --git a/src/env/catbot.py b/src/env/catbot.py
+index 54de5f2..ba6a0e7 100644
+--- a/src/env/catbot.py
++++ b/src/env/catbot.py
+@@ -176,10 +176,10 @@ class CatbotEnv:
+         self.leg_dof_mask = ~self.hip_dof_mask
+         # left/right hip masks — motors face opposite directions so limits are mirrored
+         self.left_hip_mask = torch.tensor(
+-            ["hip" in name and "_L" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
++            ["hip" in name and name[1] == "L" for name in self.joint_names], dtype=torch.bool, device=gs.device
+         )
+         self.right_hip_mask = torch.tensor(
+-            ["hip" in name and "_R" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
++            ["hip" in name and name[1] == "R" for name in self.joint_names], dtype=torch.bool, device=gs.device
+         )
+ 
+         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
+@@ -355,6 +355,7 @@ class CatbotEnv:
+             self.last_actions if self.simulate_action_latency else self.actions
+         )
+         target_dof_pos = exec_actions * self.cfg["action_scale"] + self.default_dof_pos
++        # clamp hip joints
+         target_dof_pos[:, self.right_hip_mask] = target_dof_pos[:, self.right_hip_mask].clamp(
+             self.hip_min, self.hip_max
+         )
+@@ -866,7 +867,6 @@ class CatbotEnv:
+         Freudenstein branch-selection ambiguity.
+         """
+         from src.env.catbot_leg import calculate_theta3 as _calc_theta3
+-
+         pain = torch.zeros(self.num_envs, device=self.device)
+ 
+         a_indices = [i for i, n in enumerate(self.joint_names) if n.split("_")[-1] == "a" or n == "a"]

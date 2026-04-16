@@ -1,0 +1,230 @@
+--- git commit ---
+ac90bc470262c0988efa7eb620d6c20c5fd2eaa9
+
+
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml
+	modified:   config/hw_obs/randomized/catbot_phase11_pushes.yaml
+	modified:   config/hw_obs/randomized/catbot_phase12_stumbles.yaml
+	modified:   config/hw_obs/randomized/catbot_phase13_dr_full.yaml
+	modified:   config/hw_obs/randomized/catbot_phase7_dr_intro.yaml
+	modified:   config/hw_obs/randomized/catbot_phase8_kp_kd.yaml
+	modified:   config/hw_obs/randomized/catbot_phase9_friction_mass.yaml
+	modified:   config/hw_obs/unrandomized/catbot_phase5_higher_action_limit.yaml
+	modified:   config/hw_obs/unrandomized/catbot_phase6_natural_gait.yaml
+	modified:   config/schemas/domain_randomization.json
+	modified:   src/config/config.py
+	modified:   src/env/catbot.py
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml b/config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml
+index 3a7a7eb..b9b2991 100644
+--- a/config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml
++++ b/config/hw_obs/randomized/catbot_phase10_sensor_noise.yaml
+@@ -128,6 +128,7 @@ domain_randomization:
+     friction: [0.6, 1.4]
+     mass_shift: [-0.03, 0.03]
+     calibration_offset: [-0.1, 0.1]
++    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+ 
+   obs_noise:
+     dof_pos: 0.02                # NEW: doubled — joint flex under load
+diff --git a/config/hw_obs/randomized/catbot_phase11_pushes.yaml b/config/hw_obs/randomized/catbot_phase11_pushes.yaml
+index f6e02e7..5b12e36 100644
+--- a/config/hw_obs/randomized/catbot_phase11_pushes.yaml
++++ b/config/hw_obs/randomized/catbot_phase11_pushes.yaml
+@@ -127,6 +127,7 @@ domain_randomization:
+     friction: [0.6, 1.4]
+     mass_shift: [-0.03, 0.03]
+     calibration_offset: [-0.1, 0.1]
++    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+ 
+   obs_noise:
+     dof_pos: 0.02
+diff --git a/config/hw_obs/randomized/catbot_phase12_stumbles.yaml b/config/hw_obs/randomized/catbot_phase12_stumbles.yaml
+index a9618d4..1922d75 100644
+--- a/config/hw_obs/randomized/catbot_phase12_stumbles.yaml
++++ b/config/hw_obs/randomized/catbot_phase12_stumbles.yaml
+@@ -127,6 +127,7 @@ domain_randomization:
+     friction: [0.6, 1.4]
+     mass_shift: [-0.03, 0.03]
+     calibration_offset: [-0.1, 0.1]
++    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+ 
+   obs_noise:
+     dof_pos: 0.02
+diff --git a/config/hw_obs/randomized/catbot_phase13_dr_full.yaml b/config/hw_obs/randomized/catbot_phase13_dr_full.yaml
+index bf936e8..8c02867 100644
+--- a/config/hw_obs/randomized/catbot_phase13_dr_full.yaml
++++ b/config/hw_obs/randomized/catbot_phase13_dr_full.yaml
+@@ -132,8 +132,10 @@ domain_randomization:
+     kp: [66.6520, 90.1763]       # widened to ±15%
+     kd: [2.7445, 5.0969]        # widened to ±30%
+     friction: [0.5, 1.5]         # widened to ±50%
+-    mass_shift: [-0.05, 0.05]    # widened to ±50g
+-    com_shift: 0.02              # NEW: 2cm std per link — asymmetric cable routing
++    mass_shift: [-0.05, 0.05]    # ±50g per-link manufacturing variance
++    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
++    body_mass_shift: [-0.453, 0.453]  # ±1 lb payload uncertainty (20–22 lbs real range)
++    com_shift: 0.02              # 2cm std per link — asymmetric cable routing
+     calibration_offset: [-0.2, 0.2]  # widened to ±0.2 rad
+ 
+   obs_noise:
+diff --git a/config/hw_obs/randomized/catbot_phase7_dr_intro.yaml b/config/hw_obs/randomized/catbot_phase7_dr_intro.yaml
+index ba69b9a..e0fe10f 100644
+--- a/config/hw_obs/randomized/catbot_phase7_dr_intro.yaml
++++ b/config/hw_obs/randomized/catbot_phase7_dr_intro.yaml
+@@ -129,6 +129,7 @@ domain_randomization:
+   on_reset:
+     friction: [0.8, 1.2]       # ±20% — covers hardwood, tile, smooth concrete
+     calibration_offset: [-0.1, 0.1]  # ±0.1 rad — light intro to miscalibration
++    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+ 
+   obs_noise:
+     dof_pos: 0.01              # encoder/flex noise (rad)
+diff --git a/config/hw_obs/randomized/catbot_phase8_kp_kd.yaml b/config/hw_obs/randomized/catbot_phase8_kp_kd.yaml
+index 8f24a18..8d059b2 100644
+--- a/config/hw_obs/randomized/catbot_phase8_kp_kd.yaml
++++ b/config/hw_obs/randomized/catbot_phase8_kp_kd.yaml
+@@ -127,6 +127,7 @@ domain_randomization:
+     kd: [3.5286, 4.3128]               # NEW: ±10% servo damping variation
+     friction: [0.8, 1.2]
+     calibration_offset: [-0.1, 0.1]
++    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+ 
+   obs_noise:
+     dof_pos: 0.01
+diff --git a/config/hw_obs/randomized/catbot_phase9_friction_mass.yaml b/config/hw_obs/randomized/catbot_phase9_friction_mass.yaml
+index 746f16a..b3c778a 100644
+--- a/config/hw_obs/randomized/catbot_phase9_friction_mass.yaml
++++ b/config/hw_obs/randomized/catbot_phase9_friction_mass.yaml
+@@ -128,6 +128,7 @@ domain_randomization:
+     friction: [0.6, 1.4]         # NEW: widened to ±40% — adds carpet/rubber surfaces
+     mass_shift: [-0.03, 0.03]    # NEW: ±30g per link
+     calibration_offset: [-0.1, 0.1]
++    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+ 
+   obs_noise:
+     dof_pos: 0.01
+diff --git a/config/hw_obs/unrandomized/catbot_phase5_higher_action_limit.yaml b/config/hw_obs/unrandomized/catbot_phase5_higher_action_limit.yaml
+index 0655868..bfcbef4 100644
+--- a/config/hw_obs/unrandomized/catbot_phase5_higher_action_limit.yaml
++++ b/config/hw_obs/unrandomized/catbot_phase5_higher_action_limit.yaml
+@@ -73,7 +73,7 @@ env:
+ 
+ commands:
+   lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1, 1.0]
++  lin_vel_y: [-1.0, 1.0]
+   ang_vel_z: [-0.1, 0.1]
+ 
+ obs:
+diff --git a/config/hw_obs/unrandomized/catbot_phase6_natural_gait.yaml b/config/hw_obs/unrandomized/catbot_phase6_natural_gait.yaml
+index ad50986..08904ab 100644
+--- a/config/hw_obs/unrandomized/catbot_phase6_natural_gait.yaml
++++ b/config/hw_obs/unrandomized/catbot_phase6_natural_gait.yaml
+@@ -81,8 +81,8 @@ env:
+   termination_if_body_contact_height: 0.05
+ 
+ commands:
+-  lin_vel_x: [-1.0, 1.0]
+-  lin_vel_y: [-1.5, 1.5]
++  lin_vel_x: [-1.0, 1.0]  # max speed reduced to encourage more natural gaits
++  lin_vel_y: [-1.0, 1.0]
+   ang_vel_z: [-0.1, 0.1]
+ 
+ obs:
+@@ -104,11 +104,11 @@ reward:
+     roll_angle: -200
+     pitch_angle: -200
+     base_height: -100
+-    action_rate: -4          # up from -2 — penalises rapid shuffling more
++    action_rate: -3          # up from -2 — penalises rapid shuffling more
+     similar_to_default_legs: -0.5 # up from -0.1 — gentle pull back to neutral between steps
+-    similar_to_default_hips: -2
+-    energy: -0.15           # up from -0.075 — many small steps are expensive
+-    survival: 0.8 # up from 0.2 — encourages longer survival to achieve better gait
++    similar_to_default_hips: -1.0
++    energy: -0.10           # up from -0.075 — many small steps are expensive
++    survival: 0.5 # up from 0.2 — encourages longer survival to achieve better gait
+     stretching_pain: -3  # new — encourages staying away from joint angles that damage hardware
+   targets:
+     base_height: 0.25        # slightly higher than phase4 to encourage clearance
+diff --git a/config/schemas/domain_randomization.json b/config/schemas/domain_randomization.json
+index e32b4c3..4498867 100644
+--- a/config/schemas/domain_randomization.json
++++ b/config/schemas/domain_randomization.json
+@@ -44,6 +44,17 @@
+         "com_shift": {
+           "type": "number",
+           "description": "Standard deviation (meters) of Gaussian COM shift applied per link"
++        },
++        "body_mass_offset": {
++          "type": "number",
++          "description": "Fixed kg offset applied to chassis link mass every reset (use to correct sim-to-real nominal weight)"
++        },
++        "body_mass_shift": {
++          "type": "array",
++          "items": { "type": "number" },
++          "minItems": 2,
++          "maxItems": 2,
++          "description": "[min, max] kg variance applied to chassis link mass (payload uncertainty)"
+         }
+       },
+       "additionalProperties": false
+diff --git a/src/config/config.py b/src/config/config.py
+index a77648d..507f3ee 100644
+--- a/src/config/config.py
++++ b/src/config/config.py
+@@ -10,6 +10,8 @@ class DomainRandOnResetConfig(TypedDict, total=False):
+     friction: list[float]
+     mass_shift: list[float]
+     com_shift: float
++    body_mass_offset: float
++    body_mass_shift: list[float]
+ 
+ 
+ class DomainRandObsNoiseConfig(TypedDict, total=False):
+diff --git a/src/env/catbot.py b/src/env/catbot.py
+index 5a7e097..922b424 100644
+--- a/src/env/catbot.py
++++ b/src/env/catbot.py
+@@ -314,6 +314,11 @@ class CatbotEnv:
+         )
+         self.last_foot_pos = torch.zeros_like(self.foot_pos)
+ 
++        # Chassis link index for body mass correction / payload DR
++        self.chassis_link_idx = torch.tensor(
++            [self.robot._links[0].idx_local], dtype=gs.tc_int, device=gs.device
++        )
++
+         # prepare reward functions and multiply reward scales by dt
+         self.reward_functions, self.episode_sums = dict(), dict()
+         for name in self.reward_scales.keys():
+@@ -631,6 +636,17 @@ class CatbotEnv:
+             mass_rand = torch.empty(n, n_links, device=gs.device).uniform_(lo, hi)
+             self.robot.set_mass_shift(mass_rand, envs_idx=env_indices)
+ 
++        body_mass_offset = on_reset.get("body_mass_offset", 0.0)
++        body_mass_lo, body_mass_hi = on_reset.get("body_mass_shift", [0.0, 0.0])
++        if body_mass_offset != 0.0 or body_mass_lo != 0.0 or body_mass_hi != 0.0:
++            body_mass_rand = (
++                torch.empty(n, 1, device=gs.device).uniform_(body_mass_lo, body_mass_hi)
++                + body_mass_offset
++            )
++            self.robot.set_mass_shift(
++                body_mass_rand, links_idx_local=self.chassis_link_idx, envs_idx=env_indices
++            )
++
+         if "com_shift" in on_reset:
+             std = on_reset["com_shift"]
+             n_links = self.robot.n_links
