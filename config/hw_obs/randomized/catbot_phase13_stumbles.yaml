@@ -142,5 +142,5 @@ domain_randomization:
 
   stumbles:
     enabled: true                # NEW
-    probability: 0.01            # ~1 stumble every 2.5s per env while moving
-    max_vel_impulse: 1.0         # rad/s — small stumbles, won't launch the leg
+    probability: 0.02            # ~1 stumble every 1s per env while moving
+    max_vel_impulse: 2.0         # rad/s — moderate stumbles
