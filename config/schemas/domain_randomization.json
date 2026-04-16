@@ -44,6 +44,17 @@
         "com_shift": {
           "type": "number",
           "description": "Standard deviation (meters) of Gaussian COM shift applied per link"
+        },
+        "body_mass_offset": {
+          "type": "number",
+          "description": "Fixed kg offset applied to chassis link mass every reset (use to correct sim-to-real nominal weight)"
+        },
+        "body_mass_shift": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[min, max] kg variance applied to chassis link mass (payload uncertainty)"
         }
       },
       "additionalProperties": false

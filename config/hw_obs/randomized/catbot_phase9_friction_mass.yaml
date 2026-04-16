@@ -128,6 +128,7 @@ domain_randomization:
     friction: [0.6, 1.4]         # NEW: widened to ±40% — adds carpet/rubber surfaces
     mass_shift: [-0.03, 0.03]    # NEW: ±30g per link
     calibration_offset: [-0.1, 0.1]
+    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
 
   obs_noise:
     dof_pos: 0.01

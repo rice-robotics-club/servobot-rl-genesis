@@ -129,6 +129,7 @@ domain_randomization:
   on_reset:
     friction: [0.8, 1.2]       # ±20% — covers hardwood, tile, smooth concrete
     calibration_offset: [-0.1, 0.1]  # ±0.1 rad — light intro to miscalibration
+    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
 
   obs_noise:
     dof_pos: 0.01              # encoder/flex noise (rad)

@@ -127,6 +127,7 @@ domain_randomization:
     kd: [3.5286, 4.3128]               # NEW: ±10% servo damping variation
     friction: [0.8, 1.2]
     calibration_offset: [-0.1, 0.1]
+    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
 
   obs_noise:
     dof_pos: 0.01

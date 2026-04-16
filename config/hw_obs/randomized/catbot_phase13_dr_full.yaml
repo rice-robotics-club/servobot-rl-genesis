@@ -132,8 +132,10 @@ domain_randomization:
     kp: [66.6520, 90.1763]       # widened to ±15%
     kd: [2.7445, 5.0969]        # widened to ±30%
     friction: [0.5, 1.5]         # widened to ±50%
-    mass_shift: [-0.05, 0.05]    # widened to ±50g
-    com_shift: 0.02              # NEW: 2cm std per link — asymmetric cable routing
+    mass_shift: [-0.05, 0.05]    # ±50g per-link manufacturing variance
+    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
+    body_mass_shift: [-0.453, 0.453]  # ±1 lb payload uncertainty (20–22 lbs real range)
+    com_shift: 0.02              # 2cm std per link — asymmetric cable routing
     calibration_offset: [-0.2, 0.2]  # widened to ±0.2 rad
 
   obs_noise:

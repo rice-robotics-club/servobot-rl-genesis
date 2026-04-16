@@ -314,6 +314,11 @@ class CatbotEnv:
         )
         self.last_foot_pos = torch.zeros_like(self.foot_pos)
 
+        # Chassis link index for body mass correction / payload DR
+        self.chassis_link_idx = torch.tensor(
+            [self.robot._links[0].idx_local], dtype=gs.tc_int, device=gs.device
+        )
+
         # prepare reward functions and multiply reward scales by dt
         self.reward_functions, self.episode_sums = dict(), dict()
         for name in self.reward_scales.keys():
@@ -630,6 +635,17 @@ class CatbotEnv:
             n_links = self.robot.n_links
             mass_rand = torch.empty(n, n_links, device=gs.device).uniform_(lo, hi)
             self.robot.set_mass_shift(mass_rand, envs_idx=env_indices)
+
+        body_mass_offset = on_reset.get("body_mass_offset", 0.0)
+        body_mass_lo, body_mass_hi = on_reset.get("body_mass_shift", [0.0, 0.0])
+        if body_mass_offset != 0.0 or body_mass_lo != 0.0 or body_mass_hi != 0.0:
+            body_mass_rand = (
+                torch.empty(n, 1, device=gs.device).uniform_(body_mass_lo, body_mass_hi)
+                + body_mass_offset
+            )
+            self.robot.set_mass_shift(
+                body_mass_rand, links_idx_local=self.chassis_link_idx, envs_idx=env_indices
+            )
 
         if "com_shift" in on_reset:
             std = on_reset["com_shift"]

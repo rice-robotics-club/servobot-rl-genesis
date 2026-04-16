@@ -10,6 +10,8 @@ class DomainRandOnResetConfig(TypedDict, total=False):
     friction: list[float]
     mass_shift: list[float]
     com_shift: float
+    body_mass_offset: float
+    body_mass_shift: list[float]
 
 
 class DomainRandObsNoiseConfig(TypedDict, total=False):
