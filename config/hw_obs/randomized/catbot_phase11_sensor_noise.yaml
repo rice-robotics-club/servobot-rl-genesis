@@ -1,10 +1,10 @@
 # yaml-language-server: $schema=../../schemas/config.json
-# Phase 8 - Friction + Mass Variation
-# Picks up from phase 7. Reward structure unchanged.
-# Goal: teach the policy to handle surface and body mass variation.
-# Single addition from phase 7:
-#   - friction: widened to ±40% (adds carpet and grippy rubber surfaces)
-#   - mass_shift: ±30g per link (cable routing, print density variation)
+# Phase 9 - Sensor Noise Escalation
+# Picks up from phase 8. Reward structure unchanged.
+# Goal: teach the policy to handle noisier sensor readings under load/vibration.
+# Single addition from phase 8:
+#   - IMU acc/gyro noise doubled (closer to what real hardware produces under vibration)
+#   - obs dof_pos/dof_vel noise doubled (joint flex under load, finite-diff velocity noise)
 runner:
   class_name: OnPolicyRunner
   num_steps_per_env: 96
@@ -40,7 +40,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.02
+    desired_kl: 0.01
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -81,7 +81,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.5, 1.5]
+  lin_vel_y: [-1.0, 1.0]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -117,8 +117,8 @@ domain_randomization:
   enabled: true
 
   imu:
-    acc_noise:        [0.025, 0.025, 0.025]
-    gyro_noise:       [0.01, 0.01, 0.01]
+    acc_noise:        [0.05, 0.05, 0.05]    # NEW: doubled — noisy real IMU under vibration
+    gyro_noise:       [0.02, 0.02, 0.02]    # NEW: doubled
     acc_random_walk:  [0.001, 0.001, 0.001]
     gyro_random_walk: [0.001, 0.001, 0.001]
     delay: 0.02
@@ -127,14 +127,14 @@ domain_randomization:
   on_reset:
     kp: [70.5727, 86.2556]
     kd: [3.5286, 4.3128]
-    friction: [0.6, 1.4]         # NEW: widened to ±40% — adds carpet/rubber surfaces
-    mass_shift: [-0.03, 0.03]    # NEW: ±30g per link
+    friction: [0.6, 1.4]
+    mass_shift: [-0.03, 0.03]
     calibration_offset: [-0.1, 0.1]
     body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
 
   obs_noise:
-    dof_pos: 0.01
-    dof_vel: 0.5
+    dof_pos: 0.02                # NEW: doubled — joint flex under load
+    dof_vel: 0.15                 # NEW: doubled — finite-diff velocity noisier at speed
 
   pushes:
     enabled: false

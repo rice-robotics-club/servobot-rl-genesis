@@ -1,10 +1,12 @@
 # yaml-language-server: $schema=../../schemas/config.json
-# Phase 9 - Sensor Noise Escalation
-# Picks up from phase 8. Reward structure unchanged.
-# Goal: teach the policy to handle noisier sensor readings under load/vibration.
-# Single addition from phase 8:
-#   - IMU acc/gyro noise doubled (closer to what real hardware produces under vibration)
-#   - obs dof_pos/dof_vel noise doubled (joint flex under load, finite-diff velocity noise)
+# Phase 7 - Friction DR
+# Picks up from phase 6. Single new challenge: surface friction variation.
+# Goal: teach the policy to handle different floor surfaces before introducing
+#       sensor noise or servo variance — friction is the most immediately
+#       impactful real-world variable and the least disorienting to learn.
+# Key additions:
+#   - friction: ±20% range on foot links (hardwood, tile, smooth concrete)
+#   - body_mass_offset: nominal weight correction only, no variance yet
 runner:
   class_name: OnPolicyRunner
   num_steps_per_env: 96
@@ -80,8 +82,8 @@ env:
   termination_if_body_contact_height: 0.05
 
 commands:
-  lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.5, 1.5]
+  lin_vel_x: [-0.8, 0.8]
+  lin_vel_y: [-0.8, 0.8]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -109,32 +111,16 @@ reward:
     energy: -0.10
     survival: 0.5
     stretching_pain: -3
-    hip_pain: -3
+    hip_pain: -0.3
   targets:
     base_height: 0.25
 
 domain_randomization:
   enabled: true
 
-  imu:
-    acc_noise:        [0.05, 0.05, 0.05]    # NEW: doubled — noisy real IMU under vibration
-    gyro_noise:       [0.02, 0.02, 0.02]    # NEW: doubled
-    acc_random_walk:  [0.001, 0.001, 0.001]
-    gyro_random_walk: [0.001, 0.001, 0.001]
-    delay: 0.02
-    jitter: 0.005
-
   on_reset:
-    kp: [70.5727, 86.2556]
-    kd: [3.5286, 4.3128]
-    friction: [0.6, 1.4]
-    mass_shift: [-0.03, 0.03]
-    calibration_offset: [-0.1, 0.1]
-    body_mass_offset: -1.95      # corrects sim chassis mass to real hardware midpoint (21 lbs total)
-
-  obs_noise:
-    dof_pos: 0.02                # NEW: doubled — joint flex under load
-    dof_vel: 1.0                 # NEW: doubled — finite-diff velocity noisier at speed
+    friction: [0.9, 1.1]       # ±10% — slim adjustments
+    body_mass_offset: -1.95    # corrects sim chassis mass to real hardware midpoint (21 lbs total)
 
   pushes:
     enabled: false

@@ -43,7 +43,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.02
+    desired_kl: 0.01
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -84,7 +84,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.5, 1.5]
+  lin_vel_y: [-1.0, 1.0]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -135,7 +135,7 @@ domain_randomization:
 
   obs_noise:
     dof_pos: 0.01              # encoder/flex noise (rad)
-    dof_vel: 0.5               # finite-diff velocity estimate noise (rad/s)
+    dof_vel: 0.1               # finite-diff velocity estimate noise (rad/s)
 
   pushes:
     enabled: false

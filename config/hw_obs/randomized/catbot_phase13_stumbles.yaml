@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=../../schemas/config.json
-# Phase 10 - External Pushes
-# Picks up from phase 9. Reward structure unchanged.
-# Goal: teach the policy to recover from unexpected external disturbances.
-# Single addition from phase 9:
-#   - pushes: enabled at low magnitude (gentle shoves, ~0.3 m/s impulse every ~10s)
+# Phase 11 - Stumbles
+# Picks up from phase 10. Reward structure unchanged.
+# Goal: teach the policy to recover from foot-slip and mid-swing impulses.
+# Single addition from phase 10:
+#   - stumbles: enabled at low probability (~1 stumble every 2.5s per env)
 runner:
   class_name: OnPolicyRunner
   num_steps_per_env: 96
@@ -39,7 +39,7 @@ runner:
     value_loss_coef: 1.0
     clip_param: 0.2
     use_clipped_value_loss: true
-    desired_kl: 0.02
+    desired_kl: 0.01
     entropy_coef: 0.01
     gamma: 0.99
     lam: 0.95
@@ -80,7 +80,7 @@ env:
 
 commands:
   lin_vel_x: [-1.0, 1.0]
-  lin_vel_y: [-1.5, 1.5]
+  lin_vel_y: [-1.0, 1.0]
   ang_vel_z: [-0.1, 0.1]
 
 obs:
@@ -133,9 +133,14 @@ domain_randomization:
 
   obs_noise:
     dof_pos: 0.02
-    dof_vel: 1.0
+    dof_vel: 0.15
 
   pushes:
+    enabled: true
+    interval_s: 10.0
+    max_vel_xy: 0.3
+
+  stumbles:
     enabled: true                # NEW
-    interval_s: 10.0             # push every ~10s per env
-    max_vel_xy: 0.3              # gentle — 0.3 m/s max impulse
+    probability: 0.01            # ~1 stumble every 2.5s per env while moving
+    max_vel_impulse: 1.0         # rad/s — small stumbles, won't launch the leg

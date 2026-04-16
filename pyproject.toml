@@ -26,7 +26,7 @@ dependencies = [
 train = "scripts.train:main"
 evaluate = "scripts.eval:main"
 update_schema = "scripts.update_schema:main"
-onnx = "scripts.onnx:main"
+onnx = "scripts.export_onnx:main"
 
 
 [tool.setuptools.packages.find]

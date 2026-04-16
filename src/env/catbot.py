@@ -176,10 +176,10 @@ class CatbotEnv:
         self.leg_dof_mask = ~self.hip_dof_mask
         # left/right hip masks — motors face opposite directions so limits are mirrored
         self.left_hip_mask = torch.tensor(
-            ["hip" in name and "_L" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
+            ["hip" in name and name[1] == "L" for name in self.joint_names], dtype=torch.bool, device=gs.device
         )
         self.right_hip_mask = torch.tensor(
-            ["hip" in name and "_R" in name for name in self.joint_names], dtype=torch.bool, device=gs.device
+            ["hip" in name and name[1] == "R" for name in self.joint_names], dtype=torch.bool, device=gs.device
         )
 
         all_dof_idx = torch.arange(self.robot.n_dofs, device=gs.device)
@@ -355,6 +355,7 @@ class CatbotEnv:
             self.last_actions if self.simulate_action_latency else self.actions
         )
         target_dof_pos = exec_actions * self.cfg["action_scale"] + self.default_dof_pos
+        # clamp hip joints
         target_dof_pos[:, self.right_hip_mask] = target_dof_pos[:, self.right_hip_mask].clamp(
             self.hip_min, self.hip_max
         )
@@ -866,7 +867,6 @@ class CatbotEnv:
         Freudenstein branch-selection ambiguity.
         """
         from src.env.catbot_leg import calculate_theta3 as _calc_theta3
-
         pain = torch.zeros(self.num_envs, device=self.device)
 
         a_indices = [i for i, n in enumerate(self.joint_names) if n.split("_")[-1] == "a" or n == "a"]
